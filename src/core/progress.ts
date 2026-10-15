@@ -1,3 +1,4 @@
+import { CANDLE_IDS, allCandlesLit, sanitizeBlownCandles, type CandleId } from '../config/candles';
 import type { SceneId } from '../config/scenes';
 import type { StampId } from '../config/stamps';
 import { loadJSON, removeKey, saveJSON } from './storage';
@@ -87,12 +88,14 @@ export interface GameProgress {
   wishUnlockSeen: boolean;
   /** 印章汇聚演出已播放 */
   convergenceSeen: boolean;
-  /** 四根蜡烛各自点亮状态 */
-  candles: Record<StampId, boolean>;
-  /** 蛋糕已点亮（四根全亮时同步为 true） */
+  /** 五根蜡烛各自是否点亮。`mayi` 是正中的金色蜡烛 */
+  candles: Record<CandleId, boolean>;
+  /** 蛋糕已点亮（五根全亮时为 true） */
   cakeLit: boolean;
-  /** 蜡烛已吹灭 */
+  /** 蜡烛已全部吹灭 */
   candlesBlown: boolean;
+  /** 已经熄灭的蜡烛，按吹灭波次排列。刷新后用来恢复火苗 */
+  blownCandles: CandleId[];
   /** 音乐礼物环节已结束（播放或跳过） */
   musicDone: boolean;
   /** 已看到最终祝福 */
@@ -137,9 +140,10 @@ export function createDefaultProgress(): GameProgress {
     stamps: { mint: false, food: false, exam: false, wish: false },
     wishUnlockSeen: false,
     convergenceSeen: false,
-    candles: { mint: false, food: false, exam: false, wish: false },
+    candles: { mint: false, food: false, exam: false, wish: false, mayi: false },
     cakeLit: false,
     candlesBlown: false,
+    blownCandles: [],
     musicDone: false,
     finalSeen: false,
     ticketSeen: false,
@@ -250,15 +254,24 @@ export function normalizeProgress(raw: unknown): GameProgress {
 
   const stamps = boolTable(raw.stamps, STAMP_IDS, def.stamps);
   const cakeLitRaw = bool(raw.cakeLit, false);
-  let candles = boolTable(raw.candles, STAMP_IDS, def.candles);
+  let candles = boolTable(raw.candles, [...CANDLE_IDS], def.candles);
 
-  // v1 没有 candles：旧存档“蛋糕已点亮”视为四根全亮
+  // v1 没有分根蜡烛：旧存档“蛋糕已点亮”视为五根全亮，含后来补上的金色蜡烛
   if (legacyVersion < 2 && cakeLitRaw) {
-    candles = { mint: true, food: true, exam: true, wish: true };
+    candles = { mint: true, food: true, exam: true, wish: true, mayi: true };
   }
-  const allCandles = STAMP_IDS.every((k) => candles[k]);
-  // 一致性：四根全亮 ⇒ cakeLit；cakeLit 但有未亮的蜡烛 ⇒ 以蜡烛为准（新版逐根点亮）
-  const cakeLit = allCandles || (cakeLitRaw && legacyVersion < 2);
+  const candleSrc = isDict(raw.candles) ? raw.candles : {};
+  const mayiSpecified = typeof candleSrc.mayi === 'boolean';
+  const fourLit = STAMP_IDS.every((id) => candles[id]);
+  const passedLighting =
+    bool(raw.candlesBlown, false) || bool(raw.musicDone, false) || bool(raw.finalSeen, false) || bool(raw.ticketSeen, false);
+  // 旧存档没有金色蜡烛。已经点亮蛋糕，或已经进入吹灭之后的环节时，补成已点亮，避免卡在蛋糕房
+  if (!mayiSpecified && (passedLighting || (cakeLitRaw && fourLit))) {
+    candles = { ...candles, mayi: true };
+  }
+  const cakeLit = allCandlesLit(candles) || (cakeLitRaw && legacyVersion < 2);
+  const candlesBlown = bool(raw.candlesBlown, false);
+  const blownCandles = sanitizeBlownCandles(raw.blownCandles, candlesBlown);
 
   const allStamps = STAMP_IDS.every((k) => stamps[k]);
   const ceremonyStarted = cakeLit || bool(raw.candlesBlown, false) || bool(raw.musicDone, false) || bool(raw.finalSeen, false);
@@ -302,7 +315,8 @@ export function normalizeProgress(raw: unknown): GameProgress {
     convergenceSeen: bool(raw.convergenceSeen, false) || (allStamps && ceremonyStarted),
     candles,
     cakeLit,
-    candlesBlown: bool(raw.candlesBlown, false),
+    candlesBlown,
+    blownCandles,
     musicDone: bool(raw.musicDone, false),
     finalSeen: bool(raw.finalSeen, false),
     ticketSeen: bool(raw.ticketSeen, false),

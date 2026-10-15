@@ -1,8 +1,10 @@
-import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { CakeCandles } from '../components/cake/CakeCandles';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SceneLayout } from '../components/ui/SceneLayout';
 import { StampBadge } from '../components/ui/StampBadge';
+import type { CandleId } from '../config/candles';
 import { STAMP_ORDER } from '../config/stamps';
 import { TEXTS } from '../config/texts';
 import { useGame } from '../core/GameContext';
@@ -10,17 +12,42 @@ import { audio } from '../core/audio';
 import { useSceneHint } from '../hooks/useSceneHint';
 
 /**
- * 场景 9/10a：生日蛋糕房——四枚印章集齐后开放，点亮蛋糕
+ * 生日蛋糕房。
+ * 可以逐根点亮，也可以一键点亮。五根都亮之后才能去吹蜡烛。
+ * 正中的金色蜡烛代表麻衣自己的心愿，点亮时有单独的金色光效。
  */
 export function CakeScene() {
-  const { progress, lightAllCandles, goTo } = useGame();
+  const { progress, lightCandle, lightAllCandles, goTo } = useGame();
   const t = TEXTS.cake;
   const lit = progress.cakeLit;
+  const [goldBurst, setGoldBurst] = useState(false);
   useSceneHint('cake', { target: lit ? 'cake-next' : 'cake-light' });
 
-  /** 本阶段仍为一键点亮：同时写入四根蜡烛状态，保证新版存档一致 */
-  const light = () => {
+  useEffect(() => {
+    if (!goldBurst) return;
+    const id = window.setTimeout(() => setGoldBurst(false), 1200);
+    return () => window.clearTimeout(id);
+  }, [goldBurst]);
+
+  /** 点亮一根。金色蜡烛额外给一次闪光 */
+  const lightOne = (id: CandleId) => {
+    if (progress.candles[id]) return;
     audio.playSfx('sfx_candle');
+    if (id === 'mayi') {
+      audio.playSfx('sfx_sparkle');
+      setGoldBurst(true);
+    }
+    lightCandle(id);
+  };
+
+  /** 一键点亮五根。若金色还没亮，同样播放金色光效 */
+  const lightAll = () => {
+    const goldWasDark = !progress.candles.mayi;
+    audio.playSfx('sfx_candle');
+    if (goldWasDark) {
+      audio.playSfx('sfx_sparkle');
+      setGoldBurst(true);
+    }
     lightAllCandles();
   };
 
@@ -36,7 +63,7 @@ export function CakeScene() {
             {t.toCandle}
           </Button>
         ) : (
-          <Button data-hint-target="cake-light" onClick={light}>
+          <Button data-hint-target="cake-light" onClick={lightAll}>
             {t.light}
           </Button>
         )
@@ -48,27 +75,11 @@ export function CakeScene() {
             <StampBadge key={id} id={id} unlocked={progress.stamps[id]} scale={0.7} />
           ))}
         </div>
-        <motion.div
-          className={`cake-base ${lit ? '' : 'cake-base--dark'}`}
-          animate={lit ? { scale: [1, 1.05, 1], filter: 'brightness(1)' } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="candle-row" style={{ marginTop: -70 }}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div className="candle" key={i}>
-                {lit && (
-                  <motion.div
-                    className="candle__flame"
-                    animate={{ scaleX: [1, 0.85, 1.1, 1], scaleY: [1, 1.1, 0.9, 1] }}
-                    transition={{ duration: 0.8 + i * 0.1, repeat: Infinity }}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-        <p className="card__text" style={{ marginTop: 28, fontWeight: 700, color: 'var(--c-pink-deep)', minHeight: 40 }}>
-          {lit ? t.lit : ''}
+        <div className={`cake-base ${lit ? '' : 'cake-base--dark'}`}>
+          <CakeCandles lit={progress.candles} blown={[]} interactive={!lit} goldBurst={goldBurst} onLight={lightOne} />
+        </div>
+        <p className="card__text" style={{ marginTop: 18, fontWeight: 700, color: 'var(--c-pink-deep)', minHeight: 40 }}>
+          {lit ? t.lit : t.progress(Object.values(progress.candles).filter(Boolean).length)}
         </p>
       </Card>
     </SceneLayout>

@@ -1,4 +1,5 @@
-import { ASSETS, assetPlaceholder, type ImageAssetId } from '../../config/assets';
+import { useEffect, useState } from 'react';
+import { ASSETS, assetPlaceholder, assetUrl, type ImageAssetId } from '../../config/assets';
 
 export interface PlaceholderBackgroundProps {
   /** 背景资源 ID（读取其 placeholder 渐变与说明） */
@@ -6,12 +7,37 @@ export interface PlaceholderBackgroundProps {
 }
 
 /**
- * 占位背景：使用资源表中的渐变 + 几个模糊色块，并在右下角标注将要替换的资源路径
+ * 场景背景：优先加载资源表中的图片；失败或未就绪时回退 CSS 占位渐变。
  */
 export function PlaceholderBackground({ asset }: PlaceholderBackgroundProps) {
   const entry = ASSETS[asset];
+  const url = assetUrl(asset);
+  const [useImage, setUseImage] = useState(false);
+
+  useEffect(() => {
+    setUseImage(false);
+    const img = new Image();
+    const ok = () => setUseImage(true);
+    const fail = () => setUseImage(false);
+    img.addEventListener('load', ok);
+    img.addEventListener('error', fail);
+    img.src = url;
+    return () => {
+      img.removeEventListener('load', ok);
+      img.removeEventListener('error', fail);
+    };
+  }, [url]);
+
+  if (useImage) {
+    return (
+      <div className="placeholder-bg placeholder-bg--image" data-asset={asset}>
+        <img className="placeholder-bg__photo" src={url} alt="" decoding="async" />
+      </div>
+    );
+  }
+
   return (
-    <div className="placeholder-bg" style={{ background: assetPlaceholder(asset) }}>
+    <div className="placeholder-bg placeholder-bg--fallback" style={{ background: assetPlaceholder(asset) }}>
       <div
         className="placeholder-bg__blob"
         style={{ width: 520, height: 520, left: -120, top: -160, background: 'rgba(255,255,255,0.7)' }}

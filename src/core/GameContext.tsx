@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { INITIAL_SCENE, SCENES, resolveLockedHint, type SceneId } from '../config/scenes';
 import { STAMPS, type StampId } from '../config/stamps';
+import { CANDLE_IDS, allCandlesLit, nextBlowWave, type CandleId } from '../config/candles';
 import { TEXTS } from '../config/texts';
 import { audio } from './audio';
 import {
@@ -89,12 +90,17 @@ export interface GameContextValue {
    */
   patch: (partial: PatchableProgress) => void;
   /**
-   * 点亮一根蜡烛；四根全亮时自动置 cakeLit
-   * @param id 蜡烛对应印章
+   * 点亮一根蜡烛。五根全亮时自动把蛋糕记为已点亮。
+   * @param id 蜡烛 ID，不按位置判断
    */
-  lightCandle: (id: StampId) => void;
-  /** 一键点亮全部蜡烛 */
+  lightCandle: (id: CandleId) => void;
+  /** 一键点亮全部蜡烛，包括正中的金色蜡烛 */
   lightAllCandles: () => void;
+  /**
+   * 按 2＋2＋1 吹灭下一波，金色最后。
+   * @returns 这一波熄灭的蜡烛；已经吹完时返回空数组
+   */
+  blowNextCandles: () => CandleId[];
   /**
    * 标记某场景的首次目标提示已显示
    * @param scene 场景 ID
@@ -224,18 +230,35 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setProgress((p) => ({ ...p, ...partial }));
   }, []);
 
-  const lightCandle = useCallback((id: StampId) => {
+  const lightCandle = useCallback((id: CandleId) => {
     setProgress((p) => {
       if (p.candles[id]) return p;
       const candles = { ...p.candles, [id]: true };
-      const all = candles.mint && candles.food && candles.exam && candles.wish;
-      return { ...p, candles, cakeLit: p.cakeLit || all };
+      return { ...p, candles, cakeLit: p.cakeLit || allCandlesLit(candles) };
     });
   }, []);
 
   const lightAllCandles = useCallback(() => {
-    setProgress((p) => ({ ...p, candles: { mint: true, food: true, exam: true, wish: true }, cakeLit: true }));
+    setProgress((p) => ({
+      ...p,
+      candles: { mint: true, food: true, exam: true, wish: true, mayi: true },
+      cakeLit: true,
+    }));
   }, []);
+
+  const blowNextCandles = useCallback((): CandleId[] => {
+    const wave = nextBlowWave(progress.blownCandles);
+    if (wave.length === 0 || progress.candlesBlown) return [];
+    setProgress((p) => {
+      if (p.candlesBlown) return p;
+      const fresh = nextBlowWave(p.blownCandles);
+      if (fresh.length === 0) return p;
+      const blownCandles = [...p.blownCandles, ...fresh];
+      const done = CANDLE_IDS.every((id) => blownCandles.includes(id));
+      return { ...p, blownCandles, candlesBlown: done };
+    });
+    return wave;
+  }, [progress.blownCandles, progress.candlesBlown]);
 
   const markHintSeen = useCallback((sceneId: SceneId) => {
     setProgress((p) => (p.hintsSeen[sceneId] ? p : { ...p, hintsSeen: { ...p.hintsSeen, [sceneId]: true } }));
@@ -277,6 +300,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       patch,
       lightCandle,
       lightAllCandles,
+      blowNextCandles,
       markHintSeen,
       updateSettings,
       setVolume,
@@ -300,6 +324,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       patch,
       lightCandle,
       lightAllCandles,
+      blowNextCandles,
       markHintSeen,
       updateSettings,
       setVolume,

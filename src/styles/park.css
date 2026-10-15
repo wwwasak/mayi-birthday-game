@@ -603,6 +603,12 @@
   z-index: 0;
 }
 
+/* 正式地图底图已含草地与路径时，不再叠 CSS 占位小路 */
+.park__layer--bg:has(.placeholder-bg--image) .park__ground,
+.park__layer--bg:has(.placeholder-bg--image) .park__path {
+  display: none;
+}
+
 .park__layer--buildings {
   z-index: 1;
 }
