@@ -1,0 +1,1133 @@
+/* =====================================================================
+   第一阶段新增样式：入园闸机 / 游园会地图（分层） / 轻提示 / Q 版麻衣
+   配色：樱花粉、奶白、香槟金，辅以薄荷绿与柔和紫蓝
+   ===================================================================== */
+
+/* ===== 通用：呼吸光主按钮 + 闲置脉冲高亮 ===== */
+.btn--breath {
+  animation: breath 1.8s ease-in-out infinite;
+}
+
+@keyframes breath {
+  0%,
+  100% {
+    box-shadow: 0 8px 0 var(--c-gold-deep), 0 12px 24px var(--c-shadow), 0 0 0 0 rgba(243, 197, 75, 0.5);
+  }
+  50% {
+    box-shadow: 0 8px 0 var(--c-gold-deep), 0 12px 24px var(--c-shadow), 0 0 0 14px rgba(243, 197, 75, 0);
+  }
+}
+
+.hint-pulse {
+  animation: hint-pulse 1.6s ease-in-out infinite !important;
+  outline: 4px solid rgba(243, 197, 75, 0.9);
+  outline-offset: 6px;
+  border-radius: inherit;
+}
+
+@keyframes hint-pulse {
+  0%,
+  100% {
+    outline-offset: 6px;
+    outline-color: rgba(243, 197, 75, 0.9);
+  }
+  50% {
+    outline-offset: 14px;
+    outline-color: rgba(243, 197, 75, 0.15);
+  }
+}
+
+/* ===== 提示槽（HUD 下方右侧，不拦截点击） ===== */
+.hint-slot {
+  position: absolute;
+  top: 90px;
+  right: 36px;
+  z-index: 60;
+  pointer-events: none;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 60px;
+}
+
+.hint-pill {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 820px;
+  padding: 12px 26px 12px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 3px solid var(--c-gold);
+  box-shadow: 0 10px 28px var(--c-shadow);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.hint-pill--broadcast {
+  border-color: var(--c-violet);
+  background: rgba(74, 59, 77, 0.94);
+  color: #fff;
+}
+
+.hint-pill--idle {
+  border-color: var(--c-pink-deep);
+}
+
+.hint-pill__icon {
+  font-size: 26px;
+}
+
+.hint-pill__chibi {
+  margin: -16px -4px -16px -8px;
+}
+
+/* ===== Q 版麻衣（纯 CSS 占位，120×150 基准） ===== */
+.chibi {
+  position: relative;
+  pointer-events: none;
+}
+
+.chibi__scale {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  height: 150px;
+  transform-origin: top left;
+}
+
+.chibi__inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  height: 150px;
+  animation: chibi-bob 2.2s ease-in-out infinite;
+}
+
+@keyframes chibi-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.chibi__ear {
+  position: absolute;
+  top: 2px;
+  width: 0;
+  height: 0;
+  border-left: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border-bottom: 40px solid #ff9fcb;
+}
+
+.chibi__ear--l {
+  left: 14px;
+  transform: rotate(-16deg);
+}
+
+.chibi__ear--r {
+  right: 14px;
+  transform: rotate(16deg);
+}
+
+.chibi__hair {
+  position: absolute;
+  top: 22px;
+  left: 10px;
+  width: 100px;
+  height: 92px;
+  border-radius: 50px 50px 36px 36px;
+  background: linear-gradient(180deg, #ff9fcb, #ffb8d9);
+}
+
+.chibi__face {
+  position: absolute;
+  top: 40px;
+  left: 26px;
+  width: 68px;
+  height: 60px;
+  border-radius: 50% 50% 46% 46%;
+  background: #fff4f0;
+}
+
+.chibi__eye {
+  position: absolute;
+  top: 22px;
+  width: 12px;
+  height: 18px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.chibi__eye--l {
+  left: 14px;
+  background: linear-gradient(180deg, var(--c-violet), var(--c-blue));
+}
+
+.chibi__eye--r {
+  right: 14px;
+  background: linear-gradient(180deg, var(--c-pink-deep), var(--c-pink));
+}
+
+.chibi__mouth {
+  position: absolute;
+  left: 50%;
+  top: 44px;
+  width: 12px;
+  height: 6px;
+  transform: translateX(-50%);
+  border-bottom: 3px solid var(--c-ink);
+  border-radius: 0 0 10px 10px;
+}
+
+.chibi__body {
+  position: absolute;
+  top: 98px;
+  left: 30px;
+  width: 60px;
+  height: 50px;
+  border-radius: 20px 20px 10px 10px;
+  background: linear-gradient(180deg, #fff, #fff0f7);
+  border: 3px solid var(--c-gold);
+  box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px var(--c-pink);
+}
+
+.chibi__arm {
+  position: absolute;
+  top: 104px;
+  width: 14px;
+  height: 34px;
+  border-radius: 8px;
+  background: #fff4f0;
+  border: 2px solid #ffd3e8;
+  transform-origin: top center;
+  transition: transform 0.25s;
+}
+
+.chibi__arm--l {
+  left: 18px;
+}
+
+.chibi__arm--r {
+  right: 18px;
+}
+
+.chibi__sign {
+  position: absolute;
+  top: -26px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--c-gold);
+  color: #5a4300;
+  font-weight: 900;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: all 0.25s;
+}
+
+.chibi__label {
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--c-ink-soft);
+  border: 1px dashed var(--c-ink-soft);
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* 动作 */
+.chibi--point .chibi__inner {
+  animation: chibi-hop 0.7s ease-in-out infinite;
+}
+
+.chibi--point.chibi--face-right .chibi__arm--r {
+  transform: rotate(-110deg);
+}
+
+.chibi--point.chibi--face-left .chibi__arm--l {
+  transform: rotate(110deg);
+}
+
+.chibi--point .chibi__sign {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes chibi-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-14px);
+  }
+}
+
+.chibi--happy .chibi__eye {
+  height: 6px;
+  top: 28px;
+  border-radius: 10px 10px 0 0;
+  background: var(--c-ink);
+}
+
+.chibi--happy .chibi__arm {
+  transform: rotate(160deg);
+}
+
+.chibi--surprise .chibi__eye {
+  transform: scale(1.35);
+}
+
+.chibi--surprise .chibi__mouth {
+  width: 10px;
+  height: 12px;
+  background: #e8657f;
+  border-bottom: none;
+  border-radius: 50%;
+}
+
+.chibi--surprise .chibi__inner {
+  animation: chibi-shiver 0.3s ease-in-out 2;
+}
+
+@keyframes chibi-shiver {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-6px);
+  }
+}
+
+.chibi--peek .chibi__inner {
+  animation: chibi-peek 1.2s ease-out forwards;
+}
+
+@keyframes chibi-peek {
+  from {
+    transform: translateY(70px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.chibi--pray .chibi__arm--l {
+  transform: translateX(16px) rotate(-30deg);
+}
+
+.chibi--pray .chibi__arm--r {
+  transform: translateX(-16px) rotate(30deg);
+}
+
+.chibi--pray .chibi__eye {
+  height: 4px;
+  top: 30px;
+  background: var(--c-ink);
+}
+
+.chibi--cheer .chibi__inner {
+  animation: chibi-jump 0.6s ease-in-out infinite;
+}
+
+.chibi--cheer .chibi__arm {
+  transform: rotate(170deg);
+}
+
+.chibi--cheer .chibi__eye {
+  height: 6px;
+  top: 28px;
+  border-radius: 10px 10px 0 0;
+  background: var(--c-ink);
+}
+
+@keyframes chibi-jump {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-26px) rotate(-4deg);
+  }
+}
+
+.chibi--nod .chibi__inner {
+  animation: chibi-nod 0.8s ease-in-out infinite;
+}
+
+@keyframes chibi-nod {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(8deg) translateY(4px);
+  }
+}
+
+/* ===== 入园闸机 ===== */
+.gate {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 460px 1fr 420px;
+  gap: 40px;
+  padding: 150px 120px 56px;
+}
+
+.gate__left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gate__machine {
+  position: relative;
+  height: 400px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #fff 0%, #f6eef9 100%);
+  border: 4px solid #fff;
+  box-shadow: 0 16px 40px var(--c-shadow);
+  overflow: hidden;
+}
+
+.gate__door {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: repeating-linear-gradient(135deg, #ffd6ea 0 18px, #ffe9f3 18px 36px);
+  border-top: 10px solid var(--c-gold);
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
+.gate__door--l {
+  left: 0;
+  border-right: 3px solid #fff;
+}
+
+.gate__door--r {
+  right: 0;
+  border-left: 3px solid #fff;
+}
+
+.gate__machine--open .gate__door--l {
+  transform: translateX(-100%);
+}
+
+.gate__machine--open .gate__door--r {
+  transform: translateX(100%);
+}
+
+.gate__scanner {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 32px;
+  z-index: 1;
+  padding: 20px 24px 24px;
+  border-radius: 20px;
+  background: rgba(74, 59, 77, 0.92);
+  color: #fff;
+  min-height: 200px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+
+.gate__scanner-title {
+  font-size: 18px;
+  letter-spacing: 4px;
+  opacity: 0.7;
+  margin-bottom: 14px;
+}
+
+.gate__scan-line {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  color: #b7f3e3;
+}
+
+.gate__scan-line--dim {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.gate__result {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 72px;
+  justify-content: center;
+}
+
+.gate__result-main {
+  font-size: 30px;
+  font-weight: 900;
+  color: #ffe58a;
+}
+
+.gate__result-sub {
+  font-size: 22px;
+  color: #b7f3e3;
+}
+
+.gate__scan-bar {
+  margin-top: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.gate__scan-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3fd1a8, #ffe58a);
+}
+
+.gate__chibi {
+  position: absolute;
+  right: 36px;
+  bottom: 18px;
+  z-index: 1;
+}
+
+.gate__notice {
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: rgba(255, 253, 253, 0.86);
+  border: 3px dashed rgba(240, 96, 159, 0.45);
+  color: var(--c-ink);
+  transition: transform 0.2s;
+}
+
+.gate__notice:hover {
+  transform: scale(1.03);
+}
+
+.gate__notice-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.gate__notice ol {
+  margin: 0;
+  padding-left: 26px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.gate__notice .off {
+  text-decoration: line-through;
+  color: var(--c-ink-soft);
+}
+
+.gate__center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gate__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.gate__reply {
+  min-height: 110px;
+  margin-top: 24px;
+}
+
+.gate__reply-main {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--c-pink-deep);
+}
+
+.gate__reply-note {
+  margin: 6px 0 0;
+  font-size: 20px;
+  color: var(--c-ink-soft);
+}
+
+.gate__actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  min-height: 90px;
+}
+
+.gate__right {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* ===== 游园会地图：分层 ===== */
+.park {
+  overflow: hidden;
+}
+
+.park__layer {
+  position: absolute;
+  inset: 0;
+}
+
+.park__layer--bg {
+  z-index: 0;
+}
+
+.park__layer--buildings {
+  z-index: 1;
+}
+
+.park__layer--ambient {
+  z-index: 2;
+  pointer-events: none;
+}
+
+.park__layer--fx {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.park__layer--ui {
+  z-index: 4;
+  pointer-events: none;
+}
+
+.park__layer--ui > * {
+  pointer-events: auto;
+}
+
+.park__layer--ui .park__chibi,
+.park__layer--ui .park__layer-label {
+  pointer-events: none;
+}
+
+/* 背景层：草地与小路 */
+.park__ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 62%;
+  background: linear-gradient(180deg, rgba(200, 240, 215, 0.45) 0%, rgba(190, 235, 205, 0.7) 100%);
+}
+
+.park__path {
+  position: absolute;
+  background: rgba(255, 248, 230, 0.85);
+  border: 4px solid rgba(255, 255, 255, 0.9);
+  border-radius: 40px;
+}
+
+.park__path--h {
+  left: 240px;
+  right: 240px;
+  top: 530px;
+  height: 60px;
+}
+
+.park__path--v {
+  left: 930px;
+  top: 200px;
+  bottom: 120px;
+  width: 60px;
+}
+
+/* 环境光层：天色滤镜（按 data-ambient 0~4 切换） */
+.park__sky {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 1.5s ease, background 1.5s ease;
+  background: linear-gradient(180deg, #ffd9a0 0%, #ffc3d9 100%);
+}
+
+.park[data-ambient='1'] .park__sky {
+  opacity: 0.18;
+}
+
+.park[data-ambient='2'] .park__sky {
+  opacity: 0.38;
+  background: linear-gradient(180deg, #ffb27a 0%, #d9a0e6 100%);
+}
+
+.park[data-ambient='3'] .park__sky {
+  opacity: 0.5;
+  background: linear-gradient(180deg, #8f74c9 0%, #c79ad9 60%, #f3d3e6 100%);
+}
+
+/* 夜色：上深下浅，建筑区域保留可读性，灯笼与印章槽的暖光才能透出来 */
+.park[data-ambient='4'] .park__sky {
+  opacity: 0.58;
+  background: linear-gradient(180deg, #3b2f7a 0%, #7a5fb8 45%, #c9a6e0 100%);
+}
+
+.park[data-ambient='4'] .bld__lantern--lv2 {
+  background: #ffe066;
+}
+
+.park[data-ambient='4'] .bld__sign,
+.park[data-ambient='4'] .bld__status {
+  filter: brightness(1.12);
+}
+
+.park__stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+}
+
+.park[data-ambient='3'] .park__stars {
+  opacity: 0.6;
+}
+
+.park[data-ambient='4'] .park__stars {
+  opacity: 1;
+}
+
+.park__star {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+  animation: star-twinkle 2s ease-in-out infinite;
+}
+
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* ===== 建筑 ===== */
+.bld {
+  position: absolute;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: center;
+  cursor: pointer;
+  color: var(--c-ink);
+  font-family: inherit;
+  border-radius: 24px;
+}
+
+.bld__roof {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 0;
+  height: 92px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, var(--bld-color), color-mix(in srgb, var(--bld-color) 70%, #fff));
+  filter: drop-shadow(0 6px 0 rgba(255, 255, 255, 0.8));
+}
+
+.bld__wall {
+  position: absolute;
+  left: 50px;
+  right: 50px;
+  top: 88px;
+  bottom: 0;
+  background: linear-gradient(180deg, #fffdfd 0%, #fff0f7 100%);
+  border-radius: 0 0 22px 22px;
+  border: 4px solid #fff;
+  box-shadow: 0 14px 30px var(--c-shadow), inset 0 0 0 6px color-mix(in srgb, var(--bld-color) 25%, #fff);
+}
+
+.bld__window {
+  position: absolute;
+  top: 34px;
+  left: 28px;
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: #d7e4ff;
+  border: 4px solid #fff;
+  box-shadow: inset 0 0 0 2px rgba(74, 59, 77, 0.15);
+  transition: background 0.6s, box-shadow 0.6s;
+}
+
+.bld__window--2 {
+  left: auto;
+  right: 28px;
+}
+
+.bld__window--lit {
+  background: #ffe58a;
+  box-shadow: 0 0 22px 6px rgba(255, 229, 138, 0.75);
+}
+
+.bld__door {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 70px;
+  height: 78px;
+  transform: translateX(-50%);
+  border-radius: 34px 34px 0 0;
+  background: color-mix(in srgb, var(--bld-color) 55%, #fff);
+  border: 4px solid #fff;
+  border-bottom: none;
+}
+
+.bld__door--cake {
+  width: 320px;
+  height: 100px;
+  border-radius: 48px 48px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bld__slots {
+  display: flex;
+  gap: 16px;
+}
+
+.bld__slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 4px dashed rgba(74, 59, 77, 0.35);
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 24px;
+  transition: all 0.5s;
+}
+
+.bld__slot--lit {
+  border: 4px solid #fff;
+  background: var(--slot-color);
+  box-shadow: 0 0 0 4px var(--slot-color), 0 0 24px 6px color-mix(in srgb, var(--slot-color) 70%, transparent);
+}
+
+.bld__lantern {
+  position: absolute;
+  top: 78px;
+  width: 26px;
+  height: 34px;
+  border-radius: 12px;
+  background: #ffb4c8;
+  border: 3px solid #fff;
+  transition: background 0.6s, box-shadow 0.6s;
+}
+
+.bld__lantern--l {
+  left: 14px;
+}
+
+.bld__lantern--r {
+  right: 14px;
+}
+
+.bld__lantern--lv1 {
+  background: #ffcf6a;
+  box-shadow: 0 0 12px 3px rgba(255, 207, 106, 0.6);
+}
+
+.bld__lantern--lv2 {
+  background: #ffb73b;
+  box-shadow: 0 0 26px 10px rgba(255, 183, 59, 0.85);
+  animation: lantern-glow 1.6s ease-in-out infinite;
+}
+
+.bld__lantern--r.bld__lantern--lv2 {
+  animation-delay: 0.3s;
+}
+
+@keyframes lantern-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px 8px rgba(255, 183, 59, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 32px 14px rgba(255, 183, 59, 0.95);
+  }
+}
+
+.bld__sign {
+  position: absolute;
+  left: 50%;
+  top: 62px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid var(--bld-color);
+  box-shadow: 0 8px 18px var(--c-shadow);
+  white-space: nowrap;
+}
+
+.bld__sign-emoji {
+  font-size: 28px;
+}
+
+.bld__sign-title {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.bld__desc {
+  position: absolute;
+  left: 60px;
+  right: 60px;
+  top: 128px;
+  font-size: 18px;
+  color: var(--c-ink-soft);
+  line-height: 1.4;
+}
+
+.bld--cake .bld__desc {
+  top: 150px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--c-pink-deep);
+}
+
+.bld__status {
+  position: absolute;
+  left: 50%;
+  bottom: -22px;
+  transform: translateX(-50%);
+  padding: 8px 26px;
+  border-radius: 999px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  background: linear-gradient(135deg, var(--c-pink) 0%, var(--c-pink-deep) 100%);
+  box-shadow: 0 6px 0 rgba(200, 70, 130, 0.45), 0 10px 20px var(--c-shadow);
+}
+
+.bld__status--done {
+  color: var(--c-ink);
+  background: linear-gradient(135deg, #fff 0%, #f6eef9 100%);
+  box-shadow: 0 6px 0 rgba(180, 160, 190, 0.5), 0 10px 20px var(--c-shadow);
+}
+
+.bld__status--locked {
+  color: var(--c-ink-soft);
+  background: #f1ecf3;
+  box-shadow: 0 6px 0 rgba(180, 160, 190, 0.4);
+  font-size: 19px;
+}
+
+.bld--cake .bld__status--open {
+  color: #5a4300;
+  background: linear-gradient(135deg, #ffe58a 0%, var(--c-gold) 100%);
+  box-shadow: 0 6px 0 var(--c-gold-deep), 0 10px 20px var(--c-shadow);
+}
+
+.bld__stamp {
+  position: absolute;
+  top: -14px;
+  right: 30px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--c-pink-deep);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 6px 14px var(--c-shadow);
+}
+
+.bld__lock {
+  position: absolute;
+  top: -10px;
+  right: 30px;
+  font-size: 34px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.bld__asset-label {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 30px;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: rgba(74, 59, 77, 0.45);
+  white-space: nowrap;
+}
+
+.bld--locked {
+  filter: grayscale(0.55) brightness(0.96);
+}
+
+.bld--locked .bld__roof,
+.bld--locked .bld__wall {
+  opacity: 0.9;
+}
+
+.bld--shake {
+  animation: bld-shake 0.45s ease-in-out;
+}
+
+@keyframes bld-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-10px) rotate(-1deg);
+  }
+  40% {
+    transform: translateX(10px) rotate(1deg);
+  }
+  60% {
+    transform: translateX(-7px);
+  }
+  80% {
+    transform: translateX(7px);
+  }
+}
+
+.bld--glow .bld__wall {
+  animation: bld-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes bld-glow {
+  0%,
+  100% {
+    box-shadow: 0 14px 30px var(--c-shadow), 0 0 0 0 rgba(243, 197, 75, 0.7);
+  }
+  50% {
+    box-shadow: 0 14px 30px var(--c-shadow), 0 0 40px 16px rgba(243, 197, 75, 0.55);
+  }
+}
+
+/* ===== 特效层 ===== */
+.park__fly-stamp {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  margin-left: -38px;
+  margin-top: -38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: #fff;
+  background: var(--stamp-color);
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 4px var(--stamp-color), 0 0 30px 10px color-mix(in srgb, var(--stamp-color) 60%, transparent);
+}
+
+.park__firework {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 143, 194, 0.7) 30%, transparent 70%);
+  box-shadow: 0 0 60px 20px rgba(255, 143, 194, 0.4);
+}
+
+.park__firework--gold {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(243, 197, 75, 0.7) 30%, transparent 70%);
+  box-shadow: 0 0 60px 20px rgba(243, 197, 75, 0.4);
+}
+
+/* ===== UI 层 ===== */
+.park__tray {
+  position: absolute;
+  height: 76px;
+}
+
+.park__tray-disc {
+  position: absolute;
+  top: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  border: 4px dashed rgba(74, 59, 77, 0.35);
+  background: rgba(255, 255, 255, 0.6);
+  transition: opacity 0.4s;
+}
+
+.park__tray-disc--on {
+  border: 4px solid #fff;
+  background: var(--stamp-color);
+  box-shadow: 0 0 0 4px var(--stamp-color), 0 8px 20px var(--c-shadow);
+}
+
+.park__tray-label {
+  position: absolute;
+  left: 0;
+  top: 86px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--c-ink);
+  background: rgba(255, 255, 255, 0.8);
+  padding: 4px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.park__corner {
+  position: absolute;
+  right: 40px;
+  bottom: 36px;
+}
+
+.park__layer-label {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: rgba(74, 59, 77, 0.5);
+  white-space: nowrap;
+}
+
+.park__skip {
+  position: absolute;
+  right: 40px;
+  top: 160px;
+}
