@@ -50,12 +50,55 @@ export function cakeSlotCenter(i: number): { x: number; y: number } {
 const CHIBI_SIZE = { w: 120, h: 150 };
 
 /**
- * Q 版麻衣站在某栋建筑门口的位置（左侧建筑站右边，右侧建筑站左边）
- * @param id 建筑 ID
+ * 单栋建筑的视觉微调。点击热区仍是 `MAP_BUILDINGS`。
+ * 有正式 PNG 时按 `artWidth` 和图片宽高比显示，底边锚在原矩形底边。
+ * 换图时只改这一项，不必改组件。
  */
-export function chibiSpot(id: BuildingId): { x: number; y: number } {
-  const r = MAP_BUILDINGS[id];
-  const onLeft = r.x + r.w / 2 < 960;
-  if (id === 'cake') return { x: r.x + r.w + 12, y: r.y + r.h - CHIBI_SIZE.h - 10 };
-  return onLeft ? { x: r.x + r.w + 12, y: r.y + r.h - CHIBI_SIZE.h - 10 } : { x: r.x - CHIBI_SIZE.w - 12, y: r.y + r.h - CHIBI_SIZE.h - 10 };
+export interface BuildingTune {
+  /** 显示宽度（逻辑像素）。高度 = 宽度 / artAspect，不拉伸 */
+  artWidth: number;
+  /** 图片像素宽 / 高 */
+  artAspect: number;
+  /** 相对原矩形底边中点的水平、垂直偏移。垂直正值表示再往下沉一点 */
+  offsetX: number;
+  offsetY: number;
+}
+
+/** 已导入正式图的建筑。其余场馆留空，继续用原矩形里的 CSS 房屋 */
+export const BUILDING_TUNE: Partial<Record<BuildingId, BuildingTune>> = {
+  mint: { artWidth: 560, artAspect: 1632 / 964, offsetX: -36, offsetY: 10, },
+};
+
+/**
+ * 建筑视觉框。无正式图时等于原点击矩形。
+ * @param id 建筑
+ * @param hasArt 该建筑 PNG 是否已加载成功
+ */
+export function buildingFrame(id: BuildingId, hasArt: boolean): Rect {
+  const hit = MAP_BUILDINGS[id];
+  const tune = hasArt ? BUILDING_TUNE[id] : undefined;
+  if (!tune) return hit;
+  const w = tune.artWidth;
+  const h = Math.round(w / tune.artAspect);
+  const anchorX = hit.x + hit.w / 2 + tune.offsetX;
+  const anchorY = hit.y + hit.h + tune.offsetY;
+  return { x: Math.round(anchorX - w / 2), y: Math.round(anchorY - h), w, h };
+}
+
+/**
+ * Q 版麻衣站在建筑朝向园区中心的一侧，脚底贴着视觉框底边。
+ * 若会挡住蛋糕房点击区，则向外让开。
+ * @param id 建筑
+ * @param hasArt 该建筑是否正在显示正式图
+ */
+export function chibiSpot(id: BuildingId, hasArt = false): { x: number; y: number } {
+  const frame = buildingFrame(id, hasArt);
+  const hit = MAP_BUILDINGS[id];
+  const onLeft = hit.x + hit.w / 2 < 960;
+  let x = onLeft ? frame.x + frame.w - 48 : frame.x - CHIBI_SIZE.w + 48;
+  const y = frame.y + frame.h - CHIBI_SIZE.h + 6;
+  const cake = MAP_BUILDINGS.cake;
+  const hitsCake = id !== 'cake' && x < cake.x + cake.w && x + CHIBI_SIZE.w > cake.x && y < cake.y + cake.h && y + CHIBI_SIZE.h > cake.y;
+  if (hitsCake) x = onLeft ? cake.x - CHIBI_SIZE.w - 10 : cake.x + cake.w + 10;
+  return { x: Math.round(x), y: Math.round(y) };
 }

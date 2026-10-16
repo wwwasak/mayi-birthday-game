@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ASSETS, assetPlaceholder, assetUrl, type ImageAssetId } from '../../config/assets';
+import { isDebugUiEnabled } from '../../config/debugUi';
 
 export interface PlaceholderBackgroundProps {
   /** 背景资源 ID（读取其 placeholder 渐变与说明） */
@@ -12,6 +13,7 @@ export interface PlaceholderBackgroundProps {
 export function PlaceholderBackground({ asset }: PlaceholderBackgroundProps) {
   const entry = ASSETS[asset];
   const url = assetUrl(asset);
+  const showDebug = isDebugUiEnabled();
   const [useImage, setUseImage] = useState(false);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export function PlaceholderBackground({ asset }: PlaceholderBackgroundProps) {
         className="placeholder-bg__blob"
         style={{ width: 360, height: 360, right: 420, top: 80, background: 'rgba(170,190,255,0.5)' }}
       />
-      <span className="placeholder-bg__label">占位背景 · {entry.path}</span>
+      {showDebug && <span className="placeholder-bg__label">占位背景 · {entry.path}</span>}
     </div>
   );
 }

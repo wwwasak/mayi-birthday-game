@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { ChibiMayi, type ChibiAction } from '../components/ui/ChibiMayi';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
 import { ASSETS } from '../config/assets';
+import { isDebugUiEnabled } from '../config/debugUi';
 import { cakeSlotCenter, chibiSpot, STAMP_TRAY, trayCenter, type BuildingId } from '../config/mapLayout';
 import { hasAllStamps } from '../config/scenes';
 import { STAMPS, STAMP_ORDER, type StampId } from '../config/stamps';
@@ -14,6 +15,7 @@ import { useGame } from '../core/GameContext';
 import { useHints } from '../core/HintContext';
 import { canEnterStage, countPreWishStamps, countStamps, currentStage, STRICT_ORDER, type GameProgress } from '../core/progress';
 import { useSceneHint } from '../hooks/useSceneHint';
+import { useAssetImageReady } from '../hooks/useAssetImageReady';
 
 /** 地图演出类型 */
 type ShowKind = 'none' | 'wish' | 'converge';
@@ -60,6 +62,18 @@ export function MapScene() {
   const pre = countPreWishStamps(progress);
   const allDone = hasAllStamps(progress);
   const wishOpen = canEnterStage(progress, 'wish');
+  const mintArt = useAssetImageReady('map_building_mint');
+  const foodArt = useAssetImageReady('map_building_food');
+  const examArt = useAssetImageReady('map_building_exam');
+  const wishArt = useAssetImageReady('map_building_wish');
+  const cakeArt = useAssetImageReady('map_building_cake');
+  const artReady: Record<BuildingId, boolean> = {
+    mint: mintArt,
+    food: foodArt,
+    exam: examArt,
+    wish: wishArt,
+    cake: cakeArt,
+  };
 
   // ---------- 演出状态 ----------
   const needConverge = allDone && !progress.convergenceSeen;
@@ -187,8 +201,8 @@ export function MapScene() {
 
   // ---------- Q 版麻衣：站在当前站门口；刚通关时从上一站走过来 ----------
   const chibiTarget: BuildingId = show === 'wish' ? 'wish' : show === 'converge' ? 'cake' : next;
-  const chibiPos = chibiSpot(chibiTarget);
-  const chibiStart = cameFrom ? chibiSpot(cameFrom) : chibiPos;
+  const chibiPos = chibiSpot(chibiTarget, artReady[chibiTarget]);
+  const chibiStart = cameFrom ? chibiSpot(cameFrom, artReady[cameFrom]) : chibiPos;
   const chibiAction: ChibiAction = show === 'converge' ? (step >= 4 ? 'cheer' : 'surprise') : show === 'wish' ? 'point' : hintMode === 'idle' ? 'point' : 'idle';
   const chibiFacing = chibiPos.x < 960 ? 'right' : 'left';
   /** 点击 Q 版麻衣 = 进入当前站 */
@@ -203,13 +217,18 @@ export function MapScene() {
   const stepNo = (id: StampId) => STRICT_ORDER.indexOf(id) + 1;
   const boothStatus = (id: StampId) => {
     const s = boothState(id);
-    if (s === 'done') return `${t.orderStep(stepNo(id))} · ${t.replay}`;
+    if (s !== 'open') return null;
+    if (id === 'wish' && (show === 'wish' || (progress.wishUnlockSeen && !progress.stamps.wish))) return `✨ ${t.wishEnterNow}`;
+    return `${t.orderStep(stepNo(id))} · 点击进入`;
+  };
+  const boothHint = (id: StampId) => {
+    const s = boothState(id);
     if (s === 'locked') {
       const cur = currentStage(progress);
       return cur ? t.orderLocked(t.booths[cur].title) : t.replay;
     }
-    if (id === 'wish' && (show === 'wish' || (progress.wishUnlockSeen && !progress.stamps.wish))) return `✨ ${t.wishEnterNow}`;
-    return `${t.orderStep(stepNo(id))} · ${t.orderNow}`;
+    if (s === 'done') return `${t.booths[id].desc}（${t.replay}）`;
+    return t.booths[id].desc;
   };
 
   return (
@@ -229,9 +248,9 @@ export function MapScene() {
             key={id}
             id={id}
             title={t.booths[id].title}
-            desc={t.booths[id].desc}
+            hint={boothHint(id)}
             state={boothState(id)}
-            statusText={boothStatus(id)}
+            enterLabel={boothStatus(id)}
             lanternLevel={lanternLevel}
             shaking={shaking === id}
             glowing={(id === 'wish' && (show === 'wish' || (progress.wishUnlockSeen && !progress.stamps.wish && wishOpen))) || (show === 'none' && boothState(id) === 'open')}
@@ -241,9 +260,9 @@ export function MapScene() {
         <MapBuilding
           id="cake"
           title={t.cakeTitle}
-          desc={allDone ? t.cakeOpen : t.cakeLocked(n)}
+          hint={allDone ? t.cakeOpen : t.cakeLocked(n)}
           state={allDone ? 'open' : 'locked'}
-          statusText={allDone ? `🎂 ${t.cakeEnter}` : t.cakeLocked(n)}
+          enterLabel={allDone ? `🎂 ${t.cakeEnter}` : undefined}
           lanternLevel={lanternLevel}
           shaking={shaking === 'cake'}
           glowing={allDone && show === 'none'}
@@ -313,7 +332,7 @@ export function MapScene() {
             if (e.key === 'Enter' || e.key === ' ') enterCurrent();
           }}
         >
-          <ChibiMayi action={chibiAction} facing={chibiFacing} showLabel />
+          <ChibiMayi action={chibiAction} facing={chibiFacing} showLabel={isDebugUiEnabled()} />
         </motion.div>
 
         <div className="park__tray" style={{ left: STAMP_TRAY.x, top: STAMP_TRAY.y }}>
@@ -345,9 +364,11 @@ export function MapScene() {
           </Button>
         </div>
 
-        <span className="park__layer-label">
-          {t.layerLabels.bg} · {t.layerLabels.buildings} · {t.layerLabels.ambient}（{ASSETS.map_layer_night.path}）· {t.layerLabels.fx} · {t.layerLabels.ui}
-        </span>
+        {isDebugUiEnabled() && (
+          <span className="park__layer-label">
+            {t.layerLabels.bg} · {t.layerLabels.buildings} · {t.layerLabels.ambient}（{ASSETS.map_layer_night.path}）· {t.layerLabels.fx} · {t.layerLabels.ui}
+          </span>
+        )}
 
         <AnimatePresence>
           {show !== 'none' && (
