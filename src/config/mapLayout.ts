@@ -42,63 +42,88 @@ export const CAKE_SLOT_SIZE = 52;
  * @param i 槽序号 0~3
  */
 export function cakeSlotCenter(i: number): { x: number; y: number } {
-  const c = MAP_BUILDINGS.cake;
-  return { x: c.x + c.w / 2 + (i - 1.5) * 68, y: c.y + c.h - 72 };
+  const frame = buildingFrame('cake', true);
+  return { x: frame.x + frame.w / 2 + (i - 1.5) * 68, y: frame.y + frame.h - 96 };
 }
 
 /** Q 版麻衣的尺寸（用于定位） */
-const CHIBI_SIZE = { w: 120, h: 150 };
+const CHIBI_W = 120;
+const CHIBI_H = 150;
 
 /**
- * 单栋建筑的视觉微调。点击热区仍是 `MAP_BUILDINGS`。
- * 有正式 PNG 时按 `artWidth` 和图片宽高比显示，底边锚在原矩形底边。
- * 换图时只改这一项，不必改组件。
+ * 单栋建筑的视觉参数。只改这里即可微调大小和位置。
+ * 底边中点锚在草地上；宽高比来自 PNG，不会被拉变形。
  */
 export interface BuildingTune {
-  /** 显示宽度（逻辑像素）。高度 = 宽度 / artAspect，不拉伸 */
+  /** 显示宽度（逻辑像素）。高度 = 宽度 / artAspect */
   artWidth: number;
   /** 图片像素宽 / 高 */
   artAspect: number;
-  /** 相对原矩形底边中点的水平、垂直偏移。垂直正值表示再往下沉一点 */
-  offsetX: number;
-  offsetY: number;
+  /** 底边中点 */
+  anchorX: number;
+  anchorY: number;
+  /** Q 版左上角相对底边中点的偏移 */
+  characterDx: number;
+  characterDy: number;
+  /** 名称标签相对建筑底边再往下（像素） */
+  labelOffset: number;
 }
 
-/** 已导入正式图的建筑。其余场馆留空，继续用原矩形里的 CSS 房屋 */
-export const BUILDING_TUNE: Partial<Record<BuildingId, BuildingTune>> = {
-  mint: { artWidth: 560, artAspect: 1632 / 964, offsetX: -36, offsetY: 10, },
+/**
+ * 五栋正式建筑。四角约比原先 560 宽放大 25%～30%，蛋糕房更大。
+ * 锚点按地图草地和道路留白摆放，允许轻微交叠，近景建筑叠在上面。
+ */
+export const BUILDING_TUNE: Record<BuildingId, BuildingTune> = {
+  mint: { artWidth: 680, artAspect: 1632 / 964, anchorX: 350, anchorY: 540, characterDx: -330, characterDy: -132, labelOffset: 6 },
+  food: { artWidth: 680, artAspect: 1635 / 962, anchorX: 1570, anchorY: 540, characterDx: 210, characterDy: -132, labelOffset: 6 },
+  exam: { artWidth: 660, artAspect: 1635 / 962, anchorX: 360, anchorY: 1006, characterDx: 330, characterDy: -128, labelOffset: 4 },
+  wish: { artWidth: 660, artAspect: 1635 / 962, anchorX: 1560, anchorY: 1006, characterDx: 200, characterDy: -132, labelOffset: 4 },
+  cake: { artWidth: 800, artAspect: 1632 / 964, anchorX: 960, anchorY: 736, characterDx: 150, characterDy: -128, labelOffset: 6 },
 };
 
 /**
- * 建筑视觉框。无正式图时等于原点击矩形。
+ * 建筑视觉框。无正式图时退回原来的点击矩形。
  * @param id 建筑
  * @param hasArt 该建筑 PNG 是否已加载成功
  */
 export function buildingFrame(id: BuildingId, hasArt: boolean): Rect {
   const hit = MAP_BUILDINGS[id];
-  const tune = hasArt ? BUILDING_TUNE[id] : undefined;
-  if (!tune) return hit;
+  if (!hasArt) return hit;
+  const tune = BUILDING_TUNE[id];
   const w = tune.artWidth;
   const h = Math.round(w / tune.artAspect);
-  const anchorX = hit.x + hit.w / 2 + tune.offsetX;
-  const anchorY = hit.y + hit.h + tune.offsetY;
-  return { x: Math.round(anchorX - w / 2), y: Math.round(anchorY - h), w, h };
+  return {
+    x: Math.round(tune.anchorX - w / 2),
+    y: Math.round(tune.anchorY - h),
+    w,
+    h,
+  };
 }
 
 /**
- * Q 版麻衣站在建筑朝向园区中心的一侧，脚底贴着视觉框底边。
- * 若会挡住蛋糕房点击区，则向外让开。
+ * 名称标签相对视觉框底边的下移量
+ * @param id 建筑
+ * @param hasArt 是否正在显示正式图
+ */
+export function buildingLabelOffset(id: BuildingId, hasArt: boolean): number {
+  return hasArt ? BUILDING_TUNE[id].labelOffset : 8;
+}
+
+/**
+ * Q 版麻衣站在该建筑配置的入口旁，脚底贴近建筑底边。
  * @param id 建筑
  * @param hasArt 该建筑是否正在显示正式图
  */
 export function chibiSpot(id: BuildingId, hasArt = false): { x: number; y: number } {
-  const frame = buildingFrame(id, hasArt);
-  const hit = MAP_BUILDINGS[id];
-  const onLeft = hit.x + hit.w / 2 < 960;
-  let x = onLeft ? frame.x + frame.w - 48 : frame.x - CHIBI_SIZE.w + 48;
-  const y = frame.y + frame.h - CHIBI_SIZE.h + 6;
-  const cake = MAP_BUILDINGS.cake;
-  const hitsCake = id !== 'cake' && x < cake.x + cake.w && x + CHIBI_SIZE.w > cake.x && y < cake.y + cake.h && y + CHIBI_SIZE.h > cake.y;
-  if (hitsCake) x = onLeft ? cake.x - CHIBI_SIZE.w - 10 : cake.x + cake.w + 10;
-  return { x: Math.round(x), y: Math.round(y) };
+  if (!hasArt) {
+    const r = MAP_BUILDINGS[id];
+    const onLeft = r.x + r.w / 2 < 960;
+    const x = onLeft ? r.x + r.w - 48 : r.x - CHIBI_W + 48;
+    return { x, y: r.y + r.h - CHIBI_H + 6 };
+  }
+  const tune = BUILDING_TUNE[id];
+  return {
+    x: Math.round(tune.anchorX + tune.characterDx),
+    y: Math.round(tune.anchorY + tune.characterDy),
+  };
 }

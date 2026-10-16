@@ -610,11 +610,11 @@
 }
 
 .park__layer--buildings {
-  z-index: 1;
+  z-index: 2;
 }
 
 .park__layer--ambient {
-  z-index: 2;
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -632,8 +632,23 @@
   pointer-events: auto;
 }
 
-.park__layer--ui .park__chibi,
 .park__layer--ui .park__layer-label {
+  pointer-events: none;
+}
+
+.park__layer--ui .park__chibi--clickable {
+  pointer-events: auto;
+}
+
+.park__chibi::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 0;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(48, 32, 62, 0.38) 0%, rgba(48, 32, 62, 0) 72%);
   pointer-events: none;
 }
 
@@ -668,42 +683,78 @@
   width: 60px;
 }
 
-/* 环境光层：天色滤镜（按 data-ambient 0~4 切换） */
+/* 天色只叠在背景层之上、建筑层之下，不改变建筑 PNG 的亮度 */
 .park__sky {
   position: absolute;
   inset: 0;
   mix-blend-mode: multiply;
   opacity: 0;
-  transition: opacity 1.5s ease, background 1.5s ease;
-  background: linear-gradient(180deg, #ffd9a0 0%, #ffc3d9 100%);
+  transition: opacity 1.2s ease, background 1.2s ease;
+  background: transparent;
 }
 
 .park[data-ambient='1'] .park__sky {
-  opacity: 0.18;
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(210, 120, 48, 0.28) 0%, rgba(230, 160, 80, 0.12) 22%, rgba(255, 244, 228, 0) 42%);
 }
 
+/* 2 枚印章：上半张暖金夕阳，中段淡出，建筑和草地不再被粉色雾盖住 */
 .park[data-ambient='2'] .park__sky {
-  opacity: 0.38;
-  background: linear-gradient(180deg, #ffb27a 0%, #d9a0e6 100%);
+  opacity: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(186, 78, 28, 0.62) 0%,
+    rgba(214, 112, 36, 0.48) 16%,
+    rgba(228, 150, 64, 0.22) 34%,
+    rgba(255, 236, 210, 0) 52%
+  );
 }
 
 .park[data-ambient='3'] .park__sky {
-  opacity: 0.5;
-  background: linear-gradient(180deg, #8f74c9 0%, #c79ad9 60%, #f3d3e6 100%);
+  opacity: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(48, 32, 110, 0.55) 0%,
+    rgba(92, 58, 140, 0.32) 20%,
+    rgba(196, 120, 72, 0.16) 40%,
+    rgba(255, 244, 232, 0) 58%
+  );
 }
 
-/* 夜色：上深下浅，建筑区域保留可读性，灯笼与印章槽的暖光才能透出来 */
+/* 4 枚印章：夜幕只留在上半张，下半张透明，建筑 PNG 不被这层压暗 */
 .park[data-ambient='4'] .park__sky {
-  opacity: 0.58;
-  background: linear-gradient(180deg, #3b2f7a 0%, #7a5fb8 45%, #c9a6e0 100%);
+  opacity: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 12, 48, 0.82) 0%,
+    rgba(28, 24, 82, 0.7) 18%,
+    rgba(52, 42, 112, 0.42) 36%,
+    rgba(120, 96, 160, 0.12) 54%,
+    rgba(255, 248, 252, 0) 70%
+  );
 }
 
 .park[data-ambient='4'] .bld__lantern--lv2 {
   background: #ffe066;
 }
 
-.park[data-ambient='4'] .bld__name {
-  filter: brightness(1.12);
+/* 夜晚：四角只加很轻的暖边光。蛋糕房再亮一圈，不用 brightness，避免过曝 */
+.park[data-ambient='4'] .bld--has-art:not(.bld--cake) .bld__art {
+  filter: drop-shadow(0 0 12px rgba(255, 196, 120, 0.32));
+}
+
+.park[data-ambient='4'] .bld--cake.bld--glow .bld__art {
+  animation-name: bld-art-glow-night;
+}
+
+@keyframes bld-art-glow-night {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 14px rgba(255, 198, 112, 0.42)) drop-shadow(0 8px 12px rgba(40, 24, 70, 0.16));
+  }
+  50% {
+    filter: drop-shadow(0 0 26px rgba(255, 214, 140, 0.7)) drop-shadow(0 8px 12px rgba(40, 24, 70, 0.16));
+  }
 }
 
 .park__stars {
@@ -1017,13 +1068,22 @@
   white-space: nowrap;
 }
 
-.bld--locked {
-  filter: grayscale(0.55) brightness(0.96);
+.bld--mint,
+.bld--food {
+  z-index: 2;
 }
 
-.bld--locked:not(.bld--has-art) .bld__roof,
-.bld--locked:not(.bld--has-art) .bld__wall {
-  opacity: 0.9;
+.bld--cake {
+  z-index: 3;
+}
+
+.bld--exam,
+.bld--wish {
+  z-index: 4;
+}
+
+.bld--locked {
+  filter: none;
 }
 
 .bld--shake {

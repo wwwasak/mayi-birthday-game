@@ -23,5 +23,10 @@ export default defineConfig({
   server: {
     port: 5173,
     open: false,
+    /** Windows 下预览/编辑 public 内 PNG 时，原生 watch 可能 EBUSY 导致 dev 进程退出 */
+    watch:
+      process.platform === 'win32'
+        ? { usePolling: true, interval: 1000 }
+        : undefined,
   },
 });

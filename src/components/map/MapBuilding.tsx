@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { ASSETS, assetUrl, type ImageAssetId } from '../../config/assets';
 import { isDebugUiEnabled } from '../../config/debugUi';
-import { buildingFrame, CAKE_SLOT_SIZE, type BuildingId } from '../../config/mapLayout';
+import { buildingFrame, buildingLabelOffset, CAKE_SLOT_SIZE, type BuildingId } from '../../config/mapLayout';
 import { STAMPS, STAMP_ORDER } from '../../config/stamps';
 import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 
@@ -114,7 +114,7 @@ export function MapBuilding({ id, title, hint, state, enterLabel, lanternLevel, 
         )}
       </button>
 
-      <div className="bld__meta">
+      <div className="bld__meta" style={{ top: `calc(100% + ${buildingLabelOffset(id, hasArt)}px)` }}>
         <div className="bld__name" title={hint}>
           <span className="bld__sign-emoji" aria-hidden>
             {BUILDING_EMOJI[id]}

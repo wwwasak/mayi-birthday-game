@@ -13,21 +13,24 @@ import { MinigameShell } from '../components/minigame/MinigameShell';
 import { Button } from '../components/ui/Button';
 import { SceneLayout } from '../components/ui/SceneLayout';
 import { verifyWishExpandCode } from '../config/secrets';
+import { ASSETS, assetUrl } from '../config/assets';
+import { isDebugUiEnabled } from '../config/debugUi';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
 import { useGame } from '../core/GameContext';
 import { CUSTOM_WISH_MAX, WISH_CARD_TOTAL, sanitizeUserText, type WishCardId } from '../core/progress';
+import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useMinigamePhase } from '../hooks/useMinigamePhase';
 
-/** 四簇樱花的位置（相对树冠区域 620×360） */
+/**
+ * 四簇花冠：中心点相对树框的比例 + 显示尺寸（对应四根主枝）
+ */
 const CLUSTERS = [
-  { left: 0.12, top: 0.22, rotate: -8 },
-  { left: 0.48, top: 0.06, rotate: 4 },
-  { left: 0.58, top: 0.34, rotate: 10 },
-  { left: 0.26, top: 0.44, rotate: -4 },
+  { x: 0.2, y: 0.34, rotate: -12, w: 168, h: 132 },
+  { x: 0.46, y: 0.1, rotate: -3, w: 178, h: 142 },
+  { x: 0.72, y: 0.22, rotate: 10, w: 162, h: 128 },
+  { x: 0.84, y: 0.46, rotate: 14, w: 156, h: 124 },
 ];
-/** 树冠区域尺寸与定位（与 CSS 保持一致） */
-const CANOPY = { w: 620, h: 360, bottom: 330, clusterW: 200, clusterH: 160 };
 
 /** 树枝角度 */
 const BRANCHES = [-48, -18, 16, 46];
@@ -94,6 +97,8 @@ export function WishScene() {
   const multi = progress.multiWishUnlocked;
 
   const [hung, setHung] = useState<boolean[]>(() => t.cards.map(() => false));
+  /** 是否已翻到正面（挂树后视为保持正面） */
+  const [revealed, setRevealed] = useState<boolean[]>(() => t.cards.map(() => false));
   const [sparkleAt, setSparkleAt] = useState<number | null>(null);
   const [overlay, setOverlay] = useState<Overlay>('none');
   /** 本局是否已完成心愿选择 / 跳过 */
@@ -104,8 +109,9 @@ export function WishScene() {
   // ---------- 拖拽 ----------
   const viewRef = useRef<HTMLDivElement>(null);
   const treeRef = useRef<HTMLDivElement>(null);
+  const treeFrameRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const dragRef = useRef<{ i: number; startX: number; startY: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ i: number; startX: number; startY: number; moved: boolean; flipOnly: boolean } | null>(null);
   const [dragPos, setDragPos] = useState<{ i: number; dx: number; dy: number } | null>(null);
   const [overTree, setOverTree] = useState(false);
   /** 备用操作：先点卡片（选中），再点树 */
@@ -128,6 +134,7 @@ export function WishScene() {
 
   const resetWish = useCallback(() => {
     setHung(t.cards.map(() => false));
+    setRevealed(t.cards.map(() => false));
     setSparkleAt(null);
     setOverlay('none');
     setChosen(false);
@@ -140,6 +147,13 @@ export function WishScene() {
   }, [t.cards]);
 
   const game = useMinigamePhase('wish', resetWish);
+  /** 正面 / 背面卡框；文件缺失时继续用 CSS 占位 */
+  const cardArtReady = useAssetImageReady('item_wish_card');
+  const cardBackArtReady = useAssetImageReady('img_wish_card_back');
+  const treeArtReady = useAssetImageReady('img_sakura_tree');
+  const clusterDimReady = useAssetImageReady('item_sakura_cluster');
+  const clusterLitReady = useAssetImageReady('item_sakura_cluster_lit');
+  const clusterArtReady = clusterDimReady && clusterLitReady;
   const litCount = hung.filter(Boolean).length;
   const fullBloom = litCount === t.cards.length;
   const interactive = game.phase === 'playing' && overlay === 'none' && flight === null;
@@ -152,24 +166,34 @@ export function WishScene() {
     return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad;
   };
 
+  const isFaceFront = (i: number) => revealed[i] || hung[i];
+
+  const revealCard = (i: number) => {
+    if (isFaceFront(i) || hung[i] || !interactive) return;
+    setRevealed((arr) => (arr[i] ? arr : arr.map((v, idx) => (idx === i ? true : v))));
+    audio.playSfx('sfx_flip');
+    setArmed(null);
+    setDragPos(null);
+  };
+
   /** 把卡片挂上树：光点从卡片飞到对应花簇，然后点亮 */
   const hang = (i: number) => {
-    if (hung[i] || flight) return;
+    if (hung[i] || flight || !isFaceFront(i)) return;
     const s = stageScale();
     const view = viewRef.current?.getBoundingClientRect();
-    const tree = treeRef.current?.getBoundingClientRect();
+    const frame = treeFrameRef.current?.getBoundingClientRect();
     const card = cardRefs.current[i]?.getBoundingClientRect();
-    if (!view || !tree || !card) {
+    if (!view || !frame || !card) {
       commitHang(i);
       return;
     }
     const from = { x: (card.left + card.width / 2 - view.left) / s, y: (card.top + card.height / 2 - view.top) / s };
-    const treeW = tree.width / s;
-    const treeH = tree.height / s;
     const c = CLUSTERS[i];
-    const cx = treeW / 2 - CANOPY.w / 2 + c.left * CANOPY.w + CANOPY.clusterW / 2;
-    const cy = treeH - CANOPY.bottom - CANOPY.h + c.top * CANOPY.h + CANOPY.clusterH / 2;
-    const to = { x: (tree.left - view.left) / s + cx, y: (tree.top - view.top) / s + cy };
+    const fw = frame.width / s;
+    const fh = frame.height / s;
+    const fx = (frame.left - view.left) / s;
+    const fy = (frame.top - view.top) / s;
+    const to = { x: fx + c.x * fw, y: fy + c.y * fh };
     audio.playSfx('sfx_flip');
     setArmed(null);
     setDragPos(null);
@@ -182,6 +206,7 @@ export function WishScene() {
 
   const commitHang = (i: number) => {
     setHung((arr) => (arr[i] ? arr : arr.map((v, idx) => (idx === i ? true : v))));
+    setRevealed((arr) => (arr[i] ? arr : arr.map((v, idx) => (idx === i ? true : v))));
     setSparkleAt(i);
     audio.playSfx('sfx_sparkle');
     showToast(t.drag.hung(t.cards[i].title), 1600);
@@ -191,11 +216,11 @@ export function WishScene() {
   const onCardPointerDown = (e: ReactPointerEvent<HTMLDivElement>, i: number) => {
     if (hung[i] || !interactive) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = { i, startX: e.clientX, startY: e.clientY, moved: false };
+    dragRef.current = { i, startX: e.clientX, startY: e.clientY, moved: false, flipOnly: !isFaceFront(i) };
   };
   const onCardPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const d = dragRef.current;
-    if (!d) return;
+    if (!d || d.flipOnly) return;
     const dx = e.clientX - d.startX;
     const dy = e.clientY - d.startY;
     if (!d.moved && Math.hypot(dx, dy) < 6) return;
@@ -210,9 +235,17 @@ export function WishScene() {
     if (!d) return;
     setOverTree(false);
     if (!d.moved) {
-      // 单击：切换“选中”状态（备用操作）
+      if (d.flipOnly) {
+        revealCard(d.i);
+        return;
+      }
+      if (!isFaceFront(d.i)) return;
       audio.playSfx('sfx_click');
       setArmed((a) => (a === d.i ? null : d.i));
+      setDragPos(null);
+      return;
+    }
+    if (!isFaceFront(d.i)) {
       setDragPos(null);
       return;
     }
@@ -222,7 +255,7 @@ export function WishScene() {
 
   /** 点树：挂上已选中的卡片 */
   const onTreeClick = () => {
-    if (armed === null || !interactive) return;
+    if (armed === null || !interactive || !isFaceFront(armed) || hung[armed]) return;
     hang(armed);
   };
 
@@ -441,44 +474,72 @@ export function WishScene() {
       >
         <div className={`wish-view ${dragging ? 'wish-view--dragging' : ''}`} ref={viewRef}>
           <div
-            className={`sakura-stage ${overTree ? 'sakura-stage--over' : ''} ${armed !== null ? 'sakura-stage--armed' : ''}`}
+            className={[
+              'sakura-stage',
+              overTree ? 'sakura-stage--over' : '',
+              armed !== null ? 'sakura-stage--armed' : '',
+              treeArtReady ? 'sakura-stage--has-tree-art' : '',
+              clusterArtReady ? 'sakura-stage--has-cluster-art' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             ref={treeRef}
             data-testid="wish-tree"
             onClick={onTreeClick}
             role={armed !== null ? 'button' : undefined}
           >
-            {/* 树干与树枝 */}
-            <div className="sakura-trunk" />
-            {BRANCHES.map((deg, i) => (
-              <div key={deg} className="sakura-branch" style={{ transform: `translateX(-50%) rotate(${deg}deg)`, opacity: hung[i] ? 1 : 0.7 }} />
-            ))}
+            <div className="sakura-tree-stack" aria-hidden>
+              <div className="sakura-tree-frame" ref={treeFrameRef}>
+                {treeArtReady ? (
+                  <img className="sakura-tree__art" src={assetUrl('img_sakura_tree')} alt="" draggable={false} />
+                ) : (
+                  <>
+                    <div className="sakura-trunk sakura-trunk--in-frame" />
+                    {BRANCHES.map((deg, i) => (
+                      <div key={deg} className="sakura-branch sakura-branch--in-frame" style={{ transform: `translateX(-50%) rotate(${deg}deg)`, opacity: hung[i] ? 1 : 0.7 }} />
+                    ))}
+                  </>
+                )}
 
-            {/* 花簇 */}
-            <div style={{ position: 'absolute', left: '50%', bottom: CANOPY.bottom, width: CANOPY.w, height: CANOPY.h, marginLeft: -CANOPY.w / 2 }}>
-              {CLUSTERS.map((c, i) => (
-                <motion.div
-                  key={i}
-                  className={`sakura-cluster ${hung[i] ? 'sakura-cluster--lit' : ''}`}
-                  style={{ left: `${c.left * 100}%`, top: `${c.top * 100}%`, rotate: c.rotate }}
-                  animate={hung[i] ? { scale: [0.8, 1.25, 1], opacity: 1, filter: 'saturate(1)' } : { scale: 1, opacity: 0.18, filter: 'saturate(0.4)' }}
-                  transition={{ duration: 0.7, type: 'spring', stiffness: 200, damping: 14 }}
-                />
-              ))}
+                <div className="sakura-canopy">
+                  {CLUSTERS.map((c, i) =>
+                    clusterArtReady ? (
+                      <motion.img
+                        key={i}
+                        className={`sakura-cluster__art ${hung[i] ? 'sakura-cluster__art--lit' : 'sakura-cluster__art--dim'}`}
+                        src={hung[i] ? assetUrl('item_sakura_cluster_lit') : assetUrl('item_sakura_cluster')}
+                        alt=""
+                        draggable={false}
+                        style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%`, width: c.w, height: c.h, rotate: c.rotate }}
+                        animate={hung[i] ? { scale: [0.82, 1.22, 1] } : { scale: 1 }}
+                        transition={{ duration: 0.7, type: 'spring', stiffness: 200, damping: 14 }}
+                      />
+                    ) : (
+                      <motion.div
+                        key={i}
+                        className={`sakura-cluster ${hung[i] ? 'sakura-cluster--lit' : ''}`}
+                        style={{ left: `${c.x * 100}%`, top: `${c.y * 100}%`, width: c.w, height: c.h, rotate: c.rotate }}
+                        animate={hung[i] ? { scale: [0.8, 1.25, 1], opacity: 1, filter: 'saturate(1)' } : { scale: 1, opacity: 0.18, filter: 'saturate(0.4)' }}
+                        transition={{ duration: 0.7, type: 'spring', stiffness: 200, damping: 14 }}
+                      />
+                    ),
+                  )}
               <AnimatePresence>
                 {sparkleAt !== null && (
                   <motion.div
                     key={sparkleAt}
                     style={{
                       position: 'absolute',
-                      left: `${CLUSTERS[sparkleAt].left * 100}%`,
-                      top: `${CLUSTERS[sparkleAt].top * 100}%`,
-                      width: CANOPY.clusterW,
-                      height: CANOPY.clusterH,
+                      left: `${CLUSTERS[sparkleAt].x * 100}%`,
+                      top: `${CLUSTERS[sparkleAt].y * 100}%`,
+                      width: CLUSTERS[sparkleAt].w,
+                      height: CLUSTERS[sparkleAt].h,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: 72,
                       pointerEvents: 'none',
+                      translate: '-50% -50%',
                     }}
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: [0, 1.4, 1], opacity: [0, 1, 0] }}
@@ -489,6 +550,8 @@ export function WishScene() {
                   </motion.div>
                 )}
               </AnimatePresence>
+                </div>
+              </div>
             </div>
 
             {/* 投放提示 */}
@@ -519,15 +582,20 @@ export function WishScene() {
             </AnimatePresence>
             <Petals count={fullBloom ? 24 : litCount * 3} />
             <div className="sakura-ground" />
-            <span className="placeholder-bg__label" style={{ left: 16, right: 'auto' }}>
-              占位樱花树 · images/items/sakura_tree.png
-            </span>
+            {isDebugUiEnabled() && (
+              <span className="placeholder-bg__label" style={{ left: 16, right: 'auto' }}>
+                {treeArtReady ? ASSETS.img_sakura_tree.path : 'CSS 树干'}
+                {clusterArtReady ? ` · ${ASSETS.item_sakura_cluster.path}` : ''}
+              </span>
+            )}
           </div>
 
           <div className="wish-cards">
+            <div className="wish-cards__grid">
             {t.cards.map((c, i) => {
               const isDrag = dragPos?.i === i;
               const isHung = hung[i];
+              const isFront = isFaceFront(i);
               return (
                 <motion.div
                   key={c.id}
@@ -537,6 +605,7 @@ export function WishScene() {
                   className={[
                     'wish-card',
                     'wish-card--v12',
+                    isFront ? 'wish-card--revealed' : 'wish-card--sealed',
                     isHung ? 'wish-card--hung' : '',
                     armed === i ? 'wish-card--armed' : '',
                     isDrag ? 'wish-card--dragging' : '',
@@ -546,6 +615,7 @@ export function WishScene() {
                     .join(' ')}
                   data-testid={`wish-card-${c.id}`}
                   data-hung={isHung ? '1' : '0'}
+                  data-face={isFront ? 'front' : 'back'}
                   animate={{ x: isDrag ? dragPos.dx : 0, y: isDrag ? dragPos.dy : 0, scale: isDrag ? 1.08 : 1 }}
                   transition={isDrag ? { duration: 0 } : { type: 'spring', stiffness: 320, damping: 24 }}
                   onPointerDown={(e) => onCardPointerDown(e, i)}
@@ -555,25 +625,60 @@ export function WishScene() {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if ((e.key === 'Enter' || e.key === ' ') && !isHung && interactive) {
-                      e.preventDefault();
-                      setArmed((a) => (a === i ? null : i));
-                    }
+                    if ((e.key !== 'Enter' && e.key !== ' ') || isHung || !interactive) return;
+                    e.preventDefault();
+                    if (!isFront) revealCard(i);
+                    else setArmed((a) => (a === i ? null : i));
                   }}
-                  aria-label={`${c.title}：${c.text}${isHung ? '（已挂上树）' : ''}`}
+                  aria-label={
+                    isHung
+                      ? `${c.title}：${c.text}（已挂上树）`
+                      : isFront
+                        ? `${c.title}：${c.text}`
+                        : `${c.title}（未翻开，点击翻开祝福）`
+                  }
                 >
-                  <div className="wish-card__face wish-card__face--front" style={{ transform: 'none' }}>
-                    <span className="wish-card__title">
-                      {c.emoji} {c.title}
-                    </span>
-                    <span className="wish-card__text">{c.text}</span>
-                    {isHung ? <span className="wish-card__badge">🌸 已挂上树</span> : <span className="wish-card__drag">{armed === i ? '👉 点一下树' : '⠿ 拖到树上'}</span>}
+                  <div className={`wish-card__flip${isFront ? ' wish-card__flip--front' : ''}`}>
+                    <div
+                      className={[
+                        'wish-card__face',
+                        'wish-card__face--back',
+                        cardBackArtReady ? 'wish-card__face--art' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    >
+                      {cardBackArtReady && (
+                        <img className="wish-card__art wish-card__art--back" src={assetUrl('img_wish_card_back')} alt="" draggable={false} />
+                      )}
+                      {!cardBackArtReady && <span className="wish-card__back-mark" aria-hidden>🌸</span>}
+                      {!isHung && <span className="wish-card__hint wish-card__hint--back">{t.flip.tapBack}</span>}
+                    </div>
+                    <div className={`wish-card__face wish-card__face--front${cardArtReady ? ' wish-card__face--art' : ''}`}>
+                      {cardArtReady && <img className="wish-card__art wish-card__art--front" src={assetUrl('item_wish_card')} alt="" draggable={false} />}
+                      <div className="wish-card__copy">
+                        <span className="wish-card__title">
+                          {c.emoji} {c.title}
+                        </span>
+                        <span className="wish-card__text">{c.text}</span>
+                      </div>
+                      <div className="wish-card__status">
+                        {isHung ? (
+                          <span className="wish-card__badge">🌸 已挂上树</span>
+                        ) : (
+                          <span className="wish-card__drag">{armed === i ? t.flip.armed : t.flip.dragFront}</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               );
             })}
+            </div>
+          </div>
 
-            {/* 第五张：麻衣专属许愿卡——四张挂好后才出现 */}
+          {/* 底栏：第五张专属卡和状态，不挤进竖卡格子 */}
+          <div className="wish-dock">
             <AnimatePresence>
               {fullBloom && (
                 <motion.button

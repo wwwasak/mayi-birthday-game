@@ -143,6 +143,14 @@ export const ASSETS = {
     placeholder: 'transparent',
   },
 
+  // ---------- 闸机分层 ----------
+  gate_arch: {
+    kind: 'image',
+    path: 'images/gate/arch.png',
+    description: '闸机拱门（透明底，含立柱）。显示宽 1080、顶边 y=70、水平居中。门扇单独一层，不画进这张图。',
+    placeholder: 'linear-gradient(180deg, #ff9fcb 0%, #f0609f 100%)',
+  },
+
   // ---------- Q 版角色 ----------
   chibi_mayi: {
     kind: 'image',
@@ -285,8 +293,20 @@ export const ASSETS = {
   img_sakura_tree: {
     kind: 'image',
     path: 'images/items/sakura_tree.png',
-    description: '心愿屋樱花树（熄灭/点亮两态或分层）',
+    description: '心愿屋樱花树干与树枝（透明底，不含花冠）',
     placeholder: '#ffb8d9',
+  },
+  item_sakura_cluster: {
+    kind: 'image',
+    path: 'images/items/sakura_cluster.png',
+    description: '心愿屋樱花花冠（未点亮），显示 200×160，同图贴四次',
+    placeholder: '#ffd3e8',
+  },
+  item_sakura_cluster_lit: {
+    kind: 'image',
+    path: 'images/items/sakura_cluster_lit.png',
+    description: '心愿屋樱花花冠（点亮），与暗花冠同位置',
+    placeholder: '#ff9fcb',
   },
   img_wish_card_back: {
     kind: 'image',

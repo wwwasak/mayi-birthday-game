@@ -4,12 +4,14 @@ import { Button } from '../components/ui/Button';
 import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
-import { ASSETS } from '../config/assets';
+import { ASSETS, assetUrl } from '../config/assets';
+import { isDebugUiEnabled } from '../config/debugUi';
 import { SCENES } from '../config/scenes';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
 import { useGame } from '../core/GameContext';
 import { useHints } from '../core/HintContext';
+import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useSceneHint } from '../hooks/useSceneHint';
 
 /** 每一行扫描文字的停留时间 */
@@ -85,22 +87,30 @@ export function GateScene() {
   const def = SCENES.gate;
   const opening = scan === 'opening';
   const done = scan === 'done' || opening;
+  /** 拱门图加载成功后替换 CSS 拱门和立柱；失败时保留原来的占位 */
+  const archReady = useAssetImageReady('gate_arch');
 
   return (
-    <div className={`scene gate2 ${opening ? 'gate2--opening' : ''} ${done ? 'gate2--done' : ''}`} data-testid="gate">
+    <div className={`scene gate2 ${opening ? 'gate2--opening' : ''} ${done ? 'gate2--done' : ''} ${archReady ? 'gate2--arch-art' : ''}`} data-testid="gate">
       {/* 背景层：预留正式 1920×1080 底图 */}
       <div className="gate2__layer gate2__layer--bg">
         <PlaceholderBackground asset={def.bg} />
         <div className="gate2__sky" />
       </div>
 
-      {/* 闸机层：拱门 + 两扇门 + 通道 */}
+      {/* 闸机层：拱门与两扇门分开。有正式拱门图时不再画 CSS 拱门和立柱 */}
       <div className="gate2__layer gate2__layer--gate" aria-hidden>
-        <div className="gate2__arch">
-          <div className="gate2__arch-sign">🎪 {TEXTS.common.gameTitle}</div>
-        </div>
-        <div className="gate2__pillar gate2__pillar--l" />
-        <div className="gate2__pillar gate2__pillar--r" />
+        {archReady ? (
+          <img className="gate2__arch-art" src={assetUrl('gate_arch')} alt="" />
+        ) : (
+          <>
+            <div className="gate2__arch">
+              <div className="gate2__arch-sign">🎪 {TEXTS.common.gameTitle}</div>
+            </div>
+            <div className="gate2__pillar gate2__pillar--l" />
+            <div className="gate2__pillar gate2__pillar--r" />
+          </>
+        )}
         <div className="gate2__door gate2__door--l">
           <span className="gate2__door-emblem">🌸</span>
         </div>
@@ -114,7 +124,12 @@ export function GateScene() {
           ))}
         </div>
         <div className="gate2__ground" />
-        <span className="gate2__asset-label">背景层 · {ASSETS.bg_gate.path} · 闸机层 CSS/SVG</span>
+        {isDebugUiEnabled() && (
+          <span className="gate2__asset-label">
+            背景层 · {ASSETS.bg_gate.path}
+            {archReady ? ` · 拱门 ${ASSETS.gate_arch.path}` : ' · 闸机层 CSS 占位'}
+          </span>
+        )}
       </div>
 
       {/* 内容层：居中 */}
