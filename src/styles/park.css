@@ -97,6 +97,24 @@
   transform-origin: top left;
 }
 
+.chibi__art-wrap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 120px;
+  height: 150px;
+  animation: chibi-bob 2.2s ease-in-out infinite;
+}
+
+.chibi__art {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+  user-select: none;
+}
+
 .chibi__inner {
   position: absolute;
   left: 0;

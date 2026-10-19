@@ -105,8 +105,9 @@
 
 .hd-step--active {
   opacity: 1;
-  background: #fff;
-  box-shadow: 0 6px 14px var(--c-shadow);
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 236, 210, 0.96));
+  border: 1px solid rgba(224, 184, 120, 0.85);
+  box-shadow: 0 8px 16px rgba(140, 80, 30, 0.12);
   transform: translateX(6px);
 }
 
@@ -191,8 +192,9 @@
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: var(--c-ink);
-  background: rgba(255, 255, 255, 0.88);
+  color: #6a4630;
+  background: rgba(255, 248, 236, 0.92);
+  border: 1px solid rgba(224, 184, 120, 0.5);
   padding: 6px 16px;
   border-radius: 999px;
   pointer-events: none;
@@ -217,6 +219,23 @@
   border-radius: 8px 8px 4px 4px;
   z-index: 3;
   pointer-events: none;
+}
+
+.hd-stem--art {
+  background: none;
+  width: 84px;
+  height: 72px;
+  top: -36px;
+  object-fit: contain;
+}
+
+.hd-stem--art::before {
+  display: none;
+}
+
+.hd-chunk--art {
+  background-color: transparent;
+  background-repeat: no-repeat;
 }
 
 .hd-stem::before {
@@ -360,6 +379,21 @@
   box-shadow: inset 0 0 40px rgba(255, 120, 40, 0.5);
 }
 
+.hd-oven--art {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  width: 240px;
+  height: 180px;
+}
+
+.hd-oven__art {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .hd-oven--baking {
   animation: hd-oven-glow 0.5s ease-in-out infinite alternate;
 }
@@ -429,6 +463,19 @@
 .hd-heat__labels .on {
   color: var(--c-pink-deep);
   transform: scale(1.15);
+}
+
+.hd-dish--art {
+  background: transparent;
+  border: none;
+  overflow: visible;
+}
+
+.hd-dish--art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .hd-dish {
@@ -1161,6 +1208,8 @@
 .gate2__layer--gate {
   z-index: 1;
   pointer-events: none;
+  perspective: 1400px;
+  perspective-origin: 50% 46%;
 }
 
 .gate2__layer--content {
@@ -1169,11 +1218,27 @@
 
 .gate2__layer--char {
   z-index: 2;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  padding: 0 80px 40px 0;
   pointer-events: none;
+  overflow: hidden;
+}
+
+.gate2__portrait {
+  position: absolute;
+  right: -24px;
+  bottom: -70px;
+  width: 560px;
+  height: 980px;
+}
+
+.gate2__portrait .pc__art,
+.gate2__portrait > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.gate2__portrait .pc__art {
+  object-fit: cover !important;
+  object-position: center 8% !important;
 }
 
 .gate2__sky {
@@ -1245,7 +1310,7 @@
   right: calc(50% - 540px);
 }
 
-/* 两扇门：默认合拢在中央后方（内容层在前），开门时向两侧滑出 */
+/* 两扇门：左门轴在画面左侧，右门轴在画面右侧。开门以 rotateY 为主。 */
 .gate2__door {
   position: absolute;
   z-index: 2;
@@ -1258,18 +1323,49 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 1s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.6s;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transition: transform 1.05s cubic-bezier(0.65, 0.02, 0.2, 1);
   backdrop-filter: blur(2px);
+  will-change: transform;
 }
 
 .gate2__door--l {
   left: calc(50% - 450px);
   border-radius: 24px 0 0 24px;
+  transform-origin: left center;
 }
 
 .gate2__door--r {
   right: calc(50% - 450px);
   border-radius: 0 24px 24px 0;
+  transform-origin: right center;
+}
+
+/* 正式门图左右各有约 8% 透明边，门轴对齐可见门板外缘 */
+.gate2__door--art.gate2__door--l {
+  transform-origin: 8% center;
+}
+
+.gate2__door--art.gate2__door--r {
+  transform-origin: 92% center;
+}
+
+.gate2__door--art {
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.gate2__door--art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+  user-select: none;
+  backface-visibility: hidden;
 }
 
 .gate2__door-emblem {
@@ -1277,14 +1373,91 @@
   opacity: 0.45;
 }
 
-.gate2--opening .gate2__door--l {
-  transform: translateX(-520px);
+.gate2__glow {
+  position: absolute;
+  left: 50%;
+  top: 280px;
+  z-index: 1;
+  width: 80px;
+  height: 520px;
+  margin-left: -40px;
+  background: linear-gradient(90deg, transparent, rgba(255, 236, 190, 0.0), transparent);
+  filter: blur(8px);
   opacity: 0;
+  transition: opacity 0.8s ease, width 1s cubic-bezier(0.65, 0.02, 0.2, 1), margin-left 1s cubic-bezier(0.65, 0.02, 0.2, 1);
+  pointer-events: none;
+}
+
+.gate2__glow--on {
+  width: 280px;
+  margin-left: -140px;
+  opacity: 1;
+  background: linear-gradient(90deg, transparent, rgba(255, 244, 210, 0.85), rgba(255, 214, 236, 0.45), transparent);
+  box-shadow: 0 0 80px 24px rgba(255, 220, 160, 0.45);
+}
+
+.gate2--opening .gate2__door--l {
+  transform: translateX(-12px) rotateY(74deg);
 }
 
 .gate2--opening .gate2__door--r {
-  transform: translateX(520px);
-  opacity: 0;
+  transform: translateX(12px) rotateY(-74deg);
+  transition-delay: 0.07s;
+}
+
+/* 门缝透出后散开的少量星尘，不参与点击 */
+.gate2__glow--on::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -20px;
+  width: 240px;
+  height: 560px;
+  margin-left: -120px;
+  background-image:
+    radial-gradient(circle, rgba(255, 248, 220, 0.95) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 214, 236, 0.95) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle, rgba(255, 214, 140, 0.95) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 236, 246, 0.9) 0 1.5px, transparent 2.5px);
+  background-repeat: no-repeat;
+  background-position:
+    12% 18%,
+    78% 30%,
+    36% 48%,
+    68% 66%,
+    22% 80%;
+  animation: gate-dust 1.05s cubic-bezier(0.65, 0.02, 0.2, 1) both;
+  pointer-events: none;
+}
+
+@keyframes gate-dust {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate2__door,
+  .gate2--opening .gate2__door--r {
+    transition: opacity 0.35s linear;
+    transition-delay: 0s;
+  }
+
+  .gate2--opening .gate2__door--l,
+  .gate2--opening .gate2__door--r {
+    transform: none;
+    opacity: 0;
+  }
+
+  .gate2__glow--on::before {
+    animation: none;
+  }
 }
 
 /* 通道：地面透视 + 灯串 */
@@ -1364,30 +1537,67 @@
   align-items: center;
   gap: 14px;
   text-align: center;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+/* 开门时让出通道，门扇透视才看得见。认证按钮在点击之后才淡出。 */
+.gate2--opening .gate2__center {
+  opacity: 0;
+  transform: translateY(18px);
+  pointer-events: none;
 }
 
 .gate2__title {
   margin: 0;
-  font-size: 50px;
+  font-size: 52px;
   font-weight: 900;
-  color: var(--c-ink);
-  text-shadow: 0 3px 0 #fff;
+  letter-spacing: 2px;
+  color: #b84b78;
+  text-shadow:
+    0 2px 0 rgba(255, 248, 252, 0.95),
+    0 8px 18px rgba(255, 255, 255, 0.55);
 }
 
 .gate2__question {
   margin: 0;
-  font-size: 26px;
-  color: var(--c-ink-soft);
+  padding: 4px 18px;
+  border-radius: 999px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #6d4a62;
+  background: rgba(255, 248, 252, 0.72);
+  text-shadow: none;
 }
 
 .gate2__scanner {
   width: 560px;
   padding: 16px 26px 20px;
   border-radius: 22px;
-  background: #1f1b3a;
-  color: #fff;
-  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.12), 0 14px 30px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(180deg, rgba(255, 250, 252, 0.92), rgba(255, 236, 246, 0.88));
+  color: #5c3d52;
+  border: 2px solid rgba(255, 214, 176, 0.85);
+  box-shadow: 0 14px 30px rgba(120, 70, 100, 0.16);
   text-align: left;
+}
+
+.gate2 .option-btn {
+  background: linear-gradient(180deg, rgba(255, 252, 254, 0.96), rgba(255, 236, 246, 0.94));
+  color: #6a4560;
+  border: 2px solid rgba(244, 196, 214, 0.95);
+  box-shadow: 0 8px 18px rgba(140, 80, 120, 0.12);
+}
+
+.gate2 .option-btn--picked {
+  border-color: #e7c27a;
+  background: linear-gradient(180deg, #fffaf0, #ffe9c4);
+  color: #7a5420;
+}
+
+.gate2__reply,
+.gate2 .gate__reply-main,
+.gate2 .gate__reply-note {
+  color: #6d4a62;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
 .gate2__scanner-title {
@@ -1400,6 +1610,24 @@
 .gate2__scanner .gate__scan-line,
 .gate2__scanner .gate__result {
   min-height: 60px;
+}
+
+.gate2__scanner .gate__scan-line,
+.gate2__scanner .gate__scan-line--dim {
+  color: #7a4e68;
+}
+
+.gate2__scanner .gate__result-main {
+  color: #c47a2a;
+}
+
+.gate2__scanner .gate__result-sub {
+  color: #b45b86;
+}
+
+.gate2__scanner-title {
+  color: #a56b8a;
+  opacity: 1;
 }
 
 .gate2__options {
@@ -1429,8 +1657,10 @@
 
 .gate2__chibi {
   position: absolute;
-  left: calc(50% + 470px);
-  bottom: 160px;
+  right: 250px;
+  bottom: 18px;
+  z-index: 4;
+  filter: drop-shadow(0 10px 12px rgba(80, 40, 70, 0.18));
 }
 
 .gate2__flash {

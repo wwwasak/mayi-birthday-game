@@ -33,6 +33,12 @@ export interface AudioSettings {
   volume: number;
   /** 是否静音 */
   muted: boolean;
+  /**
+   * 循环 BGM 是否开启。
+   * 存档里没有这个字段时视为「玩家还没选过」，默认开启。
+   * 玩家关掉之后会写成 false，之后不再自动打开。
+   */
+  bgmOn: boolean;
 }
 
 /** 游戏设置 */
@@ -167,7 +173,7 @@ export function createDefaultProgress(): GameProgress {
     },
     hintsSeen: {},
     settings: { danmuTimer: false },
-    audio: { volume: 0.7, muted: false },
+    audio: { volume: 0.55, muted: false, bgmOn: true },
   };
 }
 
@@ -342,7 +348,11 @@ export function normalizeProgress(raw: unknown): GameProgress {
     },
     hintsSeen,
     settings: { danmuTimer: bool(settingsSrc.danmuTimer, false) },
-    audio: { volume: unit(audioSrc.volume, def.audio.volume), muted: bool(audioSrc.muted, false) },
+    audio: {
+      volume: unit(audioSrc.volume, def.audio.volume),
+      muted: bool(audioSrc.muted, false),
+      bgmOn: bool(audioSrc.bgmOn, true),
+    },
   };
 }
 

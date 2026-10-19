@@ -4,6 +4,7 @@ import { ASSETS, assetUrl, type ImageAssetId } from '../../config/assets';
 import { isDebugUiEnabled } from '../../config/debugUi';
 import { buildingFrame, buildingLabelOffset, CAKE_SLOT_SIZE, type BuildingId } from '../../config/mapLayout';
 import { STAMPS, STAMP_ORDER } from '../../config/stamps';
+import { StampIcon } from '../ui/StampBadge';
 import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 
 /** 建筑显示状态 */
@@ -101,7 +102,7 @@ export function MapBuilding({ id, title, hint, state, enterLabel, lanternLevel, 
                         data-slot={sid}
                         style={{ width: CAKE_SLOT_SIZE, height: CAKE_SLOT_SIZE, ['--slot-color' as string]: STAMPS[sid].color }}
                       >
-                        {slotsLit ? STAMPS[sid].emoji : ''}
+                        {slotsLit ? <StampIcon id={sid} size={CAKE_SLOT_SIZE - 6} /> : ''}
                       </span>
                     ))}
                   </span>
@@ -125,7 +126,11 @@ export function MapBuilding({ id, title, hint, state, enterLabel, lanternLevel, 
               🔒
             </span>
           )}
-          {state === 'done' && !isCake && <span className="bld__stamp">{STAMPS[id].emoji} 已盖章</span>}
+          {state === 'done' && !isCake && (
+            <span className="bld__stamp">
+              <StampIcon id={id} size={22} /> 已盖章
+            </span>
+          )}
         </div>
         {state === 'open' && enterLabel && (
           <button type="button" className="bld__enter" onClick={onClick}>

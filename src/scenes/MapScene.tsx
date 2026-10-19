@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapBuilding, type BuildingState } from '../components/map/MapBuilding';
 import { Button } from '../components/ui/Button';
 import { ChibiMayi, type ChibiAction } from '../components/ui/ChibiMayi';
+import { StampIcon } from '../components/ui/StampBadge';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
 import { ASSETS } from '../config/assets';
 import { isDebugUiEnabled } from '../config/debugUi';
@@ -11,6 +12,7 @@ import { hasAllStamps } from '../config/scenes';
 import { STAMPS, STAMP_ORDER, type StampId } from '../config/stamps';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
+import { playCharacterVoice } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { useHints } from '../core/HintContext';
 import { canEnterStage, countPreWishStamps, countStamps, currentStage, STRICT_ORDER, type GameProgress } from '../core/progress';
@@ -137,7 +139,10 @@ export function MapScene() {
       return;
     }
     if (lastStampSnapshot === null) {
-      if (n === 0) announce(t.broadcast.first);
+      if (n === 0) {
+        announce(t.broadcast.first);
+        playCharacterVoice('park_welcome');
+      }
     } else {
       const gained = STAMP_ORDER.filter((id) => progress.stamps[id] && !lastStampSnapshot![id]);
       if (gained.length === 1) {
@@ -299,7 +304,7 @@ export function MapScene() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: CONVERGE_T.flyDuration / 1000, delay: (i * CONVERGE_T.flyEach) / 1000, ease: 'easeInOut' }}
                   >
-                    {STAMPS[id].emoji}
+                    <StampIcon id={id} size={56} />
                   </motion.div>
                 );
               })}
@@ -346,7 +351,7 @@ export function MapScene() {
                 style={{ left: i * STAMP_TRAY.gap, width: STAMP_TRAY.disc, height: STAMP_TRAY.disc, opacity: flying ? 0.25 : 1, ['--stamp-color' as string]: STAMPS[id].color }}
                 title={STAMPS[id].name}
               >
-                {got ? STAMPS[id].emoji : ''}
+                {got ? <StampIcon id={id} size={STAMP_TRAY.disc - 8} /> : ''}
               </div>
             );
           })}

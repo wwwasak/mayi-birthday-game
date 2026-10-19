@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { MinigameShell } from '../components/minigame/MinigameShell';
 import { Button } from '../components/ui/Button';
+import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { SceneLayout } from '../components/ui/SceneLayout';
 import { verifyWishExpandCode } from '../config/secrets';
 import { ASSETS, assetUrl } from '../config/assets';
@@ -473,6 +474,9 @@ export function WishScene() {
         }
       >
         <div className={`wish-view ${dragging ? 'wish-view--dragging' : ''}`} ref={viewRef}>
+          <div className="wish-bust" aria-hidden>
+            <PlaceholderCharacter mood={litCount >= 4 ? 'happy' : armed !== null ? 'surprise' : 'normal'} />
+          </div>
           <div
             className={[
               'sakura-stage',

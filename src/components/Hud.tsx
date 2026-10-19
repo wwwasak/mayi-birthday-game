@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react';
+import { useSyncExternalStore } from 'react';
 import { SCENES } from '../config/scenes';
 import { TEXTS } from '../config/texts';
+import { getVoiceCaption, getVoiceCaptionSnapshot, subscribeVoiceCaption } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { useHints } from '../core/HintContext';
 import { countStamps } from '../core/progress';
@@ -13,6 +15,8 @@ import { VolumeControl } from './VolumeControl';
 export function Hud() {
   const { scene, progress, storageOk, toast, backToMap } = useGame();
   const { mode: hintMode } = useHints();
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const voiceLine = getVoiceCaption();
   const def = SCENES[scene];
   const showStamps = scene !== 'boot' && scene !== 'gate' && scene !== 'auth' && scene !== 'notice';
   /** 提示槽可见时 toast 下移，避免重叠 */
@@ -50,6 +54,22 @@ export function Hud() {
             transition={{ duration: 0.25 }}
           >
             {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {voiceLine && (
+          <motion.div
+            key={voiceLine}
+            className="hud__toast hud__voice"
+            style={{ top: toast ? toastTop + 64 : toastTop }}
+            initial={{ opacity: 0, y: -20, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -12, x: '-50%' }}
+            transition={{ duration: 0.2 }}
+          >
+            麻衣：{voiceLine}
           </motion.div>
         )}
       </AnimatePresence>

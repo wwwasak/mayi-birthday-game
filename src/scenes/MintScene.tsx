@@ -2,9 +2,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MinigameShell } from '../components/minigame/MinigameShell';
 import { SceneLayout } from '../components/ui/SceneLayout';
+import { assetUrl, type ImageAssetId } from '../config/assets';
 import { TEXTS } from '../config/texts';
 import { useGame } from '../core/GameContext';
 import { audio } from '../core/audio';
+import { playCharacterVoice } from '../core/characterVoice';
+import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useCountdown } from '../hooks/useCountdown';
 import { useMinigamePhase } from '../hooks/useMinigamePhase';
 
@@ -31,6 +34,8 @@ interface Candy {
   life: number;
   label: string;
   emoji: string;
+  /** 干扰物种类，用于正式图 */
+  junkIdx: number;
 }
 
 interface FloatText {
@@ -63,6 +68,7 @@ function spawnCandy(): Candy {
     life: LIFE[kind],
     label: kind === 'mint' ? '薄荷糖' : kind === 'bonus' ? '奖励糖' : TEXTS.mint.junkNames[junkIdx],
     emoji: kind === 'mint' ? '🍬' : kind === 'bonus' ? '✨' : JUNK_EMOJI[junkIdx],
+    junkIdx,
   };
 }
 
@@ -76,8 +82,13 @@ function multiplier(combo: number): number {
 /**
  * 第一关：薄荷糖补给站——20 秒限时点击收集
  */
+const JUNK_ART: ImageAssetId[] = ['item_junk_fengyoujing', 'item_junk_soap', 'item_junk_eraser'];
+
 export function MintScene() {
   const { progress, updateRecords } = useGame();
+  const mintArt = useAssetImageReady('item_mint');
+  const bonusArt = useAssetImageReady('item_candy_bonus');
+  const junkArt = [useAssetImageReady('item_junk_fengyoujing'), useAssetImageReady('item_junk_soap'), useAssetImageReady('item_junk_eraser')];
   const t = TEXTS.mint;
 
   const [candies, setCandies] = useState<Candy[]>([]);
@@ -91,6 +102,8 @@ export function MintScene() {
   const [isNewRecord, setIsNewRecord] = useState(false);
   const prevBest = useRef(progress.records.mintBest);
   const comboRef = useRef(0);
+  /** 这一局是否已经为第一颗薄荷糖说过话 */
+  const mintVoiceRef = useRef(false);
 
   const resetRound = useCallback(() => {
     setCandies([]);
@@ -121,10 +134,13 @@ export function MintScene() {
 
   // 开始/重开时重置计时器
   const startRound = () => {
+    mintVoiceRef.current = false;
     resetTimer();
     game.start();
   };
   const restartRound = () => {
+    if (game.phase === 'result') playCharacterVoice('mint_retry');
+    mintVoiceRef.current = false;
     resetTimer();
     game.restart();
   };
@@ -172,6 +188,10 @@ export function MintScene() {
     const nextCombo = comboRef.current + 1;
     comboRef.current = nextCombo;
     audio.playSfx(c.kind === 'bonus' ? 'sfx_bonus' : 'sfx_pop');
+    if (c.kind === 'mint' && !mintVoiceRef.current) {
+      mintVoiceRef.current = true;
+      playCharacterVoice('mint_first_candy');
+    }
     setScore((s) => s + gain);
     setCombo(nextCombo);
     setMaxCombo((m) => Math.max(m, nextCombo));
@@ -187,9 +207,11 @@ export function MintScene() {
 
   const seconds = (leftMs / 1000).toFixed(1);
   const best = Math.max(progress.records.mintBest, score);
+  /** 游玩时右侧半身：连击开心，时间将尽惊讶 */
+  const mintMood = combo >= 5 ? 'happy' : leftMs < 5000 ? 'surprise' : 'normal';
 
   return (
-    <SceneLayout scene="mint" title={t.title} subtitle={t.subtitle} mood={null} compact>
+    <SceneLayout scene="mint" title={t.title} subtitle={t.subtitle} mood={game.phase === 'playing' ? mintMood : null} compact>
       <MinigameShell
         phase={game.phase}
         title={t.title}
@@ -253,7 +275,7 @@ export function MintScene() {
           </>
         }
       >
-        <div className="mint-field">
+        <div className={`mint-field ${combo >= 5 ? 'mint-field--combo' : ''}`}>
           <AnimatePresence>
             {candies.map((c) => (
               <motion.button
@@ -275,7 +297,11 @@ export function MintScene() {
                   className="candy__ring"
                   style={{ transform: `rotate(${(1 - c.ttl / c.life) * 360}deg)`, opacity: 0.6 + (c.ttl / c.life) * 0.4 }}
                 />
-                {c.emoji}
+                {(() => {
+                  const artId = c.kind === 'mint' ? 'item_mint' : c.kind === 'bonus' ? 'item_candy_bonus' : JUNK_ART[c.junkIdx];
+                  const ready = c.kind === 'mint' ? mintArt : c.kind === 'bonus' ? bonusArt : junkArt[c.junkIdx];
+                  return ready ? <img className="candy__art" src={assetUrl(artId)} alt="" draggable={false} /> : c.emoji;
+                })()}
                 <span className="candy__label">{c.label}</span>
               </motion.button>
             ))}

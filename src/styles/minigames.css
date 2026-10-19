@@ -88,12 +88,20 @@
 }
 
 .mg__panel-char {
-  width: 200px;
-  height: 280px;
+  width: 230px;
+  height: 340px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 28px 28px 18px 18px;
+}
+
+.mg__panel-char .pc-bust {
+  width: 250px;
+  height: 430px;
+  margin-bottom: -36px;
 }
 
 .mg__panel-char .pc__label {
@@ -196,11 +204,32 @@
   position: absolute;
   inset: 0;
   cursor: crosshair;
-  background:
-    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.5) 0 60px, transparent 61px),
-    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.4) 0 90px, transparent 91px),
-    linear-gradient(160deg, #e3fff5 0%, #c9f5e8 100%);
+  background: transparent;
   overflow: hidden;
+}
+
+.mint-field::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 1.5px, transparent 2.2px),
+    radial-gradient(circle, rgba(190, 245, 220, 0.9) 0 1.5px, transparent 2.2px),
+    radial-gradient(circle, rgba(255, 236, 170, 0.85) 0 1.5px, transparent 2px);
+  background-position:
+    12% 22%,
+    78% 18%,
+    30% 70%,
+    88% 64%,
+    48% 36%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  opacity: 0.7;
+}
+
+.mint-field--combo {
+  box-shadow: inset 0 0 80px rgba(255, 214, 120, 0.28);
 }
 
 .candy {
@@ -217,6 +246,19 @@
   user-select: none;
   box-shadow: 0 10px 24px var(--c-shadow);
   border: 4px solid #fff;
+}
+
+.candy__art {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.candy:has(.candy__art) {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .candy--mint {
@@ -300,7 +342,7 @@
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   gap: 22px;
-  background: linear-gradient(160deg, #fff3e6 0%, #ffe6d6 100%);
+  background: transparent;
 }
 
 .food-station {
@@ -370,7 +412,7 @@
   grid-template-columns: 1fr 520px;
   gap: 24px;
   padding: 24px 32px;
-  background: linear-gradient(160deg, #fff3e6 0%, #ffe6d6 100%);
+  background: transparent;
 }
 
 .food-station-view__left {
@@ -394,19 +436,20 @@
 }
 
 .ingredient {
-  border: 3px solid transparent;
+  border: 1px solid rgba(214, 176, 128, 0.55);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(255, 244, 230, 0.92));
   padding: 14px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   font-size: 20px;
-  color: var(--c-ink);
+  font-weight: 700;
+  color: #5c4032;
   cursor: pointer;
-  box-shadow: 0 6px 14px var(--c-shadow);
-  transition: transform 0.1s ease, border-color 0.1s ease;
+  box-shadow: 0 8px 16px rgba(120, 72, 36, 0.08);
+  transition: transform 0.1s ease, border-color 0.1s ease, box-shadow 0.15s ease;
 }
 
 .ingredient:hover:not(:disabled) {
@@ -434,12 +477,33 @@
   line-height: 1;
 }
 
+.dish-reveal {
+  position: relative;
+  z-index: 2;
+  width: min(480px, 92%);
+  height: 280px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 16px 22px rgba(120, 60, 90, 0.28));
+}
+
+.dish-reveal__miss {
+  margin: 24px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 248, 230, 0.95);
+  color: #8a4b00;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 .pot-area {
   position: relative;
   flex: 1;
   min-height: 300px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(255, 228, 210, 0.75) 0%, rgba(255, 245, 235, 0.9) 100%);
+  background: linear-gradient(180deg, rgba(255, 248, 240, 0.42) 0%, rgba(255, 232, 208, 0.72) 100%);
+  border: 1px solid rgba(224, 184, 120, 0.4);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -467,6 +531,36 @@
   border-radius: 20px 20px 40px 40px;
   background: linear-gradient(180deg, #ffd2a8 0%, #ff9a5c 100%);
   opacity: 0.9;
+}
+
+.pot--art,
+.bowl--art {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.pot--art::before {
+  display: none;
+}
+
+.pot__art,
+.bowl__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 0;
+  filter: drop-shadow(0 14px 16px rgba(90, 48, 24, 0.22));
+}
+
+.ingredient__art {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .pot__items {
@@ -513,17 +607,19 @@
   gap: 10px;
   justify-content: center;
   font-size: 44px;
+  z-index: 1;
 }
 
 .feedback-box {
   min-height: 110px;
-  background: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.94), rgba(255, 243, 228, 0.9));
+  border: 1px solid rgba(224, 184, 120, 0.45);
   border-radius: var(--radius-md);
   padding: 16px 22px;
   font-size: 22px;
   line-height: 1.5;
-  color: var(--c-ink);
-  box-shadow: 0 6px 14px var(--c-shadow);
+  color: #5c4032;
+  box-shadow: 0 8px 18px rgba(120, 72, 36, 0.08);
 }
 
 .feedback-box--weird {
@@ -532,9 +628,10 @@
 
 .step-title {
   margin: 0;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
-  color: var(--c-ink);
+  letter-spacing: 1px;
+  color: #8a4e2b;
 }
 
 .gallery-grid {
@@ -646,6 +743,22 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+}
+
+.exam-bust {
+  height: 250px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.exam-bust .pc-bust {
+  width: 250px;
+  height: 420px;
 }
 
 .exam-feedback {
@@ -812,4 +925,175 @@
   font-size: 24px;
   font-weight: 700;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 心愿屋左侧半身，不挡住右侧心愿卡，也不吃点击 */
+.wish-bust {
+  position: absolute;
+  left: 8px;
+  bottom: 64px;
+  z-index: 2;
+  width: 200px;
+  height: 280px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wish-bust .pc-bust {
+  width: 220px;
+  height: 390px;
+}
+
+/* ===== 场馆玻璃面板：薄荷清凉 / 美食暖色，互不套用 ===== */
+.scene--mint .scene__title,
+.scene--food .scene__title,
+.scene--mint .mg__panel-title,
+.scene--food .mg__panel-title {
+  font-family: 'KaiTi', 'STKaiti', var(--font-ui);
+}
+
+.scene--mint .scene__title {
+  color: #1d6a52;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85), 0 8px 18px rgba(255, 255, 255, 0.45);
+}
+
+.scene--mint .scene__subtitle,
+.scene--mint .mg__panel-desc,
+.scene--mint .mg__rules {
+  color: #143d32;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.65);
+}
+
+.scene--mint .mg {
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.58), rgba(214, 245, 232, 0.66));
+  border: 1px solid rgba(232, 206, 140, 0.7);
+  box-shadow: 0 16px 36px rgba(40, 90, 70, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+}
+
+.scene--mint .mg__topbar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(210, 242, 228, 0.28));
+  border-bottom: 1px solid rgba(120, 186, 156, 0.35);
+}
+
+.scene--mint .mg__hud {
+  color: #1d5c48;
+}
+
+.scene--mint .mg__hud-pill {
+  background: rgba(255, 255, 255, 0.82);
+  color: #1d5c48;
+  border: 1px solid rgba(150, 210, 186, 0.45);
+  box-shadow: 0 6px 14px rgba(40, 90, 70, 0.08);
+}
+
+.scene--mint .mg__hud-pill--accent {
+  color: #b4234e;
+  background: rgba(255, 236, 242, 0.92);
+}
+
+.scene--mint .mg__hud-pill--gold {
+  color: #8a5a00;
+  background: linear-gradient(180deg, #fff8dc, #ffe08a);
+  box-shadow: 0 0 16px rgba(243, 197, 75, 0.4);
+}
+
+.scene--mint .mg__panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(226, 248, 238, 0.88));
+  border: 1px solid rgba(232, 206, 140, 0.75);
+  backdrop-filter: blur(12px);
+}
+
+.scene--mint .candy--bonus {
+  box-shadow: 0 0 0 6px rgba(243, 197, 75, 0.4), 0 0 28px 8px rgba(255, 214, 90, 0.55);
+}
+
+.scene--food .scene__title {
+  color: #8a4524;
+  text-shadow: 0 2px 0 rgba(255, 248, 240, 0.9), 0 8px 16px rgba(255, 236, 214, 0.45);
+}
+
+.scene--food .scene__subtitle {
+  color: #5c3a2a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85), 0 0 8px rgba(255, 248, 240, 0.7);
+}
+
+.scene--food .mg {
+  background: linear-gradient(165deg, rgba(255, 250, 244, 0.86), rgba(255, 226, 198, 0.82));
+  border: 1px solid rgba(214, 170, 96, 0.72);
+  box-shadow: 0 16px 36px rgba(120, 70, 30, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+}
+
+.scene--food .mg__topbar {
+  background: linear-gradient(180deg, rgba(255, 250, 244, 0.62), rgba(255, 228, 200, 0.28));
+  border-bottom: 1px solid rgba(214, 170, 96, 0.4);
+}
+
+.scene--food .mg__hud,
+.scene--food .mg__panel-desc,
+.scene--food .mg__rules,
+.scene--food .hd-progress,
+.scene--food .hd-step__title,
+.scene--food .quip-box__line {
+  color: #5c4032;
+}
+
+.scene--food .mg__hud-pill {
+  background: rgba(255, 252, 247, 0.88);
+  color: #6a4630;
+  border: 1px solid rgba(214, 176, 120, 0.5);
+}
+
+.scene--food .mg__hud-pill--gold,
+.scene--food .mg__result-title {
+  color: #8a5a12;
+}
+
+.scene--food .mg__panel {
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.92), rgba(255, 236, 214, 0.9));
+  border: 1px solid rgba(214, 170, 96, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.scene--food .card {
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.94), rgba(255, 241, 224, 0.9));
+  border: 1px solid rgba(214, 176, 120, 0.55);
+  box-shadow: 0 12px 24px rgba(120, 72, 36, 0.1);
+}
+
+.scene--food .card__title {
+  color: #8a4e2b;
+}
+
+.scene--food .card__text,
+.scene--food .hd-step__desc {
+  color: #6d5648;
+}
+
+.scene--food .quip-box {
+  background: linear-gradient(180deg, rgba(255, 252, 244, 0.96), rgba(255, 244, 214, 0.94));
+  border-color: #e2c27a;
+}
+
+.scene--food .hd-op {
+  color: #7a5340;
+}
+
+@supports not ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+  .scene--mint .mg,
+  .scene--mint .mg__panel {
+    background: rgba(236, 252, 246, 0.94);
+  }
+
+  .scene--food .mg,
+  .scene--food .mg__panel {
+    background: rgba(255, 244, 230, 0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mint-field--combo {
+    box-shadow: none;
+  }
 }

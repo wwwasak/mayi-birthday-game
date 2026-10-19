@@ -5,7 +5,7 @@ import { MinigameShell } from '../components/minigame/MinigameShell';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SceneLayout } from '../components/ui/SceneLayout';
-import { assetPlaceholder } from '../config/assets';
+import { assetPlaceholder, assetUrl, type ImageAssetId } from '../config/assets';
 import {
   COLLECTIBLES,
   FRUITS,
@@ -19,9 +19,50 @@ import { fruitQuips, hotpotQuips } from '../config/foodQuips';
 import { TEXTS } from '../config/texts';
 import { useGame } from '../core/GameContext';
 import { audio } from '../core/audio';
+import { playCharacterVoice } from '../core/characterVoice';
+import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useMinigamePhase } from '../hooks/useMinigamePhase';
 
 type Station = 'hub' | 'hotpot' | 'fruit' | 'hidden' | 'hiddenPrompt' | 'gallery';
+
+/**
+ * 料理完成后的正式成品图。只有图片加载失败时才说明缺文件，避免加载瞬间闪一下占位文案。
+ */
+function FinishedDish({ src, missingPath, label }: { src: string; missingPath: string; label: string }) {
+  const [miss, setMiss] = useState(false);
+  if (miss) {
+    return (
+      <p className="dish-reveal__miss" data-testid="dish-missing">
+        {label}未显示：{missingPath}
+      </p>
+    );
+  }
+  return (
+    <motion.img
+      className="dish-reveal"
+      src={src}
+      alt={label}
+      draggable={false}
+      data-testid="dish-reveal"
+      onError={() => setMiss(true)}
+      initial={{ opacity: 0, scale: 0.86 }}
+      animate={{ opacity: 1, scale: [0.86, 1.04, 1] }}
+      transition={{ duration: 0.55, ease: 'easeOut' }}
+    />
+  );
+}
+
+/**
+ * 图鉴缩略图：正式 PNG 优先，失败时用 emoji。
+ */
+function GalleryIcon({ asset, fallback, showArt }: { asset: ImageAssetId; fallback: string; showArt: boolean }) {
+  const ready = useAssetImageReady(asset);
+  return (
+    <div className="gallery-item__icon" style={ready && showArt ? undefined : { background: assetPlaceholder(asset) }}>
+      {ready && showArt ? <img src={assetUrl(asset)} alt="" draggable={false} style={{ width: '78%', height: '78%', objectFit: 'contain', pointerEvents: 'none' }} /> : fallback}
+    </div>
+  );
+}
 
 const HOTPOT_MAX = 4;
 const FRUIT_MAX = 3;
@@ -70,6 +111,11 @@ function Steam({ count }: { count: number }) {
 export function FoodScene() {
   const { progress, unlockCollectible, patch, setRecords, showToast } = useGame();
   const t = TEXTS.food;
+  const potReady = useAssetImageReady('item_pot');
+  const bowlReady = useAssetImageReady('item_bowl');
+  const hotpotDishReady = useAssetImageReady('item_hotpot');
+  const fruitDishReady = useAssetImageReady('item_fruit');
+  const sauceReady = useAssetImageReady('item_sauce_jar');
 
   const [station, setStation] = useState<Station>('hub');
 
@@ -138,6 +184,7 @@ export function FoodScene() {
 
   const cookHotpot = () => {
     audio.playSfx('sfx_success');
+    if (hotpotWeird > 0) playCharacterVoice('food_weird');
     setHotpotCooked(true);
     setHotpotLine({ text: hotpotRating.line, weird: hotpotWeird > 0 });
   };
@@ -182,6 +229,7 @@ export function FoodScene() {
       if (!hiddenUnlocked) {
         patch({ hiddenDishUnlocked: true });
         showToast(t.fruit.secretUnlocked, 3000);
+        playCharacterVoice('secret_found');
       }
     } else {
       audio.playSfx('sfx_click');
@@ -239,10 +287,16 @@ export function FoodScene() {
   // ---------- 渲染：各站台 ----------
   const renderHub = () => (
     <div className="food-hub">
-      <Card className="food-station" clickable done={!!hotpotDone} placeholder={!hotpotDone} onClick={() => setStation('hotpot')}>
+      <Card className="food-station" clickable done={!!hotpotDone} placeholder={!hotpotDone} onClick={() => { setStation('hotpot'); playCharacterVoice('hotpot_enter'); }}>
         {hotpotDone && <span className="food-station__done">已完成</span>}
-        <div className="food-station__icon" style={{ background: assetPlaceholder('item_pot') }}>
-          🍲
+        <div className="food-station__icon" style={potReady || hotpotDishReady ? undefined : { background: assetPlaceholder('item_pot') }}>
+          {hotpotDone && hotpotDishReady ? (
+            <img src={assetUrl('item_hotpot')} alt="" draggable={false} style={{ width: '86%', height: '86%', objectFit: 'contain', pointerEvents: 'none' }} />
+          ) : potReady ? (
+            <img src={assetUrl('item_pot')} alt="" draggable={false} style={{ width: '86%', height: '86%', objectFit: 'contain', pointerEvents: 'none' }} />
+          ) : (
+            '🍲'
+          )}
         </div>
         <div>
           <h3 className="card__title" style={{ fontSize: 30 }}>
@@ -256,8 +310,14 @@ export function FoodScene() {
 
       <Card className="food-station" clickable done={!!fruitDone} placeholder={!fruitDone} onClick={() => setStation('fruit')}>
         {fruitDone && <span className="food-station__done">已完成</span>}
-        <div className="food-station__icon" style={{ background: assetPlaceholder('item_fruit') }}>
-          🍉
+        <div className="food-station__icon" style={bowlReady || fruitDishReady ? undefined : { background: assetPlaceholder('item_fruit') }}>
+          {fruitDone && fruitDishReady ? (
+            <img src={assetUrl('item_fruit')} alt="" draggable={false} style={{ width: '86%', height: '86%', objectFit: 'contain', pointerEvents: 'none' }} />
+          ) : bowlReady ? (
+            <img src={assetUrl('item_bowl')} alt="" draggable={false} style={{ width: '86%', height: '86%', objectFit: 'contain', pointerEvents: 'none' }} />
+          ) : (
+            '🍉'
+          )}
         </div>
         <div>
           <h3 className="card__title" style={{ fontSize: 30 }}>
@@ -386,23 +446,28 @@ export function FoodScene() {
       <div className="food-station-view__right">
         <div className="pot-area">
           <Steam count={hotpotPicks.length * 2 + hotpotWeird * 3 + (hotpotCooked ? 4 : 0)} />
-          <div className="pot">
-            <div className="pot__items">
-              <AnimatePresence>
-                {hotpotPicks.map((id) => (
-                  <motion.span
-                    key={id}
-                    initial={{ y: -120, opacity: 0, scale: 0.5 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 16 }}
-                  >
-                    {HOTPOT_INGREDIENTS.find((i) => i.id === id)?.emoji}
-                  </motion.span>
-                ))}
-              </AnimatePresence>
+          {hotpotCooked ? (
+            <FinishedDish src={assetUrl('item_hotpot')} missingPath="public/assets/images/items/hotpot.png" label="火锅成品" />
+          ) : (
+            <div className={`pot ${potReady ? 'pot--art' : ''}`}>
+              {potReady && <img className="pot__art" src={assetUrl('item_pot')} alt="" draggable={false} />}
+              <div className="pot__items">
+                <AnimatePresence>
+                  {hotpotPicks.map((id) => (
+                    <motion.span
+                      key={id}
+                      initial={{ y: -120, opacity: 0, scale: 0.5 }}
+                      animate={{ y: 0, opacity: 1, scale: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 16 }}
+                    >
+                      {HOTPOT_INGREDIENTS.find((i) => i.id === id)?.emoji}
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'flex-end' }}>
           <Button variant="secondary" small onClick={resetHotpot} disabled={hotpotPicks.length === 0}>
@@ -449,7 +514,9 @@ export function FoodScene() {
               data-testid={it.secret ? 'topping-secret' : undefined}
               onClick={() => onPick(it.id)}
             >
-              <span className="ingredient__emoji">{it.emoji}</span>
+              <span className="ingredient__emoji">
+                {it.secret && sauceReady ? <img className="ingredient__art" src={assetUrl('item_sauce_jar')} alt="" draggable={false} /> : it.emoji}
+              </span>
               {it.name}
               {it.secret && <span className="ingredient__secret-mark">？</span>}
             </button>
@@ -492,27 +559,32 @@ export function FoodScene() {
       </div>
       <div className="food-station-view__right">
         <div className="pot-area">
-          <div className="bowl">
-            <div className="bowl__items">
-              <AnimatePresence>
-                {[...fruitPicks, basePick, toppingPick].filter(Boolean).map((id) => {
-                  const item =
-                    FRUITS.find((f) => f.id === id) ?? FRUIT_BASES.find((b) => b.id === id) ?? FRUIT_TOPPINGS.find((x) => x.id === id);
-                  return (
-                    <motion.span
-                      key={id as string}
-                      initial={{ y: -120, opacity: 0, scale: 0.5 }}
-                      animate={{ y: 0, opacity: 1, scale: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 16 }}
-                    >
-                      {item?.emoji}
-                    </motion.span>
-                  );
-                })}
-              </AnimatePresence>
+          {fruitMade ? (
+            <FinishedDish src={assetUrl('item_fruit')} missingPath="public/assets/images/items/fruit_bowl.png" label="水果捞成品" />
+          ) : (
+            <div className={`bowl ${bowlReady ? 'bowl--art' : ''}`}>
+              {bowlReady && <img className="bowl__art" src={assetUrl('item_bowl')} alt="" draggable={false} />}
+              <div className="bowl__items">
+                <AnimatePresence>
+                  {[...fruitPicks, basePick, toppingPick].filter(Boolean).map((id) => {
+                    const item =
+                      FRUITS.find((f) => f.id === id) ?? FRUIT_BASES.find((b) => b.id === id) ?? FRUIT_TOPPINGS.find((x) => x.id === id);
+                    return (
+                      <motion.span
+                        key={id as string}
+                        initial={{ y: -120, opacity: 0, scale: 0.5 }}
+                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 16 }}
+                      >
+                        {item?.emoji}
+                      </motion.span>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         {/* 端上桌后：组合专属吐槽；线索卡：点到蛋黄沙司后出现（未开做时替代提示框），可直达神秘料理台 */}
         {fruitQuipLines ? (
@@ -617,9 +689,7 @@ export function FoodScene() {
             const got = progress.collectibles[c.id];
             return (
               <Card key={c.id} className={`gallery-item ${got ? '' : 'gallery-item--locked'}`} done={got} placeholder={!got}>
-                <div className="gallery-item__icon" style={{ background: assetPlaceholder(c.asset) }}>
-                  {got || !c.secret ? c.emoji : '❓'}
-                </div>
+                <GalleryIcon asset={c.asset} fallback={got || !c.secret ? c.emoji : '❓'} showArt={got || !c.secret} />
                 <h4 className="card__title" style={{ fontSize: 26 }}>
                   {got || !c.secret ? c.name : '？？？'}
                 </h4>
@@ -643,8 +713,11 @@ export function FoodScene() {
     gallery: renderGallery,
   };
 
+  /** 游玩时右侧半身：神秘料理思考，两道正餐都完成后开心 */
+  const foodMood = station === 'hidden' ? 'think' : hotpotDone && fruitDone ? 'happy' : 'normal';
+
   return (
-    <SceneLayout scene="food" title={t.title} subtitle={t.subtitle} mood={null} compact>
+    <SceneLayout scene="food" title={t.title} subtitle={t.subtitle} mood={game.phase === 'playing' ? foodMood : null} compact>
       <MinigameShell
         phase={game.phase}
         title={t.title}

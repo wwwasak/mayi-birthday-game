@@ -8,6 +8,7 @@ import { SceneLayout } from '../components/ui/SceneLayout';
 import { DANMU_TIMER_SECONDS, EXAM_QUESTIONS, EXAM_RESULT_LINES, type ExamQuestion } from '../config/exam';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
+import { playCharacterVoice } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { EXAM_FACT_TOTAL, EXAM_SET_VERSION } from '../core/progress';
 import { useMinigamePhase } from '../hooks/useMinigamePhase';
@@ -113,8 +114,10 @@ export function ExamScene() {
       }
       if (q.type === 'fun' || i === q.answer) {
         audio.playSfx('sfx_correct');
+        if (q.type === 'fact') playCharacterVoice('exam_proud');
       } else {
         audio.playSfx('sfx_wrong');
+        if (q.type === 'fact') playCharacterVoice('exam_wrong');
         setShake((s) => s + 1);
       }
     },
@@ -181,7 +184,10 @@ export function ExamScene() {
         desc={t.desc}
         rules={t.rules}
         introMood="think"
-        onStart={game.start}
+        onStart={() => {
+          playCharacterVoice('exam_think');
+          game.start();
+        }}
         onPause={game.pause}
         onResume={game.resume}
         onRestart={game.restart}
@@ -334,8 +340,8 @@ export function ExamScene() {
                 </motion.div>
               </AnimatePresence>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <PlaceholderCharacter mood={mood} scale={0.5} />
+            <div className="exam-bust">
+              <PlaceholderCharacter mood={mood} />
             </div>
           </div>
         </div>

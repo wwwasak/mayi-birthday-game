@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { assetPlaceholder } from '../../config/assets';
+import { assetPlaceholder, assetUrl } from '../../config/assets';
 import { COLLECTIBLES } from '../../config/food';
 import { TEXTS } from '../../config/texts';
 import { audio } from '../../core/audio';
+import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 import { Button } from '../ui/Button';
 import { ChibiMayi } from '../ui/ChibiMayi';
 
@@ -115,6 +116,10 @@ function chunkColor(progress: number): string {
  * 防卡关只保留外壳上的「跳过这关」，步骤内不再提供第二种完成方式
  */
 export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps) {
+  const pumpkinReady = useAssetImageReady('item_pumpkin');
+  const stemReady = useAssetImageReady('item_pumpkin_stem');
+  const ovenReady = useAssetImageReady('item_oven');
+  const dishReady = useAssetImageReady('item_golden_dish');
   const t = TEXTS.food.hidden;
   const [step, setStep] = useState<Step>(0);
   const [cuts, setCuts] = useState<number[]>([]);
@@ -304,10 +309,24 @@ export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps)
       return (
         <div className="hd-board hd-board--cut" data-testid="hd-cut-board" data-cuts={cuts.length} onPointerDown={onCutDown} onPointerMove={onCutMove} onPointerUp={onCutUp} onPointerCancel={onCutUp}>
           <div className="hd-pumpkin" ref={pumpkinRef} data-testid="hd-pumpkin">
-            <div className="hd-stem" />
+            {stemReady ? <img className="hd-stem hd-stem--art" src={assetUrl('item_pumpkin_stem')} alt="" draggable={false} /> : <div className="hd-stem" />}
             <div className="hd-flesh">
               {pieces.map((p) => (
-                <div key={p.key} className="hd-chunk" style={{ left: `${p.left}%`, width: `${p.width}%` }} />
+                <div
+                  key={p.key}
+                  className={`hd-chunk ${pumpkinReady ? 'hd-chunk--art' : ''}`}
+                  style={
+                    pumpkinReady
+                      ? {
+                          left: `${p.left}%`,
+                          width: `${p.width}%`,
+                          backgroundImage: `url(${assetUrl('item_pumpkin')})`,
+                          backgroundSize: '440px 300px',
+                          backgroundPosition: `${-(p.left / 100) * 440}px 0`,
+                        }
+                      : { left: `${p.left}%`, width: `${p.width}%` }
+                  }
+                />
               ))}
             </div>
             {GUIDE_LINES.filter((g) => !cuts.includes(g)).map((g) => (
@@ -342,8 +361,8 @@ export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps)
       const lv = heat ?? heatLevel(heatPos);
       return (
         <div className="hd-board hd-board--oven" data-testid="hd-heat-board" data-level={lv} ref={heatBoardRef}>
-          <div className={`hd-oven ${heat !== null ? 'hd-oven--baking' : ''}`}>
-            <span className="hd-oven__door">🔥</span>
+          <div className={`hd-oven ${heat !== null ? 'hd-oven--baking' : ''} ${ovenReady ? 'hd-oven--art' : ''}`}>
+            {ovenReady ? <img className="hd-oven__art" src={assetUrl('item_oven')} alt="" draggable={false} /> : <span className="hd-oven__door">🔥</span>}
           </div>
           <div className="hd-heat">
             <div className="hd-heat__bar">
@@ -368,12 +387,13 @@ export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps)
     return (
       <motion.div className="hd-board hd-board--done" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 220, damping: 16 }}>
         <motion.div
-          className="hd-dish"
-          style={{ background: assetPlaceholder('item_golden_dish') }}
+          className={`hd-dish ${dishReady ? 'hd-dish--art' : ''}`}
+          style={dishReady ? undefined : { background: assetPlaceholder('item_golden_dish') }}
           animate={{ scale: [1, 1.12, 1], rotate: [0, 4, -4, 0], boxShadow: ['0 0 0 0 rgba(255,215,100,0)', '0 0 70px 26px rgba(255,215,100,0.75)', '0 0 40px 14px rgba(255,215,100,0.5)'] }}
           transition={{ duration: 1.1 }}
         >
-          ✨
+          {/* 当前 golden_dish.png 只有空托盘，出炉流程会显示它。菜品内容见 GOLDEN_DISH_REDESIGN.md */}
+          {dishReady ? <img src={assetUrl('item_golden_dish')} alt="" draggable={false} /> : '✨'}
         </motion.div>
         {Array.from({ length: 8 }, (_, i) => (
           <motion.span

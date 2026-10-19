@@ -1,6 +1,7 @@
 import { HintBar } from './components/HintBar';
 import { Hud } from './components/Hud';
 import { SceneRouter } from './components/SceneRouter';
+import { VoiceDebugPanel } from './components/VoiceDebugPanel';
 import { Stage } from './components/Stage';
 import { GameProvider } from './core/GameContext';
 import { HintProvider } from './core/HintContext';
@@ -16,6 +17,7 @@ export default function App() {
           <SceneRouter />
           <Hud />
           <HintBar />
+          <VoiceDebugPanel />
         </Stage>
       </HintProvider>
     </GameProvider>

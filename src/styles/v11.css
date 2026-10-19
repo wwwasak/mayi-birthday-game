@@ -760,6 +760,15 @@
   border-left: 10px solid #d9a521;
 }
 
+.theater__curtain--art,
+.theater__valance--art {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border: none;
+  box-shadow: none;
+}
+
 .theater__valance {
   position: absolute;
   left: 0;

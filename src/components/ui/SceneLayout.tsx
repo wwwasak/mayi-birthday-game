@@ -34,7 +34,7 @@ export function SceneLayout({
 }: SceneLayoutProps) {
   const def = SCENES[scene];
   return (
-    <div className="scene">
+    <div className={`scene scene--${scene}`}>
       <div className="scene__bg">
         <PlaceholderBackground asset={def.bg} />
       </div>

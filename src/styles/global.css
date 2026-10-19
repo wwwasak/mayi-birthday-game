@@ -123,10 +123,13 @@ button:focus-visible {
 }
 
 .scene__side {
-  width: 420px;
+  width: 320px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  align-self: flex-end;
+  pointer-events: none;
+  overflow: visible;
 }
 
 .scene__actions {
@@ -143,6 +146,15 @@ button:focus-visible {
   height: 100%;
   position: relative;
   overflow: hidden;
+}
+
+.boot-logo {
+  display: block;
+  width: min(720px, 100%);
+  height: auto;
+  margin: 0 auto 8px;
+  object-fit: contain;
+  pointer-events: none;
 }
 
 .placeholder-bg__photo {
@@ -319,6 +331,32 @@ button:focus-visible {
 }
 
 /* ===== 占位角色 ===== */
+/* 半身立绘：按原图比例裁出头肩。各场景可再覆盖宽高。 */
+.pc-bust {
+  position: relative;
+  width: calc(300px * var(--pc-scale, 1));
+  height: calc(480px * var(--pc-scale, 1));
+  overflow: hidden;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.pc-bust .pc__art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  pointer-events: none;
+  user-select: none;
+}
+
+.scene__side .pc-bust {
+  width: 320px;
+  height: 560px;
+  margin-bottom: -28px;
+}
+
 .pc {
   position: relative;
   width: 320px;
@@ -575,6 +613,57 @@ button:focus-visible {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
+.hud__voice {
+  background: rgba(90, 42, 62, 0.92);
+  border: 1px solid rgba(255, 214, 170, 0.45);
+}
+
+.voice-debug {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 30;
+  width: 380px;
+  max-height: 380px;
+  overflow: auto;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(28, 18, 32, 0.9);
+  color: #fff8fb;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.voice-debug ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.voice-debug li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.voice-debug button {
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: #f3c54b;
+  color: #5a3b00;
+  font-weight: 700;
+}
+
+.voice-debug em {
+  display: block;
+  font-style: normal;
+  opacity: 0.7;
+}
+
 .hud__warn {
   font-size: 16px;
   color: #a35b00;
@@ -805,6 +894,71 @@ button.candle:focus-visible {
   border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
   background: radial-gradient(circle at 50% 70%, #fff6c2 0%, #ffb73b 50%, #ff6a2a 100%);
   box-shadow: 0 0 24px 8px rgba(255, 180, 60, 0.6);
+  pointer-events: none;
+}
+
+.cake-stage {
+  position: relative;
+  width: min(760px, 100%);
+  margin: 8px auto 0;
+}
+
+.cake-stage__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cake-stage__img--dim {
+  filter: saturate(0.75) brightness(0.92);
+}
+
+.cake-stage .candle-row {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 2%;
+  margin: 0;
+}
+
+.cake-stage .candle,
+.cake-stage button.candle {
+  width: 52px;
+  height: 108px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cake-stage .candle__name {
+  position: absolute;
+  top: 118px;
+  left: 50%;
+  width: 76px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.2;
+  color: #6a4a38;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  pointer-events: none;
+}
+
+.candle__flame--art {
+  background: none;
+  box-shadow: none;
+  width: 48px;
+  height: 64px;
+  top: -58px;
+  border-radius: 0;
+}
+
+.candle__flame--art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   pointer-events: none;
 }
 

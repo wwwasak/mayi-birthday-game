@@ -95,7 +95,7 @@ export function MinigameShell({
           <motion.div key="intro" className="mg__overlay" {...overlayMotion}>
             <motion.div className="mg__panel" {...panelMotion}>
               <div className="mg__panel-char">
-                <PlaceholderCharacter mood={introMood} scale={0.55} />
+                <PlaceholderCharacter mood={introMood} />
               </div>
               <div className="mg__panel-body">
                 <h2 className="mg__panel-title">{title}</h2>
@@ -144,7 +144,7 @@ export function MinigameShell({
           <motion.div key="result" className="mg__overlay" {...overlayMotion}>
             <motion.div className="mg__panel" {...panelMotion}>
               <div className="mg__panel-char">
-                <PlaceholderCharacter mood={resultMood} scale={0.55} />
+                <PlaceholderCharacter mood={resultMood} />
               </div>
               <div className="mg__panel-body">
                 <h2 className="mg__panel-title">结算</h2>

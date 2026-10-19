@@ -9,6 +9,7 @@ import { isDebugUiEnabled } from '../config/debugUi';
 import { SCENES } from '../config/scenes';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
+import { playCharacterVoice } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { useHints } from '../core/HintContext';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
@@ -54,6 +55,7 @@ export function GateScene() {
     if (scan === 'opening') return;
     audio.playSfx('sfx_click');
     setPicked(i);
+    if (i === 2) playCharacterVoice('gate_confused');
     if (scan === 'scanning' || scan === 'done') return;
     setScan('scanning');
     setScanStep(0);
@@ -67,10 +69,12 @@ export function GateScene() {
         }, SCAN_STEP_MS * s),
       );
     }
+    const choice = i;
     timers.current.push(
       window.setTimeout(() => {
         setScan('done');
         audio.playSfx('sfx_success');
+        if (choice === 3) playCharacterVoice('gate_spare');
       }, SCAN_STEP_MS * total + 150),
     );
   };
@@ -89,6 +93,8 @@ export function GateScene() {
   const done = scan === 'done' || opening;
   /** 拱门图加载成功后替换 CSS 拱门和立柱；失败时保留原来的占位 */
   const archReady = useAssetImageReady('gate_arch');
+  const doorLReady = useAssetImageReady('gate_door_l');
+  const doorRReady = useAssetImageReady('gate_door_r');
 
   return (
     <div className={`scene gate2 ${opening ? 'gate2--opening' : ''} ${done ? 'gate2--done' : ''} ${archReady ? 'gate2--arch-art' : ''}`} data-testid="gate">
@@ -111,11 +117,12 @@ export function GateScene() {
             <div className="gate2__pillar gate2__pillar--r" />
           </>
         )}
-        <div className="gate2__door gate2__door--l">
-          <span className="gate2__door-emblem">🌸</span>
+        <div className={`gate2__glow ${opening ? 'gate2__glow--on' : ''}`} />
+        <div className={`gate2__door gate2__door--l ${doorLReady ? 'gate2__door--art' : ''}`}>
+          {doorLReady ? <img src={assetUrl('gate_door_l')} alt="" draggable={false} /> : <span className="gate2__door-emblem">🌸</span>}
         </div>
-        <div className="gate2__door gate2__door--r">
-          <span className="gate2__door-emblem">🌸</span>
+        <div className={`gate2__door gate2__door--r ${doorRReady ? 'gate2__door--art' : ''}`}>
+          {doorRReady ? <img src={assetUrl('gate_door_r')} alt="" draggable={false} /> : <span className="gate2__door-emblem">🌸</span>}
         </div>
         <div className="gate2__passage">
           <div className="gate2__passage-light" />
@@ -222,13 +229,15 @@ export function GateScene() {
 
         {/* 闸机旁的 Q 版麻衣 */}
         <div className="gate2__chibi">
-          <ChibiMayi action={opening ? 'cheer' : done ? 'peek' : 'idle'} scale={0.8} />
+          <ChibiMayi action={opening ? 'cheer' : done ? 'peek' : 'idle'} scale={2.35} />
         </div>
       </div>
 
-      {/* 右侧立绘层（预留） */}
+      {/* 右侧半身立绘：放大后裁掉腰以下，狐耳和脸留在画面里 */}
       <div className="gate2__layer gate2__layer--char">
-        <PlaceholderCharacter mood={done ? 'surprise' : picked === null ? 'normal' : 'think'} />
+        <div className="gate2__portrait">
+          <PlaceholderCharacter mood={done ? 'surprise' : picked === null ? 'normal' : 'think'} scale={1} frame="full" />
+        </div>
       </div>
 
       {/* 开门白光过渡 */}

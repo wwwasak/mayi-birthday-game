@@ -13,8 +13,10 @@ import { STAMPS, type StampId } from '../config/stamps';
 import { CANDLE_IDS, allCandlesLit, nextBlowWave, type CandleId } from '../config/candles';
 import { TEXTS } from '../config/texts';
 import { audio } from './audio';
+import { playCharacterVoice, stopCharacterVoice } from './characterVoice';
 import {
   clearProgress,
+  countStamps,
   createDefaultProgress,
   EXAM_FACT_TOTAL,
   EXAM_SET_VERSION,
@@ -115,6 +117,11 @@ export interface GameContextValue {
   setVolume: (v: number) => void;
   /** 切换静音 */
   toggleMute: () => void;
+  /**
+   * 打开或关闭循环 BGM，并写入存档。
+   * @param on 是否开启
+   */
+  setBgmOn: (on: boolean) => void;
   /** 重置全部进度并回到开场 */
   resetProgress: () => void;
   /**
@@ -143,11 +150,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!ok && storageOk) setStorageOk(false);
   }, [progress, storageOk]);
 
-  // 音频设置同步到 Howler（不会触发播放）
+  // 音量、静音和 BGM 开关同步到播放器。关 BGM 会停掉当前曲子，不会在玩家关掉之后再打开。
   useEffect(() => {
     audio.setVolume(progress.audio.volume);
     audio.setMuted(progress.audio.muted);
-  }, [progress.audio.volume, progress.audio.muted]);
+    audio.setBgmEnabled(progress.audio.bgmOn);
+  }, [progress.audio.volume, progress.audio.muted, progress.audio.bgmOn]);
 
   const showToast = useCallback((msg: string, ms = 2200) => {
     setToast(msg);
@@ -162,13 +170,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
         showToast(resolveLockedHint(def, progress));
         return false;
       }
+      stopCharacterVoice();
       setScene(next);
       return true;
     },
     [progress, showToast],
   );
 
-  const backToMap = useCallback(() => setScene('map'), []);
+  const backToMap = useCallback(() => {
+    stopCharacterVoice();
+    setScene('map');
+  }, []);
 
   const awardStamp = useCallback(
     (id: StampId): boolean => {
@@ -176,8 +188,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
         showToast(TEXTS.common.alreadyStamp);
         return false;
       }
+      const completingPark = countStamps(progress) === 3;
       setProgress((p) => ({ ...p, stamps: { ...p.stamps, [id]: true } }));
       audio.playSfx('sfx_stamp');
+      if (completingPark) playCharacterVoice('park_complete');
       showToast(TEXTS.common.gotStamp(STAMPS[id].name), 2600);
       return true;
     },
@@ -276,6 +290,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setProgress((p) => ({ ...p, audio: { ...p.audio, muted: !p.audio.muted } }));
   }, []);
 
+  const setBgmOn = useCallback((on: boolean) => {
+    setProgress((p) => ({ ...p, audio: { ...p.audio, bgmOn: on } }));
+  }, []);
+
   const resetProgress = useCallback(() => {
     audio.stopAll();
     clearProgress();
@@ -305,6 +323,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       updateSettings,
       setVolume,
       toggleMute,
+      setBgmOn,
       resetProgress,
       showToast,
     }),
@@ -329,6 +348,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       updateSettings,
       setVolume,
       toggleMute,
+      setBgmOn,
       resetProgress,
       showToast,
     ],

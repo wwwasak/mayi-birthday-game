@@ -1,5 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
+import { assetUrl } from '../../config/assets';
 import { CANDLE_LAYOUT, CANDLES, type CandleId } from '../../config/candles';
+import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 
 export interface CakeCandlesProps {
   /** 已点亮的蜡烛 */
@@ -20,6 +22,7 @@ export interface CakeCandlesProps {
  */
 export function CakeCandles({ lit, blown, interactive = false, goldBurst = false, onLight }: CakeCandlesProps) {
   const blownSet = new Set(blown);
+  const flameReady = useAssetImageReady('item_flame');
 
   return (
     <div className="candle-row" data-testid="candle-row">
@@ -33,13 +36,15 @@ export function CakeCandles({ lit, blown, interactive = false, goldBurst = false
             {isLit && (
               <motion.span
                 key="flame"
-                className={`candle__flame ${def.gold ? 'candle__flame--gold' : ''}`}
+                className={`candle__flame ${def.gold ? 'candle__flame--gold' : ''} ${flameReady ? 'candle__flame--art' : ''}`}
                 data-testid={`flame-${id}`}
                 initial={{ opacity: 1, scale: 1, y: 0, x: '-50%' }}
                 animate={{ x: '-50%', scaleX: [1, 0.85, 1.1, 1], scaleY: [1, 1.1, 0.9, 1] }}
                 exit={{ x: '-50%', opacity: 0, scale: 0.2, y: -20, transition: { duration: 0.35, repeat: 0 } }}
                 transition={{ duration: def.gold ? 0.7 : 0.85, repeat: Infinity }}
-              />
+              >
+                {flameReady && <img src={assetUrl('item_flame')} alt="" draggable={false} />}
+              </motion.span>
             )}
           </AnimatePresence>
         );

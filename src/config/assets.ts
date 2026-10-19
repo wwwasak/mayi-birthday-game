@@ -25,6 +25,8 @@ export interface AssetEntry {
   loop?: boolean;
   /** 音频：默认音量 0~1 */
   volume?: number;
+  /** 音频分组。voice 走角色语音通道，不和音效混用。 */
+  group?: 'bgm' | 'sfx' | 'voice';
 }
 
 /** 资源根目录（相对路径，不可写成绝对路径） */
@@ -150,8 +152,56 @@ export const ASSETS = {
     description: '闸机拱门（透明底，含立柱）。显示宽 1080、顶边 y=70、水平居中。门扇单独一层，不画进这张图。',
     placeholder: 'linear-gradient(180deg, #ff9fcb 0%, #f0609f 100%)',
   },
+  gate_door_l: {
+    kind: 'image',
+    path: 'images/gate/door_l.png',
+    description: '闸机左门扇（透明底，不含门柱）',
+    placeholder: 'transparent',
+  },
+  gate_door_r: {
+    kind: 'image',
+    path: 'images/gate/door_r.png',
+    description: '闸机右门扇（透明底，不含门柱）',
+    placeholder: 'transparent',
+  },
 
   // ---------- Q 版角色 ----------
+  chibi_idle: {
+    kind: 'image',
+    path: 'images/char/chibi_idle.png',
+    description: 'Q 版麻衣：待机',
+    placeholder: '#ffb8d9',
+  },
+  chibi_point: {
+    kind: 'image',
+    path: 'images/char/chibi_point.png',
+    description: 'Q 版麻衣：指路',
+    placeholder: '#ffb8d9',
+  },
+  chibi_happy: {
+    kind: 'image',
+    path: 'images/char/chibi_happy.png',
+    description: 'Q 版麻衣：开心',
+    placeholder: '#ffb8d9',
+  },
+  chibi_surprise: {
+    kind: 'image',
+    path: 'images/char/chibi_surprise.png',
+    description: 'Q 版麻衣：惊讶',
+    placeholder: '#ffb8d9',
+  },
+  chibi_pray: {
+    kind: 'image',
+    path: 'images/char/chibi_pray.png',
+    description: 'Q 版麻衣：许愿',
+    placeholder: '#ffb8d9',
+  },
+  chibi_cheer: {
+    kind: 'image',
+    path: 'images/char/chibi_cheer.png',
+    description: 'Q 版麻衣：欢呼',
+    placeholder: '#ffb8d9',
+  },
   chibi_mayi: {
     kind: 'image',
     path: 'images/char/chibi_mayi.png',
@@ -235,6 +285,30 @@ export const ASSETS = {
     path: 'images/items/golden_dish.png',
     description: '神秘料理：蛋黄焗窝瓜（金黄色，带光效）',
     placeholder: 'linear-gradient(135deg, #ffe58a, #f3c54b)',
+  },
+  item_pumpkin: {
+    kind: 'image',
+    path: 'images/items/pumpkin.png',
+    description: '神秘料理：整颗窝瓜，划切分块',
+    placeholder: '#f0942e',
+  },
+  item_pumpkin_stem: {
+    kind: 'image',
+    path: 'images/items/pumpkin_stem.png',
+    description: '窝瓜瓜蒂',
+    placeholder: '#3d9a45',
+  },
+  item_oven: {
+    kind: 'image',
+    path: 'images/items/oven.png',
+    description: '烤箱，不遮挡火候指针',
+    placeholder: '#7a3b2e',
+  },
+  item_flame: {
+    kind: 'image',
+    path: 'images/items/flame.png',
+    description: '蜡烛火苗',
+    placeholder: '#ffb73b',
   },
   item_candy_bonus: {
     kind: 'image',
@@ -332,6 +406,24 @@ export const ASSETS = {
     description: '《麻衣生日奇妙游园会》标题 LOGO',
     placeholder: 'transparent',
   },
+  theater_curtain_l: {
+    kind: 'image',
+    path: 'images/theater/curtain_l.png',
+    description: '舞台左幕布',
+    placeholder: '#8a1b2e',
+  },
+  theater_curtain_r: {
+    kind: 'image',
+    path: 'images/theater/curtain_r.png',
+    description: '舞台右幕布',
+    placeholder: '#8a1b2e',
+  },
+  theater_valance: {
+    kind: 'image',
+    path: 'images/theater/valance.png',
+    description: '舞台顶部檐幕',
+    placeholder: '#8a1b2e',
+  },
 
   // ---------- 音频 ----------
   bgm_park: {
@@ -339,14 +431,14 @@ export const ASSETS = {
     path: 'audio/bgm_park.mp3',
     description: '游园会主 BGM（轻快、可循环）',
     loop: true,
-    volume: 0.5,
+    volume: 0.32,
   },
   bgm_cake: {
     kind: 'audio',
     path: 'audio/bgm_cake.mp3',
     description: '蛋糕房 BGM（温柔、可循环）',
     loop: true,
-    volume: 0.5,
+    volume: 0.32,
   },
   music_hongdou: {
     kind: 'audio',
@@ -445,6 +537,92 @@ export const ASSETS = {
     path: 'audio/sfx_unlock.mp3',
     description: '图鉴解锁',
     volume: 0.7,
+  },
+
+  // ---------- 麻衣角色语音（WAV，缺文件时只显示字幕） ----------
+  voice_mayi_surprised: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_01.wav',
+    description: '诶？什么东西？',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_welcome: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_02.wav',
+    description: '嘿嘿，欢迎光临！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_proud: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_03.wav',
+    description: '哼哼，那当然！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_unbelievable: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_04.wav',
+    description: '啊？这也行？！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_hooray: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_05.wav',
+    description: '好耶！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_again: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_06.wav',
+    description: '不对不对！重来！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_mint: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_07.wav',
+    description: '哇！是薄荷糖！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_hotpot: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_08.wav',
+    description: '火锅！我要吃火锅！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_think: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_09.wav',
+    description: '让我想想……',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_really: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_10.wav',
+    description: '真的假的？',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_spare: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_11.wav',
+    description: '今天就放过你啦！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_mayi_birthday: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_12.wav',
+    description: '生日快乐！嘿嘿！',
+    volume: 1,
+    group: 'voice',
   },
 } as const satisfies Record<string, AssetEntry>;
 

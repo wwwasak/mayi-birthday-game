@@ -3,10 +3,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
+import { assetUrl } from '../config/assets';
 import { SCENES } from '../config/scenes';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
 import { useGame } from '../core/GameContext';
+import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useSceneHint } from '../hooks/useSceneHint';
 
 /** 第一幕系统加载时长 */
@@ -47,6 +49,9 @@ function stepsOf(act: Act): number {
 export function FinalScene() {
   const { patch, goTo } = useGame();
   const t = TEXTS.final;
+  const curtainL = useAssetImageReady('theater_curtain_l');
+  const curtainR = useAssetImageReady('theater_curtain_r');
+  const valance = useAssetImageReady('theater_valance');
   const acts = t.acts;
   useSceneHint('final', { target: 'final-next' });
 
@@ -203,7 +208,7 @@ export function FinalScene() {
       {/* 角色立绘层 */}
       <div className="theater__layer theater__layer--char">
         <motion.div className="theater__char" animate={{ opacity: curtainClosed && !isEnd ? 0 : 1, scale: spotlight === 'focus' ? 1.04 : 1 }} transition={{ duration: 1 }}>
-          <PlaceholderCharacter mood={mood} />
+          <PlaceholderCharacter mood={mood} frame="full" />
         </motion.div>
       </div>
       {/* 聚光灯层 */}
@@ -221,9 +226,22 @@ export function FinalScene() {
       </div>
       {/* 幕布层 */}
       <div className="theater__layer theater__layer--curtain" aria-hidden>
-        <motion.div className="theater__curtain theater__curtain--l" animate={{ x: curtainClosed ? '0%' : '-92%' }} transition={{ duration: isEnd ? 2.2 : 1.1, ease: 'easeInOut' }} />
-        <motion.div className="theater__curtain theater__curtain--r" animate={{ x: curtainClosed ? '0%' : '92%' }} transition={{ duration: isEnd ? 2.2 : 1.1, ease: 'easeInOut' }} />
-        <div className="theater__valance" />
+        <motion.div
+          className={`theater__curtain theater__curtain--l ${curtainL ? 'theater__curtain--art' : ''}`}
+          style={curtainL ? { backgroundImage: `url(${assetUrl('theater_curtain_l')})` } : undefined}
+          animate={{ x: curtainClosed ? '0%' : '-92%' }}
+          transition={{ duration: isEnd ? 2.2 : 1.1, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className={`theater__curtain theater__curtain--r ${curtainR ? 'theater__curtain--art' : ''}`}
+          style={curtainR ? { backgroundImage: `url(${assetUrl('theater_curtain_r')})` } : undefined}
+          animate={{ x: curtainClosed ? '0%' : '92%' }}
+          transition={{ duration: isEnd ? 2.2 : 1.1, ease: 'easeInOut' }}
+        />
+        <div
+          className={`theater__valance ${valance ? 'theater__valance--art' : ''}`}
+          style={valance ? { backgroundImage: `url(${assetUrl('theater_valance')})` } : undefined}
+        />
       </div>
       {/* UI 层 */}
       <div className="theater__layer theater__layer--ui">

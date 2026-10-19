@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
+import { assetUrl } from '../config/assets';
 import { TEXTS } from '../config/texts';
 import { useGame } from '../core/GameContext';
 import { hasAnyProgress } from '../core/progress';
+import { useAssetImageReady } from '../hooks/useAssetImageReady';
 
 /** 连接动画总时长（毫秒） */
 const CONNECT_MS = 2400;
@@ -16,6 +18,7 @@ const CONNECT_MS = 2400;
  */
 export function BootScene() {
   const { goTo, progress } = useGame();
+  const logoReady = useAssetImageReady('ui_logo');
   const [pct, setPct] = useState(0);
   const steps = TEXTS.boot.steps;
 
@@ -53,10 +56,14 @@ export function BootScene() {
           transition={{ duration: 0.6 }}
           style={{ width: 900 }}
         >
-          <Card tag="占位标题 LOGO · images/ui/logo.png">
-            <h1 className="scene__title" style={{ fontSize: 72, textAlign: 'center' }}>
-              {TEXTS.common.gameTitle}
-            </h1>
+          <Card tag={logoReady ? undefined : '占位标题 LOGO · images/ui/logo.png'}>
+            {logoReady ? (
+              <img className="boot-logo" src={assetUrl('ui_logo')} alt={TEXTS.common.gameTitle} draggable={false} />
+            ) : (
+              <h1 className="scene__title" style={{ fontSize: 72, textAlign: 'center' }}>
+                {TEXTS.common.gameTitle}
+              </h1>
+            )}
             <p className="scene__subtitle" style={{ textAlign: 'center', marginTop: 24 }}>
               {done ? steps[steps.length - 1] : TEXTS.boot.connecting}
             </p>
