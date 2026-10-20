@@ -1,9 +1,11 @@
 import { motion } from 'motion/react';
-import { assetUrl, type ImageAssetId } from '../../config/assets';
+import { assetUrl } from '../../config/assets';
+import { PLAYER_MOOD_ASSET, PLAYER_MOOD_FALLBACK, PLAYER_ROLE_LABEL, type PlayerMood } from '../../config/characters';
+import { isDebugUiEnabled } from '../../config/debugUi';
 import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 
-/** 角色表情 */
-export type CharacterMood = 'normal' | 'happy' | 'think' | 'surprise';
+/** 玩家麻衣的表情。沿用旧名字，避免改遍每个场景的导入。 */
+export type CharacterMood = PlayerMood;
 
 export interface PlaceholderCharacterProps {
   mood?: CharacterMood;
@@ -19,23 +21,22 @@ export interface PlaceholderCharacterProps {
   frame?: 'bust' | 'full';
 }
 
-const MOOD_ASSET: Record<CharacterMood, ImageAssetId> = {
-  normal: 'char_normal',
-  happy: 'char_happy',
-  think: 'char_think',
-  surprise: 'char_surprise',
-};
-
 const BASE_W = 320;
 const BASE_H = 460;
 
 /**
- * 普通麻衣立绘。默认半身入镜，保持原图比例；加载失败时回退 CSS 占位。
+ * 玩家麻衣的普通立绘。
+ * 她是游玩的人，不是向导。缺图时用 CSS 占位，并标出「玩家麻衣」，不用 Q 版顶替。
  * @param frame bust 用容器裁上头肩，full 按原容器完整包含
  */
 export function PlaceholderCharacter({ mood = 'normal', scale = 1, frame = 'bust' }: PlaceholderCharacterProps) {
-  const asset = MOOD_ASSET[mood];
-  const ready = useAssetImageReady(asset);
+  const preferred = PLAYER_MOOD_ASSET[mood];
+  const fallbackId = PLAYER_MOOD_FALLBACK[mood] ?? preferred;
+  const preferredReady = useAssetImageReady(preferred);
+  const fallbackReady = useAssetImageReady(fallbackId);
+  const asset = preferredReady ? preferred : fallbackId;
+  const ready = preferredReady || fallbackReady;
+  const showRole = !ready || isDebugUiEnabled();
   const bust = frame === 'bust';
   const eyeCls = mood === 'happy' ? 'pc__eye--happy' : '';
   const mouthCls = mood === 'surprise' ? 'pc__mouth--open' : mood === 'think' ? 'pc__mouth--flat' : '';
@@ -43,6 +44,8 @@ export function PlaceholderCharacter({ mood = 'normal', scale = 1, frame = 'bust
   return (
     <motion.div
       className={bust ? 'pc-bust' : 'pc-full'}
+      data-character-role="player_mayi"
+      data-player-mood={mood}
       style={{ ['--pc-scale' as string]: scale, width: bust ? undefined : BASE_W * scale, height: bust ? undefined : BASE_H * scale, position: 'relative' }}
       animate={{ y: [0, -8 * scale, 0] }}
       transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
@@ -70,6 +73,7 @@ export function PlaceholderCharacter({ mood = 'normal', scale = 1, frame = 'bust
           </div>
         </div>
       )}
+      {showRole && <span className="pc__role">{PLAYER_ROLE_LABEL}</span>}
     </motion.div>
   );
 }

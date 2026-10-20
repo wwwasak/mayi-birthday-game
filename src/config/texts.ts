@@ -383,6 +383,8 @@ export const TEXTS = {
   candle: {
     title: '吹蜡烛',
     subtitle: '许个愿，然后点击按钮吹灭蜡烛。',
+    wishPrompt: '先许个愿，再吹蜡烛。也可以直接吹。',
+    wished: '我许好了',
     blow: '呼——吹蜡烛',
     left: (n: number) => `还剩 ${n} 根蜡烛`,
     wishSent: '最后一个愿望，已经替你送往未来啦！',

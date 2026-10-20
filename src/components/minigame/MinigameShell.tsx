@@ -1,8 +1,22 @@
 import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';
+import type { GuideAction } from '../../config/characters';
 import { TEXTS } from '../../config/texts';
 import { Button } from '../ui/Button';
-import { PlaceholderCharacter, type CharacterMood } from '../ui/PlaceholderCharacter';
+import { ChibiMayi } from '../ui/ChibiMayi';
+import type { CharacterMood } from '../ui/PlaceholderCharacter';
+
+/**
+ * 开场和结算面板上的主持人是 Q 版向导，不是玩家立绘。
+ * @param mood 旧的表情参数，转成向导动作
+ * @param fallback 常态时的动作：开场指路，结算站着
+ */
+function hostAction(mood: CharacterMood, fallback: GuideAction): GuideAction {
+  if (mood === 'happy') return 'happy';
+  if (mood === 'surprise') return 'surprise';
+  if (mood === 'think') return 'think';
+  return fallback;
+}
 
 /** 小游戏阶段 */
 export type MinigamePhase = 'intro' | 'playing' | 'paused' | 'result';
@@ -94,8 +108,8 @@ export function MinigameShell({
         {phase === 'intro' && (
           <motion.div key="intro" className="mg__overlay" {...overlayMotion}>
             <motion.div className="mg__panel" {...panelMotion}>
-              <div className="mg__panel-char">
-                <PlaceholderCharacter mood={introMood} />
+              <div className="mg__panel-char" data-character-role="guide_mayi">
+                <ChibiMayi action={hostAction(introMood, 'point')} scale={1.7} followVoice />
               </div>
               <div className="mg__panel-body">
                 <h2 className="mg__panel-title">{title}</h2>
@@ -143,8 +157,8 @@ export function MinigameShell({
         {phase === 'result' && (
           <motion.div key="result" className="mg__overlay" {...overlayMotion}>
             <motion.div className="mg__panel" {...panelMotion}>
-              <div className="mg__panel-char">
-                <PlaceholderCharacter mood={resultMood} />
+              <div className="mg__panel-char" data-character-role="guide_mayi">
+                <ChibiMayi action={hostAction(resultMood, 'idle')} scale={1.7} followVoice />
               </div>
               <div className="mg__panel-body">
                 <h2 className="mg__panel-title">结算</h2>

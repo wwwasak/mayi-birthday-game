@@ -16,7 +16,7 @@ export function Hud() {
   const { scene, progress, storageOk, toast, backToMap } = useGame();
   const { mode: hintMode } = useHints();
   useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
-  const voiceLine = getVoiceCaption();
+  const voice = getVoiceCaption();
   const def = SCENES[scene];
   const showStamps = scene !== 'boot' && scene !== 'gate' && scene !== 'auth' && scene !== 'notice';
   /** 提示槽可见时 toast 下移，避免重叠 */
@@ -59,17 +59,18 @@ export function Hud() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {voiceLine && (
+        {voice && (
           <motion.div
-            key={voiceLine}
+            key={voice.line}
             className="hud__toast hud__voice"
             style={{ top: toast ? toastTop + 64 : toastTop }}
+            role="status"
             initial={{ opacity: 0, y: -20, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: -12, x: '-50%' }}
             transition={{ duration: 0.2 }}
           >
-            麻衣：{voiceLine}
+            {voice.speaker}：{voice.line}
           </motion.div>
         )}
       </AnimatePresence>

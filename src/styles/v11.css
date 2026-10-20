@@ -551,6 +551,14 @@
   transform-origin: bottom center;
 }
 
+.theater__guide {
+  position: absolute;
+  left: 36px;
+  bottom: 48px;
+  z-index: 2;
+  pointer-events: none;
+}
+
 .theater__layer--light {
   z-index: 4;
   pointer-events: none;

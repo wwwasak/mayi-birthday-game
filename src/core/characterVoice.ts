@@ -1,10 +1,19 @@
 import { ASSETS, type AudioAssetId } from '../config/assets';
+import { GUIDE_SPEAKER_LABEL, type CharacterRole, type GuideAction } from '../config/characters';
 import { VOICE_EVENTS, voiceCanInterrupt, type VoiceEvent, type VoicePriority } from '../config/voices';
 import { audio } from './audio';
 
+/** 当前这句台词。说话者固定是 Q 版向导。 */
+export interface VoiceCaption {
+  speaker: string;
+  line: string;
+  role: CharacterRole;
+  action: GuideAction;
+}
+
 /** 字幕订阅者 */
 const listeners = new Set<() => void>();
-let caption: string | null = null;
+let caption: VoiceCaption | null = null;
 let captionToken = 0;
 let snapshot = 0;
 
@@ -17,9 +26,9 @@ function emit(): void {
 }
 
 /**
- * 当前角色台词。没有在说话时为 null。
+ * 当前 Q 版向导的台词。没有在说话时为 null。
  */
-export function getVoiceCaption(): string | null {
+export function getVoiceCaption(): VoiceCaption | null {
   return caption;
 }
 
@@ -44,9 +53,14 @@ export function clearVoiceCaption(): void {
   emit();
 }
 
-function showCaption(line: string): number {
+/**
+ * 显示一句向导台词，并记下她该用的表情。
+ * @param line 字幕正文
+ * @param action Q 版表情
+ */
+function showCaption(line: string, action: GuideAction): number {
   const token = ++captionToken;
-  caption = line;
+  caption = { speaker: GUIDE_SPEAKER_LABEL, line, role: 'guide_mayi', action };
   emit();
   return token;
 }
@@ -60,9 +74,9 @@ function hideCaptionLater(token: number, delayMs: number): void {
 }
 
 /**
- * 按事件播放麻衣的一句台词。
+ * 按事件播放 Q 版向导的一句台词。
  * 冷却中、已经说过、或优先级不够时直接跳过。
- * 文件缺失时仍显示字幕，不抛错。
+ * 文件缺失时仍显示字幕，不抛错，也不改玩家立绘。
  * @param event 语音事件名
  * @returns 是否真正开始了这一句
  */
@@ -80,7 +94,7 @@ export function playCharacterVoice(event: VoiceEvent): boolean {
   lastAt.set(event, now);
   if (once) playedOnce.add(event);
 
-  const token = showCaption(spec.line);
+  const token = showCaption(spec.line, spec.guideAction);
   const started = performance.now();
   audio.playVoice(spec.assetId, spec.priority, () => {
     const remain = Math.max(0, 2200 - (performance.now() - started));
@@ -104,8 +118,9 @@ export function stopCharacterVoice(): void {
  * @param id 语音资源 ID
  */
 export function previewCharacterVoice(id: AudioAssetId): void {
-  const line = ASSETS[id].description;
-  const token = showCaption(line);
+  const matched = Object.values(VOICE_EVENTS).find((spec) => spec.assetId === id);
+  const line = matched?.line ?? ASSETS[id].description;
+  const token = showCaption(line, matched?.guideAction ?? 'happy');
   const started = performance.now();
   audio.playVoice(id, 'moment', () => {
     const remain = Math.max(0, 1800 - (performance.now() - started));

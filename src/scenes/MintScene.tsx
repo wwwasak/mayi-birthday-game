@@ -104,6 +104,8 @@ export function MintScene() {
   const comboRef = useRef(0);
   /** 这一局是否已经为第一颗薄荷糖说过话 */
   const mintVoiceRef = useRef(false);
+  /** 这一局是否已经提醒过奖励糖。正在说别的句子时不占掉这次机会。 */
+  const bonusVoiceRef = useRef(false);
 
   const resetRound = useCallback(() => {
     setCandies([]);
@@ -135,12 +137,13 @@ export function MintScene() {
   // 开始/重开时重置计时器
   const startRound = () => {
     mintVoiceRef.current = false;
+    bonusVoiceRef.current = false;
     resetTimer();
     game.start();
   };
   const restartRound = () => {
-    if (game.phase === 'result') playCharacterVoice('mint_retry');
     mintVoiceRef.current = false;
+    bonusVoiceRef.current = false;
     resetTimer();
     game.restart();
   };
@@ -192,6 +195,9 @@ export function MintScene() {
       mintVoiceRef.current = true;
       playCharacterVoice('mint_first_candy');
     }
+    if (c.kind === 'bonus' && !bonusVoiceRef.current && playCharacterVoice('mint_bonus')) {
+      bonusVoiceRef.current = true;
+    }
     setScore((s) => s + gain);
     setCombo(nextCombo);
     setMaxCombo((m) => Math.max(m, nextCombo));
@@ -207,11 +213,19 @@ export function MintScene() {
 
   const seconds = (leftMs / 1000).toFixed(1);
   const best = Math.max(progress.records.mintBest, score);
-  /** 游玩时右侧半身：连击开心，时间将尽惊讶 */
-  const mintMood = combo >= 5 ? 'happy' : leftMs < 5000 ? 'surprise' : 'normal';
+  /** 开场和结算才把玩家放在旁边。游玩时她退开，向导只在说话时露一下。 */
+  const mintPlayerMood = game.phase === 'result' && score >= 350 ? 'happy' : 'normal';
 
   return (
-    <SceneLayout scene="mint" title={t.title} subtitle={t.subtitle} mood={game.phase === 'playing' ? mintMood : null} compact>
+    <SceneLayout
+      scene="mint"
+      title={t.title}
+      subtitle={t.subtitle}
+      side={game.phase === 'playing' ? 'overlay' : 'flow'}
+      mood={game.phase === 'playing' ? null : mintPlayerMood}
+      guide={game.phase === 'playing' ? { action: 'happy', scale: 0.8, followVoice: true, onlyWhileSpeaking: true } : null}
+      compact
+    >
       <MinigameShell
         phase={game.phase}
         title={t.title}

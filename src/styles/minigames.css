@@ -98,6 +98,10 @@
   border-radius: 28px 28px 18px 18px;
 }
 
+.mg__panel-char .chibi {
+  margin-bottom: 8px;
+}
+
 .mg__panel-char .pc-bust {
   width: 250px;
   height: 430px;
@@ -746,6 +750,22 @@
   min-height: 0;
 }
 
+.exam-cast {
+  height: 210px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 6px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.exam-cast .pc-bust {
+  width: 118px;
+  height: 200px;
+}
+
 .exam-bust {
   height: 250px;
   overflow: hidden;
@@ -942,6 +962,14 @@
 .wish-bust .pc-bust {
   width: 220px;
   height: 390px;
+}
+
+.wish-guide {
+  position: absolute;
+  left: 214px;
+  bottom: 72px;
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* ===== 场馆玻璃面板：薄荷清凉 / 美食暖色，互不套用 ===== */

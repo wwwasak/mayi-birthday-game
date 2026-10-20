@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SceneLayout } from '../components/ui/SceneLayout';
 import { TEXTS } from '../config/texts';
+import { playCharacterVoice } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 
 /**
@@ -17,13 +18,19 @@ export function EggScene() {
     patch({ eggFound: true });
   }, [patch]);
 
+  useEffect(() => {
+    const id = window.setTimeout(() => playCharacterVoice('egg_quiet'), 500);
+    return () => window.clearTimeout(id);
+  }, []);
+
   const white = (s: string) => <span style={{ color: '#fff', textShadow: '0 4px 0 rgba(0,0,0,0.3)' }}>{s}</span>;
 
   return (
     <SceneLayout
       scene="egg"
       title={white(t.title)}
-      mood="think"
+      mood="normal"
+      guide={{ action: 'peek', scale: 0.75, followVoice: true }}
       actions={
         <Button variant="secondary" onClick={backToMap}>
           {t.back}

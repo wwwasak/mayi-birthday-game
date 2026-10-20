@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { MinigameShell } from '../components/minigame/MinigameShell';
 import { Button } from '../components/ui/Button';
+import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { SceneLayout } from '../components/ui/SceneLayout';
 import { verifyWishExpandCode } from '../config/secrets';
@@ -18,6 +19,7 @@ import { ASSETS, assetUrl } from '../config/assets';
 import { isDebugUiEnabled } from '../config/debugUi';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
+import { playCharacterVoice } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { CUSTOM_WISH_MAX, WISH_CARD_TOTAL, sanitizeUserText, type WishCardId } from '../core/progress';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
@@ -206,6 +208,7 @@ export function WishScene() {
   };
 
   const commitHang = (i: number) => {
+    if (!hung[i] && hung.filter(Boolean).length === 3) playCharacterVoice('wish_bloom');
     setHung((arr) => (arr[i] ? arr : arr.map((v, idx) => (idx === i ? true : v))));
     setRevealed((arr) => (arr[i] ? arr : arr.map((v, idx) => (idx === i ? true : v))));
     setSparkleAt(i);
@@ -476,6 +479,9 @@ export function WishScene() {
         <div className={`wish-view ${dragging ? 'wish-view--dragging' : ''}`} ref={viewRef}>
           <div className="wish-bust" aria-hidden>
             <PlaceholderCharacter mood={litCount >= 4 ? 'happy' : armed !== null ? 'surprise' : 'normal'} />
+          </div>
+          <div className="wish-guide" aria-hidden>
+            <ChibiMayi action="point" facing="right" scale={0.72} followVoice />
           </div>
           <div
             className={[

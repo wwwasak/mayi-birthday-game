@@ -284,6 +284,12 @@ export function FoodScene() {
     setStation('hub');
   };
 
+  /** 第一次打开水果捞时，向导叮嘱摆盘。再次进入由事件的 once 拦住。 */
+  const openFruit = () => {
+    setStation('fruit');
+    playCharacterVoice('fruit_enter');
+  };
+
   // ---------- 渲染：各站台 ----------
   const renderHub = () => (
     <div className="food-hub">
@@ -308,7 +314,7 @@ export function FoodScene() {
         </div>
       </Card>
 
-      <Card className="food-station" clickable done={!!fruitDone} placeholder={!fruitDone} onClick={() => setStation('fruit')}>
+      <Card className="food-station" clickable done={!!fruitDone} placeholder={!fruitDone} onClick={() => openFruit()}>
         {fruitDone && <span className="food-station__done">已完成</span>}
         <div className="food-station__icon" style={bowlReady || fruitDishReady ? undefined : { background: assetPlaceholder('item_fruit') }}>
           {fruitDone && fruitDishReady ? (
@@ -664,7 +670,7 @@ export function FoodScene() {
             <Button variant="secondary" onClick={goHub}>
               {t.hub.hiddenPrompt.later}
             </Button>
-            <Button variant="gold" className="btn--breath" data-testid="go-fruit" onClick={() => setStation('fruit')}>
+            <Button variant="gold" className="btn--breath" data-testid="go-fruit" onClick={() => openFruit()}>
               {t.hub.hiddenPrompt.go}
             </Button>
           </div>
@@ -713,11 +719,19 @@ export function FoodScene() {
     gallery: renderGallery,
   };
 
-  /** 游玩时右侧半身：神秘料理思考，两道正餐都完成后开心 */
+  /** 玩家站在料理台一侧。思考和开心都只是表情，台词由旁边的 Q 版向导说。 */
   const foodMood = station === 'hidden' ? 'think' : hotpotDone && fruitDone ? 'happy' : 'normal';
+  const foodGuide = station === 'hotpot' ? 'hotpot' : station === 'hidden' ? 'dish' : station === 'fruit' ? 'point' : station === 'hiddenPrompt' ? 'surprise' : 'point';
 
   return (
-    <SceneLayout scene="food" title={t.title} subtitle={t.subtitle} mood={game.phase === 'playing' ? foodMood : null} compact>
+    <SceneLayout
+      scene="food"
+      title={t.title}
+      subtitle={t.subtitle}
+      mood={game.phase === 'playing' ? foodMood : null}
+      guide={game.phase === 'playing' ? { action: foodGuide, scale: 0.82, followVoice: true } : null}
+      compact
+    >
       <MinigameShell
         phase={game.phase}
         title={t.title}

@@ -88,6 +88,42 @@
   pointer-events: none;
 }
 
+.map-token {
+  width: 120px;
+  height: 150px;
+  overflow: hidden;
+  pointer-events: none;
+  display: block;
+}
+
+.map-token .pc-bust {
+  width: 150px;
+  height: 230px;
+  margin-left: -15px;
+}
+
+.map-token__art {
+  width: 120px;
+  height: 150px;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+  user-select: none;
+}
+
+.map-token--left .pc__art,
+.map-token--left .map-token__art {
+  transform: scaleX(-1);
+}
+
+.park__guide {
+  position: absolute;
+  left: 620px;
+  top: 888px;
+  z-index: 2;
+  pointer-events: none;
+}
+
 .chibi__scale {
   position: absolute;
   left: 0;

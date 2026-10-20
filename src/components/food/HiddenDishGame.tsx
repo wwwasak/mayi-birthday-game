@@ -4,6 +4,7 @@ import { assetPlaceholder, assetUrl } from '../../config/assets';
 import { COLLECTIBLES } from '../../config/food';
 import { TEXTS } from '../../config/texts';
 import { audio } from '../../core/audio';
+import { playCharacterVoice } from '../../core/characterVoice';
 import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 import { Button } from '../ui/Button';
 import { ChibiMayi } from '../ui/ChibiMayi';
@@ -122,6 +123,10 @@ export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps)
   const dishReady = useAssetImageReady('item_golden_dish');
   const t = TEXTS.food.hidden;
   const [step, setStep] = useState<Step>(0);
+
+  useEffect(() => {
+    if (step === 3) playCharacterVoice('dish_reveal');
+  }, [step]);
   const [cuts, setCuts] = useState<number[]>([]);
   const [slash, setSlash] = useState<number | null>(null);
   const [coat, setCoat] = useState(0);
@@ -407,7 +412,7 @@ export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps)
           </motion.span>
         ))}
         <motion.div className="hd-chibi" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-          <ChibiMayi action="cheer" scale={0.7} />
+          <ChibiMayi action="dish" scale={0.7} followVoice />
           <span className="hd-chibi__bubble">{t.mayiReact[reactIdx]}</span>
         </motion.div>
       </motion.div>

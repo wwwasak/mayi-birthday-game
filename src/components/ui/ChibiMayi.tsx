@@ -1,9 +1,13 @@
 import type { CSSProperties } from 'react';
-import { assetUrl, type ImageAssetId } from '../../config/assets';
+import { useSyncExternalStore } from 'react';
+import { assetUrl } from '../../config/assets';
+import { GUIDE_ACTION_ASSET, GUIDE_ACTION_FALLBACK, GUIDE_ROLE_LABEL, type GuideAction } from '../../config/characters';
+import { isDebugUiEnabled } from '../../config/debugUi';
+import { getVoiceCaption, getVoiceCaptionSnapshot, subscribeVoiceCaption } from '../../core/characterVoice';
 import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 
-/** Q 版麻衣的 8 个关键动作（peek / nod 复用已有正式图） */
-export type ChibiAction = 'idle' | 'point' | 'happy' | 'surprise' | 'peek' | 'pray' | 'cheer' | 'nod';
+/** Q 版向导的动作。peek / nod 复用已有正式图。 */
+export type ChibiAction = GuideAction;
 
 export interface ChibiMayiProps {
   action?: ChibiAction;
@@ -15,35 +19,47 @@ export interface ChibiMayiProps {
   className?: string;
   /** 是否显示占位标签 */
   showLabel?: boolean;
+  /**
+   * 为 true 时，向导正在说话就改用这句台词的表情。
+   * 地图上的玩家标记和提示条里的小图标不要打开。
+   */
+  followVoice?: boolean;
 }
 
 export const CHIBI_W = 120;
 export const CHIBI_H = 150;
 
-const CHIBI_ART: Record<ChibiAction, ImageAssetId> = {
-  idle: 'chibi_idle',
-  point: 'chibi_point',
-  happy: 'chibi_happy',
-  surprise: 'chibi_surprise',
-  peek: 'chibi_surprise',
-  pray: 'chibi_pray',
-  cheer: 'chibi_cheer',
-  nod: 'chibi_happy',
-};
-
 /**
- * Q 版麻衣：正式 PNG 到位后替换 CSS 身体，外层尺寸与轻跳动画保留。
+ * Q 版向导。正式图缺失时保留 CSS 身体，并标出「Q版向导」，不用普通立绘顶替。
+ * @param followVoice 说话时改用台词对应的表情
  */
-export function ChibiMayi({ action = 'idle', scale = 1, facing = 'right', style, className, showLabel = false }: ChibiMayiProps) {
-  const artId = CHIBI_ART[action];
-  const ready = useAssetImageReady(artId);
+export function ChibiMayi({
+  action = 'idle',
+  scale = 1,
+  facing = 'right',
+  style,
+  className,
+  showLabel = false,
+  followVoice = false,
+}: ChibiMayiProps) {
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const voice = followVoice ? getVoiceCaption() : null;
+  const shown = voice?.action ?? action;
+  const preferred = GUIDE_ACTION_ASSET[shown];
+  const fallbackId = GUIDE_ACTION_FALLBACK[shown] ?? preferred;
+  const preferredReady = useAssetImageReady(preferred);
+  const fallbackReady = useAssetImageReady(fallbackId);
+  const artId = preferredReady ? preferred : fallbackId;
+  const ready = preferredReady || fallbackReady;
+  const showRole = showLabel || !ready || isDebugUiEnabled();
 
   return (
     <div
-      className={`chibi chibi--${action} chibi--face-${facing} ${ready ? 'chibi--art' : ''} ${className ?? ''}`}
+      className={`chibi chibi--${shown} chibi--face-${facing} ${ready ? 'chibi--art' : ''} ${className ?? ''}`}
       style={{ width: CHIBI_W * scale, height: CHIBI_H * scale, ...style }}
       aria-hidden
-      data-chibi-action={action}
+      data-character-role="guide_mayi"
+      data-chibi-action={shown}
     >
       <div className="chibi__scale" style={{ transform: `scale(${scale})` }}>
         {ready ? (
@@ -73,7 +89,7 @@ export function ChibiMayi({ action = 'idle', scale = 1, facing = 'right', style,
           </div>
         )}
       </div>
-      {showLabel && !ready && <span className="chibi__label">占位 Q 版</span>}
+      {showRole && <span className="chibi__role">{GUIDE_ROLE_LABEL}</span>}
     </div>
   );
 }

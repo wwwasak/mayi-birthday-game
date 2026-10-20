@@ -55,7 +55,7 @@ export function MusicScene() {
       scene="music"
       title={whiteTitle(t.title)}
       subtitle={<span style={{ color: 'rgba(255,255,255,0.85)' }}>{t.subtitle}</span>}
-      mood={playing ? 'happy' : 'normal'}
+      mood={playing ? 'listen' : 'normal'}
       actions={
         <>
           <Button variant="ghost" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.6)' }} onClick={skip}>

@@ -2,10 +2,11 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapBuilding, type BuildingState } from '../components/map/MapBuilding';
 import { Button } from '../components/ui/Button';
-import { ChibiMayi, type ChibiAction } from '../components/ui/ChibiMayi';
+import { ChibiMayi } from '../components/ui/ChibiMayi';
+import { PlaceholderCharacter, type CharacterMood } from '../components/ui/PlaceholderCharacter';
 import { StampIcon } from '../components/ui/StampBadge';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
-import { ASSETS } from '../config/assets';
+import { ASSETS, assetUrl } from '../config/assets';
 import { isDebugUiEnabled } from '../config/debugUi';
 import { cakeSlotCenter, chibiSpot, STAMP_TRAY, trayCenter, type BuildingId } from '../config/mapLayout';
 import { hasAllStamps } from '../config/scenes';
@@ -57,7 +58,7 @@ function recommendNext(p: GameProgress): BuildingId {
  */
 export function MapScene() {
   const { progress, goTo, resetProgress, patch } = useGame();
-  const { announce, mode: hintMode } = useHints();
+  const { announce } = useHints();
   const t = TEXTS.map;
 
   const n = countStamps(progress);
@@ -204,12 +205,13 @@ export function MapScene() {
     else goTo('cake');
   };
 
-  // ---------- Q 版麻衣：站在当前站门口；刚通关时从上一站走过来 ----------
-  const chibiTarget: BuildingId = show === 'wish' ? 'wish' : show === 'converge' ? 'cake' : next;
-  const chibiPos = chibiSpot(chibiTarget, artReady[chibiTarget]);
-  const chibiStart = cameFrom ? chibiSpot(cameFrom, artReady[cameFrom]) : chibiPos;
-  const chibiAction: ChibiAction = show === 'converge' ? (step >= 4 ? 'cheer' : 'surprise') : show === 'wish' ? 'point' : hintMode === 'idle' ? 'point' : 'idle';
-  const chibiFacing = chibiPos.x < 960 ? 'right' : 'left';
+  // ---------- 玩家标记：站在当前站门口；刚通关时从上一站走过来 ----------
+  const tokenTarget: BuildingId = show === 'wish' ? 'wish' : show === 'converge' ? 'cake' : next;
+  const tokenPos = chibiSpot(tokenTarget, artReady[tokenTarget]);
+  const tokenStart = cameFrom ? chibiSpot(cameFrom, artReady[cameFrom]) : tokenPos;
+  const playerMood: CharacterMood = show === 'converge' && step >= 4 ? 'happy' : cameFrom ? 'happy' : 'normal';
+  const mapBustReady = useAssetImageReady('player_mayi_map');
+  const tokenFacing = tokenPos.x < 960 ? 'right' : 'left';
   /** 点击 Q 版麻衣 = 进入当前站 */
   const enterCurrent = () => {
     if (show !== 'none') return;
@@ -319,13 +321,14 @@ export function MapScene() {
         </AnimatePresence>
       </div>
 
-      {/* UI 层：Q 版麻衣、印章托盘、重置、演出跳过 */}
+      {/* UI 层：玩家标记、Q版向导、印章托盘、重置、演出跳过 */}
       <div className="park__layer park__layer--ui">
         <motion.div
           className="park__chibi park__chibi--clickable"
           data-testid="map-chibi"
-          initial={{ left: chibiStart.x, top: chibiStart.y }}
-          animate={{ left: chibiPos.x, top: chibiPos.y }}
+          data-character-role="player_mayi"
+          initial={{ left: tokenStart.x, top: tokenStart.y }}
+          animate={{ left: tokenPos.x, top: tokenPos.y }}
           transition={{ type: 'spring', stiffness: 60, damping: 16, delay: cameFrom ? 0.6 : 0 }}
           style={{ position: 'absolute' }}
           role="button"
@@ -337,8 +340,18 @@ export function MapScene() {
             if (e.key === 'Enter' || e.key === ' ') enterCurrent();
           }}
         >
-          <ChibiMayi action={chibiAction} facing={chibiFacing} showLabel={isDebugUiEnabled()} />
+          <span className={`map-token map-token--${tokenFacing}`}>
+            {mapBustReady ? (
+              <img className="map-token__art" src={assetUrl('player_mayi_map')} alt="" draggable={false} />
+            ) : (
+              <PlaceholderCharacter mood={playerMood} />
+            )}
+          </span>
         </motion.div>
+
+        <div className="park__guide">
+          <ChibiMayi action="point" scale={0.9} followVoice facing="right" />
+        </div>
 
         <div className="park__tray" style={{ left: STAMP_TRAY.x, top: STAMP_TRAY.y }}>
           {STAMP_ORDER.map((id, i) => {

@@ -1,12 +1,14 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Button } from '../components/ui/Button';
+import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { assetUrl } from '../config/assets';
 import { SCENES } from '../config/scenes';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
+import { getVoiceCaption, getVoiceCaptionSnapshot, playCharacterVoice, subscribeVoiceCaption } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useSceneHint } from '../hooks/useSceneHint';
@@ -60,11 +62,18 @@ export function FinalScene() {
   const timers = useRef<number[]>([]);
   const act = acts[actIdx];
   const isEnd = act.kind === 'end';
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const guideSpeaking = isEnd && getVoiceCaption() !== null;
   const lastStep = stepsOf(act) - 1;
 
   useEffect(() => {
     patch({ finalSeen: true });
   }, [patch]);
+
+  useEffect(() => {
+    if (!isEnd) return;
+    playCharacterVoice('guide_farewell');
+  }, [isEnd]);
 
   useEffect(() => () => timers.current.forEach((id) => window.clearTimeout(id)), []);
 
@@ -210,6 +219,11 @@ export function FinalScene() {
         <motion.div className="theater__char" animate={{ opacity: curtainClosed && !isEnd ? 0 : 1, scale: spotlight === 'focus' ? 1.04 : 1 }} transition={{ duration: 1 }}>
           <PlaceholderCharacter mood={mood} frame="full" />
         </motion.div>
+        {guideSpeaking && (
+          <div className="theater__guide">
+            <ChibiMayi action="farewell" scale={0.85} followVoice />
+          </div>
+        )}
       </div>
       {/* 聚光灯层 */}
       <div className={`theater__layer theater__layer--light theater__light--${spotlight}`} aria-hidden>

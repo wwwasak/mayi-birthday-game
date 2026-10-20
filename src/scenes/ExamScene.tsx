@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MinigameShell } from '../components/minigame/MinigameShell';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { SceneLayout } from '../components/ui/SceneLayout';
 import { DANMU_TIMER_SECONDS, EXAM_QUESTIONS, EXAM_RESULT_LINES, type ExamQuestion } from '../config/exam';
@@ -101,6 +102,7 @@ export function ExamScene() {
       if (q.type === 'absurd') {
         if (!overloaded[idx]) {
           audio.playSfx('sfx_wrong');
+          playCharacterVoice('exam_overload');
           setOverload(true);
           setOverloaded((m) => ({ ...m, [idx]: true }));
           window.setTimeout(() => {
@@ -169,7 +171,8 @@ export function ExamScene() {
     [q, picked, t, byTimer, idx],
   );
   const liveFact = countFact(answers);
-  const mood = overload ? 'surprise' : verdict === 'ok' || verdict === 'fun' ? 'happy' : verdict === 'bad' ? 'surprise' : 'think';
+  const playerMood = overload || verdict === 'bad' ? 'surprise' : verdict === 'ok' || verdict === 'fun' ? 'happy' : 'normal';
+  const examinerAction = overload ? 'surprise' : verdict === 'bad' ? 'tease' : verdict === 'ok' || verdict === 'fun' ? 'happy' : 'think';
   const tag = q.type === 'fact' ? t.tagFact : q.type === 'fun' ? t.tagFun : t.tagAbsurd;
   const danmuLine = q.type === 'fact' ? (hintShown[idx] ? q.hint : t.danmuFact) : q.type === 'fun' ? t.danmuFun : t.danmuAbsurd;
   /** 历史最佳：只在同一题组下才有意义 */
@@ -336,12 +339,13 @@ export function ExamScene() {
             <div className={`exam-feedback ${verdict === 'ok' || verdict === 'fun' ? 'exam-feedback--ok' : ''} ${verdict === 'bad' ? 'exam-feedback--bad' : ''}`} data-testid="exam-feedback">
               <AnimatePresence mode="wait">
                 <motion.div key={overload ? 'overload' : feedback || 'empty'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-                  {overload ? t.overload : feedback || '选择一个答案，麻衣会给出反馈。'}
+                  {overload ? t.overload : feedback || '选择一个答案，Q版麻衣会给出反馈。'}
                 </motion.div>
               </AnimatePresence>
             </div>
-            <div className="exam-bust">
-              <PlaceholderCharacter mood={mood} />
+            <div className="exam-cast">
+              <PlaceholderCharacter mood={playerMood} />
+              <ChibiMayi action={examinerAction} scale={1.15} followVoice />
             </div>
           </div>
         </div>

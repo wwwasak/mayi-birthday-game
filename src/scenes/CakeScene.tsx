@@ -63,7 +63,8 @@ export function CakeScene() {
       scene="cake"
       title={t.title}
       subtitle={t.subtitle}
-      mood={lit ? 'happy' : 'surprise'}
+      mood={lit ? 'happy' : 'normal'}
+      guide={{ action: lit ? 'host' : 'point', scale: 0.9, followVoice: true }}
       actions={
         lit ? (
           <Button variant="gold" data-hint-target="cake-next" onClick={() => goTo('candle')}>

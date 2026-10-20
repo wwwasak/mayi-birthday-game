@@ -165,41 +165,41 @@ export const ASSETS = {
     placeholder: 'transparent',
   },
 
-  // ---------- Q 版角色 ----------
+  // ---------- Q 版向导 guide_mayi。保留旧资源 ID，避免改路径。 ----------
   chibi_idle: {
     kind: 'image',
     path: 'images/char/chibi_idle.png',
-    description: 'Q 版麻衣：待机',
+    description: 'Q版向导：常态',
     placeholder: '#ffb8d9',
   },
   chibi_point: {
     kind: 'image',
     path: 'images/char/chibi_point.png',
-    description: 'Q 版麻衣：指路',
+    description: 'Q版向导：指路',
     placeholder: '#ffb8d9',
   },
   chibi_happy: {
     kind: 'image',
     path: 'images/char/chibi_happy.png',
-    description: 'Q 版麻衣：开心',
+    description: 'Q版向导：开心',
     placeholder: '#ffb8d9',
   },
   chibi_surprise: {
     kind: 'image',
     path: 'images/char/chibi_surprise.png',
-    description: 'Q 版麻衣：惊讶',
+    description: 'Q版向导：惊讶',
     placeholder: '#ffb8d9',
   },
   chibi_pray: {
     kind: 'image',
     path: 'images/char/chibi_pray.png',
-    description: 'Q 版麻衣：许愿',
+    description: 'Q版向导：双手合十，用于吹蜡烛前的许愿',
     placeholder: '#ffb8d9',
   },
   chibi_cheer: {
     kind: 'image',
     path: 'images/char/chibi_cheer.png',
-    description: 'Q 版麻衣：欢呼',
+    description: 'Q版向导：欢呼',
     placeholder: '#ffb8d9',
   },
   chibi_mayi: {
@@ -208,30 +208,93 @@ export const ASSETS = {
     description: 'Q 版麻衣序列图：idle / point / happy / surprise / peek / pray / cheer / nod 八个动作（120×150 每帧）',
     placeholder: '#ffb8d9',
   },
+  guide_mayi_think: {
+    kind: 'image',
+    path: 'images/char/guide_mayi_think.png',
+    description: 'Q版向导：考试思考。缺图时退回双手合十',
+    placeholder: '#ffb8d9',
+  },
+  guide_mayi_tease: {
+    kind: 'image',
+    path: 'images/char/guide_mayi_tease.png',
+    description: 'Q版向导：考官改错。缺图时退回路指',
+    placeholder: '#ffb8d9',
+  },
+  guide_mayi_hotpot: {
+    kind: 'image',
+    path: 'images/char/guide_mayi_hotpot.png',
+    description: 'Q版向导：自己想吃火锅。缺图时退回欢呼',
+    placeholder: '#ffb8d9',
+  },
+  guide_mayi_host: {
+    kind: 'image',
+    path: 'images/char/guide_mayi_host.png',
+    description: 'Q版向导：蛋糕房主持祝福。缺图时退回欢呼',
+    placeholder: '#ffb8d9',
+  },
+  guide_mayi_farewell: {
+    kind: 'image',
+    path: 'images/char/guide_mayi_farewell.png',
+    description: 'Q版向导：最终道别。缺图时退回开心',
+    placeholder: '#ffb8d9',
+  },
+  guide_mayi_gate: {
+    kind: 'image',
+    path: 'images/char/guide_mayi_gate.png',
+    description: 'Q版向导：闸机请人入内。缺图时退回待机',
+    placeholder: '#ffb8d9',
+  },
+  guide_mayi_dish: {
+    kind: 'image',
+    path: 'images/char/guide_mayi_dish.png',
+    description: 'Q版向导：端出神秘料理。缺图时退回欢呼',
+    placeholder: '#ffb8d9',
+  },
 
-  // ---------- 角色立绘 ----------
+  // ---------- 玩家普通立绘 player_mayi。不承担 NPC 台词。 ----------
   char_normal: {
     kind: 'image',
     path: 'images/char/mayi_normal.png',
-    description: '麻衣立绘-常态：粉色长发、狐耳、蓝紫/粉红异瞳、白粉金花纹服饰',
+    description: '玩家麻衣：常态全身。粉色长发、狐耳、蓝紫与粉红异瞳、白粉金花纹服饰',
     placeholder: '#ffb8d9',
   },
   char_happy: {
     kind: 'image',
     path: 'images/char/mayi_happy.png',
-    description: '麻衣立绘-开心：眯眼笑',
+    description: '玩家麻衣：开心。只是视觉反应，不代表她在说话',
     placeholder: '#ffb8d9',
   },
   char_think: {
     kind: 'image',
     path: 'images/char/mayi_think.png',
-    description: '麻衣立绘-思考：托腮/歪头',
+    description: '玩家麻衣：思考。只是视觉反应，不代表她在说话',
     placeholder: '#ffb8d9',
   },
   char_surprise: {
     kind: 'image',
     path: 'images/char/mayi_surprise.png',
-    description: '麻衣立绘-惊讶：睁大眼睛',
+    description: '玩家麻衣：惊讶。只是视觉反应，不代表她在说话',
+    placeholder: '#ffb8d9',
+  },
+  /**
+   * 地图用的半身。文件还没有时，地图继续裁切 char_normal，不会出现裂图。
+   */
+  player_mayi_map: {
+    kind: 'image',
+    path: 'images/char/player_mayi_map.png',
+    description: '玩家麻衣：地图标记半身。未提供时继续裁切常态全身',
+    placeholder: '#ffb8d9',
+  },
+  player_mayi_wish: {
+    kind: 'image',
+    path: 'images/char/player_mayi_wish.png',
+    description: '玩家麻衣：闭眼许愿。只在吹蜡烛前使用，不配台词',
+    placeholder: '#ffb8d9',
+  },
+  player_mayi_listen: {
+    kind: 'image',
+    path: 'images/char/player_mayi_listen.png',
+    description: '玩家麻衣：听音乐。不配台词，向导不插话',
     placeholder: '#ffb8d9',
   },
 
@@ -539,7 +602,7 @@ export const ASSETS = {
     volume: 0.7,
   },
 
-  // ---------- 麻衣角色语音（WAV，缺文件时只显示字幕） ----------
+  // ---------- Q版向导语音（WAV，缺文件时只显示字幕，不阻断通关） ----------
   voice_mayi_surprised: {
     kind: 'audio',
     path: 'audio/voices/mayi_01.wav',
@@ -621,6 +684,71 @@ export const ASSETS = {
     kind: 'audio',
     path: 'audio/voices/mayi_12.wav',
     description: '生日快乐！嘿嘿！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_guide_dish: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_14.wav',
+    description: '出炉啦。金黄金黄的。',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_guide_wish_bloom: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_15.wav',
+    description: '你看，树亮起来了。',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_guide_fruit: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_16.wav',
+    description: '水果捞要装得好看一点哦。',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_guide_overload: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_17.wav',
+    description: '等等，系统你冷静一点！',
+    volume: 1,
+    group: 'voice',
+  },
+  /** 向导在吹蜡烛前请玩家许愿。 */
+  voice_guide_wish: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_18.wav',
+    description: '好，闭上眼，许愿吧。',
+    volume: 1,
+    group: 'voice',
+  },
+  /** 向导在最终舞台道别，不是寿星道谢。 */
+  voice_guide_farewell: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_13.wav',
+    description: '游园会到这里就结束啦。希望你今天玩得开心！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_guide_egg: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_19.wav',
+    description: '……这条功能，真的下线了。',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_guide_bonus: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_20.wav',
+    description: '金色的，快拿！',
+    volume: 1,
+    group: 'voice',
+  },
+  voice_guide_ticket: {
+    kind: 'audio',
+    path: 'audio/voices/mayi_21.wav',
+    description: '票根收好，下次还能进来。',
     volume: 1,
     group: 'voice',
   },

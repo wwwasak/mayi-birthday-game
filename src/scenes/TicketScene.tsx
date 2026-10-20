@@ -5,6 +5,7 @@ import { SceneLayout } from '../components/ui/SceneLayout';
 import { COLLECTIBLES } from '../config/food';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
+import { playCharacterVoice } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { EXAM_FACT_TOTAL, EXAM_SET_VERSION, WISH_CARD_TOTAL, countStamps } from '../core/progress';
 import { useSceneHint } from '../hooks/useSceneHint';
@@ -23,6 +24,7 @@ export function TicketScene() {
   useEffect(() => {
     patch({ ticketSeen: true });
     audio.playSfx('sfx_stamp');
+    playCharacterVoice('ticket_keep');
   }, [patch]);
 
   const stampCount = countStamps(progress);
@@ -74,7 +76,13 @@ export function TicketScene() {
   if (progress.signalCardSeen) rows.push({ key: 'signal', label: t.rows.signal, value: t.values.signalSeen });
 
   return (
-    <SceneLayout scene="ticket" title={t.title} subtitle={t.subtitle} mood="happy">
+    <SceneLayout
+      scene="ticket"
+      title={t.title}
+      subtitle={t.subtitle}
+      mood="happy"
+      guide={{ action: 'point', scale: 0.8, followVoice: true }}
+    >
       <motion.div className="ticket" data-testid="ticket" initial={{ opacity: 0, y: 30, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: -1 }} transition={{ type: 'spring', stiffness: 160, damping: 18 }}>
         <div className="ticket__head">
           <span className="ticket__serial">{t.serial}</span>

@@ -227,16 +227,16 @@ export function GateScene() {
           </ol>
         </div>
 
-        {/* 闸机旁的 Q 版麻衣 */}
+        {/* 闸机工作人员：Q 版向导。台词表情跟她走，不改右侧玩家。 */}
         <div className="gate2__chibi">
-          <ChibiMayi action={opening ? 'cheer' : done ? 'peek' : 'idle'} scale={2.35} />
+          <ChibiMayi action={opening ? 'cheer' : done ? 'happy' : 'gate'} scale={2.35} followVoice />
         </div>
       </div>
 
-      {/* 右侧半身立绘：放大后裁掉腰以下，狐耳和脸留在画面里 */}
+      {/* 右侧是等待入园的玩家麻衣。表情只是反应，她不说预录台词。 */}
       <div className="gate2__layer gate2__layer--char">
         <div className="gate2__portrait">
-          <PlaceholderCharacter mood={done ? 'surprise' : picked === null ? 'normal' : 'think'} scale={1} frame="full" />
+          <PlaceholderCharacter mood={done ? 'surprise' : 'normal'} scale={1} frame="full" />
         </div>
       </div>
 
