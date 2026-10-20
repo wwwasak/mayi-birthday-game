@@ -1314,7 +1314,7 @@
 .gate2__door {
   position: absolute;
   z-index: 2;
-  top: 250px;
+  top: 190px;
   width: 450px;
   height: 620px;
   background: repeating-linear-gradient(135deg, rgba(255, 214, 234, 0.55) 0 22px, rgba(255, 233, 243, 0.55) 22px 44px);
@@ -1331,13 +1331,13 @@
 }
 
 .gate2__door--l {
-  left: calc(50% - 450px);
+  left: calc(50% - 412px);
   border-radius: 24px 0 0 24px;
   transform-origin: left center;
 }
 
 .gate2__door--r {
-  right: calc(50% - 450px);
+  right: calc(50% - 412px);
   border-radius: 0 24px 24px 0;
   transform-origin: right center;
 }
@@ -1552,7 +1552,7 @@
   font-size: 52px;
   font-weight: 900;
   letter-spacing: 2px;
-  color: #b84b78;
+  color: #6d4a62;
   text-shadow:
     0 2px 0 rgba(255, 248, 252, 0.95),
     0 8px 18px rgba(255, 255, 255, 0.55);
@@ -1657,8 +1657,8 @@
 
 .gate2__chibi {
   position: absolute;
-  right: 250px;
-  bottom: 18px;
+  right: 1300px;
+  bottom: 400px;
   z-index: 4;
   filter: drop-shadow(0 10px 12px rgba(80, 40, 70, 0.18));
 }

@@ -124,6 +124,92 @@
   pointer-events: none;
 }
 
+/* 门口带路的是 Q 版向导。整块不接点击，只留身体中部的小热区，避免挡住建筑和进入按钮。 */
+.park__chibi--guide {
+  margin-top: -36px;
+  z-index: 2;
+}
+
+.park__layer--ui .park__chibi--guide {
+  pointer-events: none;
+}
+
+.park__guide-hit {
+  position: absolute;
+  left: 22px;
+  top: 6px;
+  width: 76px;
+  height: 92px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.park__chibi--pop .chibi__art-wrap {
+  animation: guide-hop 0.4s ease;
+}
+
+.park__chibi--alert .chibi__art-wrap {
+  animation-duration: 1.15s;
+}
+
+@keyframes guide-hop {
+  0% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-16px) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* 玩家只是托盘旁的小头像，不负责带路。 */
+.park__player-mark {
+  position: absolute;
+  left: 1164px;
+  top: 968px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.park__player-mark__art,
+.park__player-mark__fallback {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 248, 236, 0.96);
+  box-shadow: 0 6px 14px rgba(90, 50, 70, 0.22);
+  background: #fff4ea;
+}
+
+.park__player-mark__art {
+  object-fit: cover;
+  object-position: center 16%;
+}
+
+.park__player-mark__fallback {
+  background: radial-gradient(circle at 40% 35%, #ffe4f1, #f3c4d8);
+}
+
+.park__player-mark__label {
+  position: absolute;
+  left: 50%;
+  top: 58px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #6a4558;
+  background: rgba(255, 248, 240, 0.92);
+  border-radius: 999px;
+  padding: 0 8px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(90, 50, 70, 0.12);
+}
+
 .chibi__scale {
   position: absolute;
   left: 0;

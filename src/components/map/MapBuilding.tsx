@@ -20,6 +20,10 @@ export interface MapBuildingProps {
   enterLabel?: ReactNode;
   /** 灯笼亮度 0（灭）/ 1（微亮）/ 2（全亮） */
   lanternLevel: 0 | 1 | 2;
+  /** 鼠标移入建筑（含名称和进入按钮） */
+  onHover?: () => void;
+  /** 鼠标离开建筑 */
+  onHoverEnd?: () => void;
   /** 被点击但锁定：抖一下 */
   shaking?: boolean;
   /** 解锁瞬间 / 可进入强调：发光 */
@@ -44,7 +48,7 @@ const BUILDING_EMOJI: Record<BuildingId, string> = { mint: '🍬', food: '🍲',
  * 正式 PNG 按底边锚点、保持宽高比铺在视觉框里；名称和按钮在框的下方，不盖住建筑。
  * 没有 PNG 时，视觉框退回原来的点击矩形，里面仍是 CSS 房屋。
  */
-export function MapBuilding({ id, title, hint, state, enterLabel, lanternLevel, shaking, glowing, slotsLit, onClick }: MapBuildingProps) {
+export function MapBuilding({ id, title, hint, state, enterLabel, lanternLevel, shaking, glowing, slotsLit, onClick, onHover, onHoverEnd }: MapBuildingProps) {
   const isCake = id === 'cake';
   const color = isCake ? '#ffb3d2' : STAMPS[id].color;
   const assetId = BUILDING_ASSET[id];
@@ -71,6 +75,8 @@ export function MapBuilding({ id, title, hint, state, enterLabel, lanternLevel, 
       style={{ left: frame.x, top: frame.y, width: frame.w, height: frame.h, ['--bld-color' as string]: color }}
       data-has-art={hasArt ? '1' : '0'}
       whileHover={{ y: -6 }}
+      onMouseEnter={onHover}
+      onMouseLeave={onHoverEnd}
     >
       <button
         type="button"

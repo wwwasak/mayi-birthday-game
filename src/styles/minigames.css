@@ -203,13 +203,32 @@
   vertical-align: middle;
 }
 
-/* ===== 第一关：薄荷糖补给站 ===== */
+/* ===== 第一关：薄荷糖补给站 =====
+   配色取自 bg/mint.jpg：奶油大理石、浅金描边、薄荷绿与腮红。
+   操作区做成店内圆形糖果台的展示橱窗，装饰层不接点击。 */
+.scene--mint {
+  --mint-cream: #fffaf3;
+  --mint-foam: #e7f7f0;
+  --mint-ink: #3e4a44;
+  --mint-deep: #2f6a56;
+  --mint-gold: #c9a45a;
+  --mint-gold-deep: #8d6a32;
+  --mint-blush: #f3c9d4;
+  --mint-rose: #b85b78;
+}
+
 .mint-field {
   position: absolute;
-  inset: 0;
+  inset: 10px 14px 14px;
   cursor: crosshair;
-  background: transparent;
   overflow: hidden;
+  border-radius: 28px;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(255, 255, 252, 0.46) 0%, rgba(214, 240, 228, 0.28) 52%, rgba(255, 236, 228, 0.1) 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 252, 246, 0.95),
+    inset 0 0 0 8px rgba(201, 164, 90, 0.22),
+    inset 0 16px 36px rgba(255, 255, 255, 0.45);
 }
 
 .mint-field::before {
@@ -217,23 +236,68 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 1.5px, transparent 2.2px),
-    radial-gradient(circle, rgba(190, 245, 220, 0.9) 0 1.5px, transparent 2.2px),
-    radial-gradient(circle, rgba(255, 236, 170, 0.85) 0 1.5px, transparent 2px);
-  background-position:
-    12% 22%,
-    78% 18%,
-    30% 70%,
-    88% 64%,
-    48% 36%;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  opacity: 0.7;
+  background:
+    radial-gradient(circle at 50% 120%, rgba(125, 196, 168, 0.16), transparent 46%);
+}
+
+.mint-tray {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mint-field .candy,
+.mint-field .float-text,
+.mint-field .combo-burst {
+  z-index: 2;
+}
+
+.mint-tray span {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 2px solid rgba(180, 138, 62, 0.72);
+  pointer-events: none;
+}
+
+.mint-tray span:nth-child(1) {
+  top: 10px;
+  left: 10px;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 10px 0 0 0;
+}
+
+.mint-tray span:nth-child(2) {
+  top: 10px;
+  right: 10px;
+  border-left: 0;
+  border-bottom: 0;
+  border-radius: 0 10px 0 0;
+}
+
+.mint-tray span:nth-child(3) {
+  bottom: 10px;
+  left: 10px;
+  border-right: 0;
+  border-top: 0;
+  border-radius: 0 0 0 10px;
+}
+
+.mint-tray span:nth-child(4) {
+  right: 10px;
+  bottom: 10px;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 10px 0;
 }
 
 .mint-field--combo {
-  box-shadow: inset 0 0 80px rgba(255, 214, 120, 0.28);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 248, 220, 0.95),
+    inset 0 0 0 8px rgba(212, 168, 74, 0.38),
+    inset 0 0 48px rgba(255, 214, 120, 0.28);
 }
 
 .candy {
@@ -973,67 +1037,226 @@
 }
 
 /* ===== 场馆玻璃面板：薄荷清凉 / 美食暖色，互不套用 ===== */
-.scene--mint .scene__title,
 .scene--food .scene__title,
-.scene--mint .mg__panel-title,
 .scene--food .mg__panel-title {
   font-family: 'KaiTi', 'STKaiti', var(--font-ui);
 }
 
-.scene--mint .scene__title {
-  color: #1d6a52;
-  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85), 0 8px 18px rgba(255, 255, 255, 0.45);
+.scene--mint .scene__content {
+  padding: 78px 88px 28px;
 }
 
-.scene--mint .scene__subtitle,
-.scene--mint .mg__panel-desc,
-.scene--mint .mg__rules {
-  color: #143d32;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8), 0 0 8px rgba(255, 255, 255, 0.65);
+.scene--mint .scene__body {
+  margin-top: 12px;
+}
+
+.scene--mint .scene__title,
+.scene--mint .mg__panel-title,
+.scene--mint .mg__result-title {
+  font-family: 'KaiTi', 'STKaiti', var(--font-ui);
+  color: var(--mint-gold-deep);
+  letter-spacing: 3px;
+  text-shadow: none;
+}
+
+.scene--mint .scene__title {
+  display: inline-block;
+  width: fit-content;
+  padding: 4px 22px 8px;
+  color: #4a3828;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.94), rgba(255, 241, 224, 0.9));
+  border: 2px solid rgba(201, 164, 90, 0.85);
+  border-radius: 16px 18px 20px 16px;
+  box-shadow: 0 8px 18px rgba(90, 60, 30, 0.12), inset 0 1px 0 #fff;
+}
+
+.scene--mint .scene__subtitle {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 14px;
+  font-size: 20px;
+  line-height: 1.4;
+  color: #5c4a3c;
+  background: rgba(255, 250, 244, 0.82);
+  border-radius: 999px;
+  text-shadow: none;
 }
 
 .scene--mint .mg {
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.58), rgba(214, 245, 232, 0.66));
-  border: 1px solid rgba(232, 206, 140, 0.7);
-  box-shadow: 0 16px 36px rgba(40, 90, 70, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
+  height: 800px;
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(255, 250, 244, 0.22), rgba(255, 246, 236, 0.08));
+  border: 3px solid rgba(201, 164, 90, 0.82);
+  box-shadow:
+    0 16px 32px rgba(90, 60, 30, 0.14),
+    inset 0 0 0 5px rgba(255, 250, 244, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
 }
 
 .scene--mint .mg__topbar {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(210, 242, 228, 0.28));
-  border-bottom: 1px solid rgba(120, 186, 156, 0.35);
+  padding: 12px 20px;
+  background: linear-gradient(180deg, rgba(255, 250, 244, 0.88), rgba(243, 232, 210, 0.55));
+  border-bottom: 1px solid rgba(201, 164, 90, 0.4);
 }
 
 .scene--mint .mg__hud {
-  color: #1d5c48;
+  color: var(--mint-ink);
+  gap: 14px;
 }
 
 .scene--mint .mg__hud-pill {
-  background: rgba(255, 255, 255, 0.82);
-  color: #1d5c48;
-  border: 1px solid rgba(150, 210, 186, 0.45);
-  box-shadow: 0 6px 14px rgba(40, 90, 70, 0.08);
+  background: rgba(255, 252, 246, 0.92);
+  color: var(--mint-deep);
+  border: 1px solid rgba(201, 164, 90, 0.4);
+  box-shadow: 0 4px 10px rgba(90, 60, 30, 0.08);
+  font-variant-numeric: tabular-nums;
+}
+
+.scene--mint .mint-hud__time {
+  font-size: 30px;
+  font-weight: 800;
+  padding: 8px 22px;
+}
+
+.scene--mint .mint-hud__score {
+  font-size: 26px;
+  font-weight: 800;
 }
 
 .scene--mint .mg__hud-pill--accent {
-  color: #b4234e;
-  background: rgba(255, 236, 242, 0.92);
+  color: var(--mint-rose);
+  background: linear-gradient(180deg, #fff6f8, #ffe0e8);
+  border-color: rgba(184, 91, 120, 0.45);
+  animation: mint-timer-pulse 0.9s ease-in-out infinite;
 }
 
-.scene--mint .mg__hud-pill--gold {
-  color: #8a5a00;
-  background: linear-gradient(180deg, #fff8dc, #ffe08a);
-  box-shadow: 0 0 16px rgba(243, 197, 75, 0.4);
+.scene--mint .mg__hud-pill--gold,
+.scene--mint .mint-hud__combo {
+  color: var(--mint-gold-deep);
+  background: linear-gradient(180deg, #fff8dc, #ffe3a0);
+  box-shadow: 0 0 14px rgba(243, 197, 75, 0.35);
+}
+
+.scene--mint .mg__play--dim {
+  filter: none;
+}
+
+.scene--mint .mg__overlay {
+  background: rgba(255, 244, 230, 0.22);
 }
 
 .scene--mint .mg__panel {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(226, 248, 238, 0.88));
-  border: 1px solid rgba(232, 206, 140, 0.75);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(236, 248, 242, 0.94));
+  border: 2px solid rgba(201, 164, 90, 0.72);
+  box-shadow: 0 18px 36px rgba(90, 60, 30, 0.16);
+  backdrop-filter: none;
+}
+
+.scene--mint .mg__panel-desc,
+.scene--mint .mg__rules,
+.scene--mint .mg__result {
+  color: var(--mint-ink);
+  text-shadow: none;
+}
+
+.scene--mint .mg__rules {
+  font-size: 20px;
+}
+
+.scene--mint .mg__stat {
+  background: rgba(255, 252, 246, 0.9);
+  border: 1px solid rgba(201, 164, 90, 0.35);
+}
+
+.scene--mint .mg__stat-label {
+  color: #7a6a58;
+}
+
+.scene--mint .mg__stat-value {
+  color: var(--mint-deep);
+  font-size: 32px;
+}
+
+.scene--mint .mg__badge-new {
+  background: var(--mint-rose);
+}
+
+.scene--mint .btn--gold {
+  color: #5c4314;
+  background: linear-gradient(180deg, #fff6d2 0%, #f0d48a 58%, #e6c36e 100%);
+  border: 2px solid rgba(255, 252, 240, 0.95);
+  box-shadow: 0 6px 0 #c4a15a, 0 10px 16px rgba(120, 80, 30, 0.16);
+}
+
+.scene--mint .btn--gold:active {
+  box-shadow: 0 3px 0 #c4a15a, 0 6px 10px rgba(120, 80, 30, 0.14);
+}
+
+.scene--mint .btn--secondary {
+  color: var(--mint-deep);
+  background: linear-gradient(180deg, #fffefb, #eef8f3);
+  border: 2px solid rgba(140, 190, 168, 0.7);
+  box-shadow: 0 6px 0 rgba(150, 186, 168, 0.55), 0 10px 16px rgba(40, 80, 64, 0.08);
+}
+
+.scene--mint .btn--ghost {
+  color: #6a5344;
+  background: rgba(255, 252, 246, 0.62);
+  border: 2px dashed rgba(168, 132, 62, 0.5);
+}
+
+.scene--mint .candy__label {
+  color: var(--mint-ink);
+  font-weight: 700;
+  background: rgba(255, 252, 246, 0.9);
+  border: 1px solid rgba(201, 164, 90, 0.4);
 }
 
 .scene--mint .candy--bonus {
   box-shadow: 0 0 0 6px rgba(243, 197, 75, 0.4), 0 0 28px 8px rgba(255, 214, 90, 0.55);
+}
+
+.scene--mint .candy--junk .candy__label {
+  color: #5c5360;
+  background: rgba(244, 240, 246, 0.92);
+  border-color: rgba(160, 150, 170, 0.45);
+}
+
+.scene--mint .float-text--plus {
+  color: var(--mint-deep);
+}
+
+.scene--mint .float-text--bonus {
+  color: var(--mint-gold-deep);
+}
+
+.scene--mint .float-text--minus {
+  color: #6d5a78;
+}
+
+.scene--mint .combo-burst {
+  color: #fffaf0;
+  -webkit-text-stroke: 3px var(--mint-gold-deep);
+  text-shadow: 0 8px 24px rgba(201, 164, 90, 0.45);
+}
+
+.scene--mint .scene__side--overlay {
+  left: 4px;
+  right: auto;
+  bottom: 0;
+  z-index: 5;
+}
+
+.scene--mint .scene__guide {
+  height: 118px;
+  filter: drop-shadow(0 8px 10px rgba(80, 50, 30, 0.18));
+}
+
+@keyframes mint-timer-pulse {
+  0%,
+  100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .scene--food .scene__title {
@@ -1109,9 +1332,12 @@
 }
 
 @supports not ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
-  .scene--mint .mg,
+  .scene--mint .mg {
+    background: rgba(255, 250, 244, 0.5);
+  }
+
   .scene--mint .mg__panel {
-    background: rgba(236, 252, 246, 0.94);
+    background: rgba(255, 252, 248, 0.97);
   }
 
   .scene--food .mg,
@@ -1122,6 +1348,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mint-field--combo {
-    box-shadow: none;
+    box-shadow: inset 0 0 0 8px rgba(212, 168, 74, 0.38);
+  }
+
+  .scene--mint .mg__hud-pill--accent,
+  .park__chibi--pop .chibi__art-wrap {
+    animation: none;
   }
 }

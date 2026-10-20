@@ -3,10 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapBuilding, type BuildingState } from '../components/map/MapBuilding';
 import { Button } from '../components/ui/Button';
 import { ChibiMayi } from '../components/ui/ChibiMayi';
-import { PlaceholderCharacter, type CharacterMood } from '../components/ui/PlaceholderCharacter';
 import { StampIcon } from '../components/ui/StampBadge';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
 import { ASSETS, assetUrl } from '../config/assets';
+import type { GuideAction } from '../config/characters';
 import { isDebugUiEnabled } from '../config/debugUi';
 import { cakeSlotCenter, chibiSpot, STAMP_TRAY, trayCenter, type BuildingId } from '../config/mapLayout';
 import { hasAllStamps } from '../config/scenes';
@@ -177,12 +177,32 @@ export function MapScene() {
 
   // ---------- 点击处理 ----------
   const [shaking, setShaking] = useState<BuildingId | null>(null);
+  const [hovered, setHovered] = useState<BuildingId | null>(null);
+  const [guidePop, setGuidePop] = useState(false);
+  const popTimer = useRef<number | null>(null);
   const shake = (id: BuildingId) => {
     setShaking(id);
     window.setTimeout(() => setShaking((s) => (s === id ? null : s)), 450);
   };
 
+  /**
+   * 向导被点到或送玩家进门时轻跳一下。不播语音，也不推迟进场。
+   */
+  const nudgeGuide = () => {
+    setGuidePop(true);
+    if (popTimer.current !== null) window.clearTimeout(popTimer.current);
+    popTimer.current = window.setTimeout(() => setGuidePop(false), 420);
+  };
+
+  useEffect(
+    () => () => {
+      if (popTimer.current !== null) window.clearTimeout(popTimer.current);
+    },
+    [],
+  );
+
   const enterBooth = (id: StampId) => {
+    nudgeGuide();
     if (show === 'wish' && id === 'wish') finishShow();
     const ok = goTo(id);
     if (!ok) shake(id);
@@ -190,6 +210,7 @@ export function MapScene() {
 
   /** 蛋糕房入口（重复进入时按进度直达对应环节） */
   const enterCake = () => {
+    nudgeGuide();
     if (show === 'converge') {
       finishShow();
     }
@@ -205,14 +226,17 @@ export function MapScene() {
     else goTo('cake');
   };
 
-  // ---------- 玩家标记：站在当前站门口；刚通关时从上一站走过来 ----------
+  // ---------- Q 版向导站在当前站门口；刚通关时从上一站走过来 ----------
   const tokenTarget: BuildingId = show === 'wish' ? 'wish' : show === 'converge' ? 'cake' : next;
   const tokenPos = chibiSpot(tokenTarget, artReady[tokenTarget]);
   const tokenStart = cameFrom ? chibiSpot(cameFrom, artReady[cameFrom]) : tokenPos;
-  const playerMood: CharacterMood = show === 'converge' && step >= 4 ? 'happy' : cameFrom ? 'happy' : 'normal';
   const mapBustReady = useAssetImageReady('player_mayi_map');
-  const tokenFacing = tokenPos.x < 960 ? 'right' : 'left';
-  /** 点击 Q 版麻衣 = 进入当前站 */
+  const guideFacing: 'left' | 'right' = (() => {
+    if (!hovered) return tokenPos.x < 960 ? 'right' : 'left';
+    const spot = chibiSpot(hovered, artReady[hovered]);
+    return spot.x >= tokenPos.x ? 'right' : 'left';
+  })();
+  /** 点击 Q 版向导 = 进入当前站 */
   const enterCurrent = () => {
     if (show !== 'none') return;
     if (next === 'cake') enterCake();
@@ -238,6 +262,27 @@ export function MapScene() {
     return t.booths[id].desc;
   };
 
+  /**
+   * 向导表情只跟鼠标下的场馆走，不播语音。
+   * 锁定惊讶，已完成开心，未完成按场馆换一个已有动作。
+   */
+  const guideAction: GuideAction = (() => {
+    if (show === 'converge' && step >= 4) return 'cheer';
+    if (hovered) {
+      const state: BuildingState = hovered === 'cake' ? (allDone ? 'open' : 'locked') : boothState(hovered);
+      if (state === 'locked') return 'surprise';
+      if (state === 'done') return 'happy';
+      if (hovered === 'food') return 'hotpot';
+      if (hovered === 'exam') return 'think';
+      if (hovered === 'wish') return 'point';
+      if (hovered === 'cake') return 'host';
+      return 'happy';
+    }
+    if (show === 'wish') return 'cheer';
+    if (cameFrom) return 'happy';
+    return 'point';
+  })();
+
   return (
     <div className="scene park" data-ambient={ambientLevel}>
       {/* 背景层 */}
@@ -262,6 +307,8 @@ export function MapScene() {
             shaking={shaking === id}
             glowing={(id === 'wish' && (show === 'wish' || (progress.wishUnlockSeen && !progress.stamps.wish && wishOpen))) || (show === 'none' && boothState(id) === 'open')}
             onClick={() => enterBooth(id)}
+            onHover={() => setHovered(id)}
+            onHoverEnd={() => setHovered((cur) => (cur === id ? null : cur))}
           />
         ))}
         <MapBuilding
@@ -275,6 +322,8 @@ export function MapScene() {
           glowing={allDone && show === 'none'}
           slotsLit={slotsLit}
           onClick={enterCake}
+          onHover={() => setHovered('cake')}
+          onHoverEnd={() => setHovered((cur) => (cur === 'cake' ? null : cur))}
         />
       </div>
 
@@ -321,36 +370,27 @@ export function MapScene() {
         </AnimatePresence>
       </div>
 
-      {/* UI 层：玩家标记、Q版向导、印章托盘、重置、演出跳过 */}
+      {/* UI 层：Q版向导、玩家小标记、印章托盘、重置、演出跳过 */}
       <div className="park__layer park__layer--ui">
         <motion.div
-          className="park__chibi park__chibi--clickable"
-          data-testid="map-chibi"
-          data-character-role="player_mayi"
+          className={`park__chibi park__chibi--clickable park__chibi--guide${guidePop ? ' park__chibi--pop' : ''}${hovered ? ' park__chibi--alert' : ''}`}
+          data-character-role="guide_mayi"
           initial={{ left: tokenStart.x, top: tokenStart.y }}
           animate={{ left: tokenPos.x, top: tokenPos.y }}
           transition={{ type: 'spring', stiffness: 60, damping: 16, delay: cameFrom ? 0.6 : 0 }}
           style={{ position: 'absolute' }}
-          role="button"
-          tabIndex={0}
-          aria-label={t.chibiHint}
-          title={t.chibiHint}
-          onClick={enterCurrent}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') enterCurrent();
-          }}
         >
-          <span className={`map-token map-token--${tokenFacing}`}>
-            {mapBustReady ? (
-              <img className="map-token__art" src={assetUrl('player_mayi_map')} alt="" draggable={false} />
-            ) : (
-              <PlaceholderCharacter mood={playerMood} />
-            )}
-          </span>
+          <ChibiMayi action={guideAction} scale={1} facing={guideFacing} followVoice />
+          <button type="button" className="park__guide-hit" data-testid="map-chibi" aria-label={t.chibiHint} title={t.chibiHint} onClick={enterCurrent} />
         </motion.div>
 
-        <div className="park__guide">
-          <ChibiMayi action="point" scale={0.9} followVoice facing="right" />
+        <div className="park__player-mark" data-character-role="player_mayi" title="玩家麻衣">
+          {mapBustReady ? (
+            <img className="park__player-mark__art" src={assetUrl('player_mayi_map')} alt="" draggable={false} />
+          ) : (
+            <span className="park__player-mark__fallback" aria-hidden />
+          )}
+          <span className="park__player-mark__label">玩家</span>
         </div>
 
         <div className="park__tray" style={{ left: STAMP_TRAY.x, top: STAMP_TRAY.y }}>

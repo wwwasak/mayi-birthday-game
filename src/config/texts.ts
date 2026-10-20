@@ -69,7 +69,7 @@ export const TEXTS = {
     orderLocked: (name: string) => `🔒 先完成「${name}」`,
     orderStep: (n: number) => `第 ${n} 站`,
     orderNow: '👉 当前站，点击进入',
-    chibiHint: '点我也能进入当前站！',
+    chibiHint: '点 Q 版麻衣，进入她正在指路的这一站。',
     allReplay: '四站都可以随时重玩，蛋糕房已开放。',
     booths: {
       mint: { title: '薄荷糖补给站', desc: '给今天的游园会补充一点清凉。' },

@@ -213,17 +213,17 @@ export function MintScene() {
 
   const seconds = (leftMs / 1000).toFixed(1);
   const best = Math.max(progress.records.mintBest, score);
-  /** 开场和结算才把玩家放在旁边。游玩时她退开，向导只在说话时露一下。 */
-  const mintPlayerMood = game.phase === 'result' && score >= 350 ? 'happy' : 'normal';
+  const timerUrgent = leftMs < 5000;
 
+  /** 普通立绘不常驻。开场和结算由面板里的 Q 版向导主持；游玩时她只在说话时从左下角探出。 */
   return (
     <SceneLayout
       scene="mint"
       title={t.title}
       subtitle={t.subtitle}
-      side={game.phase === 'playing' ? 'overlay' : 'flow'}
-      mood={game.phase === 'playing' ? null : mintPlayerMood}
-      guide={game.phase === 'playing' ? { action: 'happy', scale: 0.8, followVoice: true, onlyWhileSpeaking: true } : null}
+      side="overlay"
+      mood={null}
+      guide={game.phase === 'playing' ? { action: 'happy', scale: 0.68, followVoice: true, onlyWhileSpeaking: true } : null}
       compact
     >
       <MinigameShell
@@ -242,15 +242,15 @@ export function MintScene() {
         finishLabel="领取印章，返回地图"
         hud={
           <>
-            <span className={`mg__hud-pill ${leftMs < 5000 ? 'mg__hud-pill--accent' : ''}`}>{t.timeLeft(seconds)}</span>
-            <span className="mg__hud-pill">{t.score(score)}</span>
+            <span className={`mg__hud-pill mint-hud__time ${timerUrgent ? 'mg__hud-pill--accent' : ''}`}>{t.timeLeft(seconds)}</span>
+            <span className="mg__hud-pill mint-hud__score">{t.score(score)}</span>
             <AnimatePresence>
               {combo >= 2 && (
                 <motion.span
                   key="combo"
-                  className="mg__hud-pill mg__hud-pill--gold"
+                  className="mg__hud-pill mg__hud-pill--gold mint-hud__combo"
                   initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  animate={{ scale: combo % 5 === 0 ? 1.12 : 1, opacity: 1 }}
                   exit={{ scale: 0.6, opacity: 0 }}
                 >
                   {t.combo(combo)} ×{multiplier(combo).toFixed(1)}
@@ -289,7 +289,13 @@ export function MintScene() {
           </>
         }
       >
-        <div className={`mint-field ${combo >= 5 ? 'mint-field--combo' : ''}`}>
+        <div className={`mint-field ${combo >= 5 ? 'mint-field--combo' : ''}`} role="application" aria-label="薄荷糖收集台">
+          <div className="mint-tray" aria-hidden>
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
           <AnimatePresence>
             {candies.map((c) => (
               <motion.button
@@ -300,7 +306,8 @@ export function MintScene() {
                 animate={{ scale: 1, rotate: 0 }}
                 exit={{ scale: 0, opacity: 0, transition: { duration: 0.15 } }}
                 transition={{ type: 'spring', stiffness: 400, damping: 18 }}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
                 onPointerDown={(e) => {
                   e.preventDefault();
                   hit(c);
