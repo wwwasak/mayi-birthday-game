@@ -68,6 +68,20 @@ function GalleryIcon({ asset, fallback, showArt }: { asset: ImageAssetId; fallba
 const HOTPOT_MAX = 4;
 const FRUIT_MAX = 3;
 
+/** 最多 3 颗水果在碗里错开的位置，只做展示 */
+const FRUIT_SLOTS = [
+  { left: '36%', top: '48%' },
+  { left: '52%', top: '42%' },
+  { left: '66%', top: '50%' },
+] as const;
+
+/** 底料倒入后的碗内色块，不改变制作判定 */
+const BASE_WASH: Record<string, string> = {
+  yogurt: 'rgba(255, 255, 255, 0.82)',
+  coconut: 'rgba(255, 226, 168, 0.7)',
+  syrup: 'rgba(255, 170, 90, 0.58)',
+};
+
 /**
  * 根据离谱食材数量获取火锅评级
  */
@@ -544,162 +558,217 @@ export function FoodScene() {
     );
   };
 
-  const renderPickGroup = <T extends { id: string; name: string; emoji: string; secret?: boolean }>(
-    title: string,
-    items: T[],
-    isPicked: (id: string) => boolean,
-    onPick: (id: string) => void,
-    disabledAll: boolean,
-    disabledUnpicked: boolean,
-  ) => (
-    <div>
-      <h3 className="step-title" style={{ marginBottom: 10 }}>
-        {title}
-      </h3>
-      <div className="ingredient-grid">
-        {items.map((it) => {
-          const picked = isPicked(it.id);
-          return (
-            <button
-              key={it.id}
-              className={`ingredient ${picked ? 'ingredient--picked' : ''} ${it.secret ? 'ingredient--secret' : ''}`}
-              disabled={disabledAll || (!picked && disabledUnpicked)}
-              data-testid={it.secret ? 'topping-secret' : undefined}
-              onClick={() => onPick(it.id)}
-            >
-              <span className="ingredient__emoji">
-                {it.secret && sauceReady ? <img className="ingredient__art" src={assetUrl('item_sauce_jar')} alt="" draggable={false} /> : it.emoji}
-              </span>
-              {it.name}
-              {it.secret && <span className="ingredient__secret-mark">？</span>}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
+  const renderFruit = () => {
+    const pickedFruits = fruitPicks
+      .map((id) => FRUITS.find((f) => f.id === id))
+      .filter((item): item is (typeof FRUITS)[number] => !!item);
+    const base = FRUIT_BASES.find((item) => item.id === basePick);
+    const topping = FRUIT_TOPPINGS.find((item) => item.id === toppingPick);
+    const fruitRemain = FRUIT_MAX - fruitPicks.length;
+    const statusText = fruitPicks.length === 0 && !base && !topping
+      ? '先挑选3种喜欢的水果吧！'
+      : fruitPicks.length < FRUIT_MAX
+        ? `已选${fruitPicks.length}/3种水果，还差${fruitRemain}种。`
+        : !base
+          ? '水果准备好了，再选一种底料吧！'
+          : !topping
+            ? '底料好了，再点一种配料。'
+            : '水果捞准备完成，可以开始制作啦！';
+    const makeLabel = fruitPicks.length < FRUIT_MAX
+      ? `开做 · 还差 ${fruitRemain} 种水果`
+      : !base
+        ? '开做 · 还差底料'
+        : !topping
+          ? '开做 · 还差配料'
+          : t.fruit.make;
 
-  const renderFruit = () => (
-    <div className="food-station-view">
-      <div className="food-station-view__left" style={{ overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="ghost" small onClick={goHub}>
-            {t.hub.back}
-          </Button>
-        </div>
-        {renderPickGroup(
-          t.fruit.stepFruit(fruitPicks.length),
-          FRUITS,
-          (id) => fruitPicks.includes(id),
-          toggleFruit,
-          fruitMade,
-          fruitPicks.length >= FRUIT_MAX,
-        )}
-        <div style={{ display: 'grid', gridTemplateColumns: '3fr 4fr', gap: 16 }}>
-          {renderPickGroup(
-            t.fruit.stepBase,
-            FRUIT_BASES,
-            (id) => basePick === id,
-            (id) => {
-              audio.playSfx('sfx_click');
-              setBasePick(id);
-            },
-            fruitMade,
-            false,
-          )}
-          {renderPickGroup(t.fruit.stepTopping, FRUIT_TOPPINGS, (id) => toppingPick === id, pickTopping, fruitMade, false)}
-        </div>
-      </div>
-      <div className="food-station-view__right">
-        <div className="pot-area food-stage food-stage--sweet">
-          {fruitMade ? (
-            <FinishedDish src={assetUrl('item_fruit')} missingPath="public/assets/images/items/fruit_bowl.png" label="水果捞成品" />
-          ) : (
-            <div className={`bowl ${bowlReady ? 'bowl--art' : ''}`}>
-              {bowlReady && <img className="bowl__art" src={assetUrl('item_bowl')} alt="" draggable={false} />}
-              <div className="bowl__items">
-                <AnimatePresence>
-                  {[...fruitPicks, basePick, toppingPick].filter(Boolean).map((id) => {
-                    const item =
-                      FRUITS.find((f) => f.id === id) ?? FRUIT_BASES.find((b) => b.id === id) ?? FRUIT_TOPPINGS.find((x) => x.id === id);
-                    return (
-                      <motion.span
-                        key={id as string}
-                        initial={{ y: -120, opacity: 0, scale: 0.5 }}
-                        animate={{ y: 0, opacity: 1, scale: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 16 }}
-                      >
-                        {item?.emoji}
-                      </motion.span>
-                    );
-                  })}
-                </AnimatePresence>
+    return (
+      <div className="food-station-view food-fruit">
+        <div className="food-station-view__left">
+          <div className="food-fruit__count" aria-live="polite">
+            <span className="food-fruit__count-kicker">水果</span>
+            <strong>
+              {fruitPicks.length}
+              <span> / {FRUIT_MAX}</span>
+            </strong>
+            <em>{base ? base.name : '底料未选'}</em>
+            <em>{topping ? topping.name : '配料未选'}</em>
+          </div>
+          <section className="food-fruit__group">
+            <h3 className="food-fruit__label">水果</h3>
+            <div className="ingredient-grid food-fruit__fruits">
+              {FRUITS.map((item) => {
+                const picked = fruitPicks.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    className={`ingredient ${picked ? 'ingredient--picked' : ''}`}
+                    disabled={fruitMade || (!picked && fruitPicks.length >= FRUIT_MAX)}
+                    onClick={() => toggleFruit(item.id)}
+                  >
+                    <span className="ingredient__emoji">{item.emoji}</span>
+                    <span className="ingredient__name">{item.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+          <div className="food-fruit__splits">
+            <section className="food-fruit__group">
+              <h3 className="food-fruit__label">底料</h3>
+              <div className="ingredient-grid food-fruit__bases">
+                {FRUIT_BASES.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`ingredient ${basePick === item.id ? 'ingredient--picked' : ''}`}
+                    disabled={fruitMade}
+                    onClick={() => {
+                      audio.playSfx('sfx_click');
+                      setBasePick(item.id);
+                    }}
+                  >
+                    <span className="ingredient__emoji">{item.emoji}</span>
+                    <span className="ingredient__name">{item.name}</span>
+                  </button>
+                ))}
               </div>
+            </section>
+            <section className="food-fruit__group">
+              <h3 className="food-fruit__label">配料</h3>
+              <div className="ingredient-grid food-fruit__tops">
+                {FRUIT_TOPPINGS.map((item) => (
+                  <button
+                    key={item.id}
+                    className={`ingredient ${toppingPick === item.id ? 'ingredient--picked' : ''} ${item.secret ? 'ingredient--secret' : ''}`}
+                    disabled={fruitMade}
+                    data-testid={item.secret ? 'topping-secret' : undefined}
+                    onClick={() => pickTopping(item.id)}
+                  >
+                    <span className="ingredient__emoji">
+                      {item.secret && sauceReady ? <img className="ingredient__art" src={assetUrl('item_sauce_jar')} alt="" draggable={false} /> : item.emoji}
+                    </span>
+                    <span className="ingredient__name">{item.name}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          </div>
+          {fruitQuipLines ? (
+            <motion.div className="feedback-box quip-box food-fruit__status food-fruit__status--result" data-testid="fruit-quips" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+              <span className="quip-box__tag">🍉 {t.hotpot.servedTag}</span>
+              <strong className="food-fruit__result-title">{fruitName}</strong>
+              {fruitQuipLines.map((line) => (
+                <p key={line} className="quip-box__line">{line}</p>
+              ))}
+              {secretChosen && hiddenUnlocked && (
+                <Button small variant="gold" onClick={() => setStation('hidden')}>{t.fruit.goHidden}</Button>
+              )}
+            </motion.div>
+          ) : clueShown && !fruitMade ? (
+            <motion.div key="clue" className="clue-card food-fruit__clue" data-testid="clue-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+              <span className="clue-card__tag">🔍 {t.fruit.clueTag}</span>
+              <div className="clue-card__lines">
+                {t.fruit.clueLines.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+              <Button small variant="gold" onClick={() => setStation('hidden')}>{t.fruit.goHidden}</Button>
+            </motion.div>
+          ) : (
+            <div className={`food-fruit__status ${fruitMade ? 'food-fruit__status--result' : ''}`}>
+              {fruitMade ? (
+                <>
+                  <strong className="food-fruit__result-title">{fruitName}</strong>
+                  <p className="food-fruit__status-line">{secretChosen ? t.fruit.secretLine : t.fruit.resultLine}</p>
+                </>
+              ) : (
+                <>
+                  <p className="food-fruit__status-line">{statusText}</p>
+                  {(pickedFruits.length > 0 || base || topping) && (
+                    <div className="food-fruit__picked" aria-hidden>
+                      {pickedFruits.map((item) => (
+                        <span key={item.id} className="food-fruit__mini" title={item.name}>{item.emoji}</span>
+                      ))}
+                      {base && <span className="food-fruit__mini food-fruit__mini--base" title={base.name}>{base.emoji}</span>}
+                      {topping && <span className="food-fruit__mini food-fruit__mini--top" title={topping.name}>{topping.secret && sauceReady ? '🥚' : topping.emoji}</span>}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
-        {/* 端上桌后：组合专属吐槽；线索卡：点到蛋黄沙司后出现（未开做时替代提示框），可直达神秘料理台 */}
-        {fruitQuipLines ? (
-          <motion.div className="feedback-box quip-box food-station-note" data-testid="fruit-quips" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <span className="quip-box__tag">🍉 {t.hotpot.servedTag}</span>
-            <strong style={{ color: 'var(--c-pink-deep)', display: 'block' }}>{fruitName}</strong>
-            {fruitQuipLines.map((l) => (
-              <p key={l} className="quip-box__line">
-                {l}
-              </p>
-            ))}
-            {secretChosen && hiddenUnlocked && (
-              <Button small variant="gold" onClick={() => setStation('hidden')}>
-                {t.fruit.goHidden}
-              </Button>
-            )}
-          </motion.div>
-        ) : clueShown && !fruitMade ? (
-          <motion.div key="clue" className="clue-card food-station-note" data-testid="clue-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-            <span className="clue-card__tag">🔍 {t.fruit.clueTag}</span>
-            <div className="clue-card__lines">
-              {t.fruit.clueLines.map((l) => (
-                <p key={l}>{l}</p>
-              ))}
-            </div>
-            <Button small variant="gold" onClick={() => setStation('hidden')}>
-              {t.fruit.goHidden}
+        <div className="food-station-view__right">
+          <div className="food-fruit__bar">
+            <Button variant="ghost" small className="food-fruit__back" onClick={goHub}>{t.hub.back}</Button>
+            <Button variant="secondary" small onClick={resetFruit} disabled={fruitPicks.length === 0 && !basePick && !toppingPick && !fruitMade}>
+              {t.fruit.reset}
             </Button>
-          </motion.div>
-        ) : (
-          <div className={`feedback-box food-station-note ${fruitMade && secretChosen ? 'feedback-box--weird' : ''}`}>
-            {fruitMade ? (
-              <>
-                <strong style={{ color: 'var(--c-pink-deep)', display: 'block' }}>{fruitName}</strong>
-                {secretChosen ? t.fruit.secretLine : t.fruit.resultLine}
-              </>
+            {fruitQuipLines ? (
+              <Button variant="gold" className="food-fruit__make" onClick={goHub} data-testid="fruit-back">{t.hotpot.backHub}</Button>
+            ) : !fruitMade ? (
+              <Button className={`food-fruit__make ${fruitReady ? 'food-fruit__make--ready' : ''}`} disabled={!fruitReady} onClick={makeFruit} data-testid="fruit-make">
+                {makeLabel}
+              </Button>
             ) : (
-              '选好水果、底料和配料后点"开做！"'
+              <Button variant="gold" className="food-fruit__make food-fruit__make--ready" onClick={serveFruit} data-testid="fruit-serve">{t.fruit.done}</Button>
             )}
           </div>
-        )}
-        <div className="food-station-actions">
-          <Button variant="secondary" small onClick={resetFruit} disabled={fruitPicks.length === 0 && !basePick && !toppingPick}>
-            {t.fruit.reset}
-          </Button>
-          {fruitQuipLines ? (
-            <Button variant="gold" onClick={goHub} data-testid="fruit-back">
-              {t.hotpot.backHub}
-            </Button>
-          ) : !fruitMade ? (
-            <Button disabled={!fruitReady} onClick={makeFruit} data-testid="fruit-make">
-              {t.fruit.make}
-            </Button>
-          ) : (
-            <Button variant="gold" onClick={serveFruit} data-testid="fruit-serve">
-              {t.fruit.done}
-            </Button>
-          )}
+          <div className={`pot-area food-stage food-stage--sweet ${fruitMade ? 'food-fruit__bowl--done' : ''}`}>
+            <div className="food-fruit__stage">
+              {fruitMade ? (
+                <FinishedDish src={assetUrl('item_fruit')} missingPath="public/assets/images/items/fruit_bowl.png" label="水果捞成品" />
+              ) : (
+                <div className={`bowl ${bowlReady ? 'bowl--art' : ''}`}>
+                  {bowlReady && <img className="bowl__art" src={assetUrl('item_bowl')} alt="" draggable={false} />}
+                  <div className="food-fruit__fill" aria-hidden>
+                    <AnimatePresence>
+                      {base && (
+                        <motion.span
+                          key={base.id}
+                          className="food-fruit__pour"
+                          style={{ background: BASE_WASH[base.id] ?? BASE_WASH.yogurt }}
+                          initial={{ scaleY: 0.2, opacity: 0 }}
+                          animate={{ scaleY: 1, opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.28 }}
+                        />
+                      )}
+                      {pickedFruits.map((item, index) => (
+                        <motion.span
+                          key={item.id}
+                          className="food-fruit__bit"
+                          style={FRUIT_SLOTS[index]}
+                          initial={{ y: -70, opacity: 0, scale: 0.5 }}
+                          animate={{ y: 0, opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.4 }}
+                          transition={{ type: 'spring', stiffness: 280, damping: 18 }}
+                        >
+                          {item.emoji}
+                        </motion.span>
+                      ))}
+                      {topping && (
+                        <motion.span
+                          key={topping.id}
+                          className={`food-fruit__bit food-fruit__bit--top ${topping.secret ? 'food-fruit__bit--secret' : ''}`}
+                          initial={{ y: -80, opacity: 0, scale: 0.45 }}
+                          animate={{ y: 0, opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.4 }}
+                          transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+                        >
+                          {topping.secret && sauceReady ? <img src={assetUrl('item_sauce_jar')} alt="" draggable={false} /> : topping.emoji}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderHidden = () => <HiddenDishGame key={hiddenRun} active={game.phase === 'playing'} onServe={serveHidden} onBack={goHub} />;
 
@@ -791,7 +860,7 @@ export function FoodScene() {
 
   return (
     <SceneLayout scene="food" title={t.title} subtitle={t.subtitle} mood={null} guide={null} compact>
-      <div className={`food-room${station === 'hotpot' ? ' food-room--hotpot' : ''}`}>
+      <div className={`food-room${station === 'hotpot' ? ' food-room--hotpot' : ''}${station === 'fruit' ? ' food-room--fruit' : ''}`}>
       <MinigameShell
         phase={game.phase}
         title={t.title}
@@ -834,7 +903,9 @@ export function FoodScene() {
           </motion.div>
         </AnimatePresence>
       </MinigameShell>
-      {cooking && station !== 'hidden' && <FoodVoiceCast dock={station === 'hotpot' ? 'hotpot' : 'side'} />}
+      {cooking && station !== 'hidden' && (
+        <FoodVoiceCast dock={station === 'hotpot' ? 'hotpot' : station === 'fruit' ? 'fruit' : 'side'} />
+      )}
       </div>
     </SceneLayout>
   );
@@ -842,9 +913,9 @@ export function FoodScene() {
 
 /**
  * 美食屋说话时的 Q 版向导，浮在右侧，不挤占料理台宽度。
- * 火锅台贴在锅框右下外侧；其他台沿用右侧浮层。台词只来自语音字幕。
+ * 火锅和水果捞贴在展示框右下外侧；其他台沿用右侧浮层。台词只来自语音字幕。
  */
-const FoodVoiceCast = memo(function FoodVoiceCast({ dock }: { dock: 'hotpot' | 'side' }) {
+const FoodVoiceCast = memo(function FoodVoiceCast({ dock }: { dock: 'hotpot' | 'fruit' | 'side' }) {
   useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
   const voice = getVoiceCaption();
 
@@ -853,14 +924,14 @@ const FoodVoiceCast = memo(function FoodVoiceCast({ dock }: { dock: 'hotpot' | '
       {voice && (
         <motion.div
           key="food-cast"
-          className={`food-cast ${dock === 'hotpot' ? 'food-cast--hotpot' : ''}`}
+          className={`food-cast ${dock === 'side' ? '' : `food-cast--${dock}`}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.28, ease: 'easeOut' }}
         >
           <div className="food-cast__pop">
-            <ChibiMayi action={voice.action} scale={dock === 'hotpot' ? 280 / 150 : 300 / 150} facing="left" followVoice />
+            <ChibiMayi action={voice.action} scale={dock === 'side' ? 300 / 150 : 280 / 150} facing="left" followVoice />
             <div className="food-cast__bubble" role="status">
               <span className="food-cast__who">{voice.speaker}</span>
               <span className="food-cast__line">{voice.line}</span>

@@ -747,7 +747,7 @@
 }
 
 .food-cast--hotpot {
-  right: 8px;
+  right: 388px;
   bottom: 6px;
   z-index: 5;
 }
@@ -767,6 +767,408 @@
   .food-hotpot__flame {
     animation: none;
   }
+}
+
+/* ===== 水果捞：清新卡片、碗内叠层、紧凑状态。不改火锅台 ===== */
+.scene--food .food-room--fruit .mg {
+  background: linear-gradient(165deg, rgba(255, 250, 244, 0.42), rgba(255, 228, 204, 0.22));
+  box-shadow: 0 8px 18px rgba(120, 70, 30, 0.06);
+  backdrop-filter: blur(2px);
+}
+
+.scene--food .food-room--fruit .mg__topbar {
+  background: linear-gradient(180deg, rgba(255, 250, 244, 0.72), rgba(255, 236, 214, 0.28));
+}
+
+.food-fruit {
+  gap: 18px;
+  padding: 14px 22px 16px;
+}
+
+.food-fruit .food-station-view__left,
+.food-fruit .food-station-view__right {
+  gap: 10px;
+}
+
+.food-fruit__count,
+.food-fruit__label {
+  align-self: flex-start;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(255, 252, 246, 0.98);
+  border: 1px solid rgba(214, 168, 96, 0.75);
+  box-shadow: 0 6px 14px rgba(120, 72, 36, 0.1);
+  color: #6a4034;
+}
+
+.food-fruit__count {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+}
+
+.food-fruit__count-kicker {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.food-fruit__count strong {
+  font-size: 28px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #c45b32;
+}
+
+.food-fruit__count strong span {
+  font-size: 20px;
+  color: #8a6248;
+}
+
+.food-fruit__count em {
+  font-style: normal;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 236, 214, 0.94);
+  color: #8a5a48;
+}
+
+.food-fruit__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.food-fruit__label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 5px 16px;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 2px;
+}
+
+.food-fruit__splits {
+  display: grid;
+  grid-template-columns: 3fr 4fr;
+  gap: 14px;
+}
+
+.food-fruit__bases {
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+}
+
+.food-fruit__tops {
+  grid-template-columns: repeat(4, 1fr);
+  align-items: stretch;
+}
+
+.food-fruit .ingredient-grid {
+  gap: 8px;
+}
+
+/* 底料 3 列更宽、配料 4 列更窄；蛋黄沙司会换行，统一名称区高度使两侧卡片等高 */
+.food-fruit__splits .ingredient {
+  box-sizing: border-box;
+}
+
+.food-fruit__splits .ingredient__name {
+  min-height: 3.75em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.food-fruit .ingredient {
+  position: relative;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 6px 8px;
+  border-radius: 18px;
+  border: 2px solid rgba(232, 176, 160, 0.85);
+  background: linear-gradient(180deg, #fffdf8 0%, #fff0ea 100%);
+  box-shadow: 0 5px 0 rgba(232, 176, 168, 0.35), 0 10px 14px rgba(160, 80, 70, 0.08);
+  color: #5c4038;
+}
+
+.food-fruit .ingredient__emoji {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fff 0%, #ffe4d4 74%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.95);
+}
+
+.food-fruit .ingredient__art {
+  width: 34px;
+  height: 34px;
+}
+
+.food-fruit .ingredient__name {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.food-fruit .ingredient:hover:not(:disabled) {
+  transform: translateY(-4px);
+  border-color: #e09098;
+  box-shadow: 0 8px 0 rgba(224, 150, 150, 0.32), 0 12px 16px rgba(180, 90, 90, 0.12);
+}
+
+.food-fruit .ingredient--picked {
+  opacity: 1;
+  transform: translateY(-2px);
+  border-color: #e07a88;
+  background: linear-gradient(180deg, #fff6f2 0%, #ffd9c8 100%);
+  box-shadow: 0 0 0 3px rgba(255, 176, 160, 0.75), 0 6px 0 rgba(214, 120, 110, 0.28);
+}
+
+.food-fruit .ingredient--picked::after {
+  content: '✓';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e07a88;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+}
+
+.food-fruit .ingredient:disabled:not(.ingredient--picked) {
+  opacity: 0.62;
+  filter: saturate(0.85);
+  transform: none;
+  cursor: default;
+}
+
+.food-fruit__status,
+.food-fruit__clue {
+  min-height: 0;
+  padding: 10px 14px;
+}
+
+.food-fruit__status {
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 236, 226, 0.97));
+  border: 1px solid rgba(214, 150, 160, 0.7);
+  box-shadow: 0 8px 16px rgba(160, 80, 70, 0.08);
+  color: #5c4038;
+}
+
+.food-fruit .feedback-box {
+  min-height: 0;
+}
+
+.food-fruit__status-line,
+.food-fruit .quip-box__line,
+.food-fruit .clue-card__lines p {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.4;
+}
+
+.food-fruit__result-title {
+  display: block;
+  margin-bottom: 2px;
+  color: #c45b6a;
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.food-fruit__picked {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.food-fruit__mini {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(232, 160, 150, 0.8);
+  font-size: 16px;
+}
+
+.food-fruit__mini--base {
+  border-color: rgba(214, 168, 96, 0.9);
+}
+
+.food-fruit__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+}
+
+.food-fruit__back {
+  margin-right: auto;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: #8a6248;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 1px;
+}
+
+.food-fruit__back:hover,
+.food-fruit__back:active {
+  background: transparent;
+  box-shadow: none;
+  color: #c45b6a;
+  transform: none;
+}
+
+.food-fruit__bar .btn--secondary {
+  font-size: 20px;
+  line-height: 1.2;
+  padding: 8px 8px;
+  box-shadow: 0 4px 0 rgba(180, 150, 110, 0.35);
+}
+
+.food-fruit__make {
+  min-width: 196px;
+  padding: 10px 18px;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.food-fruit__make:disabled {
+  filter: none;
+  opacity: 1;
+  color: #8a6a62;
+  background: linear-gradient(180deg, #f8eee8, #ead8d0);
+  box-shadow: inset 0 0 0 2px rgba(196, 150, 140, 0.55);
+  cursor: not-allowed;
+}
+
+.food-fruit__make--ready {
+  box-shadow: 0 6px 0 rgba(200, 90, 110, 0.32), 0 0 0 3px rgba(255, 210, 180, 0.9);
+}
+
+.scene--food .food-fruit .pot-area {
+  flex: 0 0 auto;
+  min-height: 0;
+  height: auto;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 12px 16px;
+  overflow: visible;
+  /* 左侧有「水果」铭牌，下移展示框与首行水果卡（如葡萄）上沿对齐 */
+  margin-top: calc(2.4375rem + 0.5rem);
+  /* 盖掉 .food-stage--sweet 的粉色描边，只留奶油面板原有的淡金边 */
+  border-color: rgba(214, 168, 96, 0.55);
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 236, 226, 0.97));
+}
+
+.food-fruit__stage {
+  position: relative;
+  width: min(100%, 440px);
+}
+
+.scene--food .food-fruit .bowl {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 4;
+  margin: 0;
+}
+
+/* .bowl 写在 .bowl--art 之后，8px 粉色边会盖住 border: none。成品图在时去掉这圈框。 */
+.scene--food .food-fruit .bowl.bowl--art {
+  border-width: 0;
+  box-shadow: none;
+}
+
+.food-fruit__fill {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.food-fruit__pour {
+  position: absolute;
+  left: 28%;
+  right: 28%;
+  top: 52%;
+  height: 16%;
+  border-radius: 50%;
+  transform-origin: center bottom;
+  box-shadow: inset 0 -6px 10px rgba(255, 255, 255, 0.35);
+}
+
+.food-fruit__bit {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fff, #ffe4d4 72%);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  font-size: 26px;
+  box-shadow: 0 6px 10px rgba(160, 80, 70, 0.16);
+}
+
+.food-fruit__bit--top {
+  left: 74%;
+  top: 46%;
+}
+
+.food-fruit__bit--secret img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.food-fruit__bowl--done {
+  box-shadow: 0 14px 28px rgba(120, 72, 36, 0.14);
+}
+
+.food-fruit .dish-reveal {
+  position: relative;
+  width: min(420px, 100%);
+  height: auto;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 16px 18px rgba(180, 90, 90, 0.22));
+}
+
+.food-cast--fruit {
+  right: 388px;
+  bottom: 6px;
+  z-index: 5;
+}
+
+.food-cast--fruit .food-cast__bubble {
+  max-width: 220px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 232, 220, 0.98));
 }
 
 /* ===== 考场：题目像摊开的认证卷，选项是独立签 ===== */
