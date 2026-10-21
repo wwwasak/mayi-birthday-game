@@ -1,15 +1,16 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { MinigameShell } from '../components/minigame/MinigameShell';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { SceneLayout } from '../components/ui/SceneLayout';
+import type { GuideAction, PlayerMood } from '../config/characters';
 import { DANMU_TIMER_SECONDS, EXAM_QUESTIONS, EXAM_RESULT_LINES, type ExamQuestion } from '../config/exam';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
-import { playCharacterVoice } from '../core/characterVoice';
+import { clearVoiceCaption, getVoiceCaption, getVoiceCaptionSnapshot, playCharacterVoice, subscribeVoiceCaption } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { EXAM_FACT_TOTAL, EXAM_SET_VERSION } from '../core/progress';
 import { useMinigamePhase } from '../hooks/useMinigamePhase';
@@ -179,8 +180,19 @@ export function ExamScene() {
   const best = progress.records.examSet === EXAM_SET_VERSION ? Math.max(progress.records.examBestCorrect, finalFact) : finalFact;
   const isLast = idx + 1 >= total;
 
+  const playing = game.phase === 'playing' || game.phase === 'paused';
+
+  /** 换题、交卷或离开答题时收起考生气泡，不停掉其他场景的语音系统 */
+  useEffect(() => {
+    if (!playing) clearVoiceCaption();
+  }, [playing]);
+  useEffect(() => {
+    clearVoiceCaption();
+  }, [idx]);
+
   return (
     <SceneLayout scene="exam" title={t.title} subtitle={t.subtitle} mood={null} compact>
+      <div className="exam-room">
       <MinigameShell
         phase={game.phase}
         title={t.title}
@@ -244,16 +256,17 @@ export function ExamScene() {
           </>
         }
       >
-        <div className="exam-view">
+        <div className={`exam-view ${overload ? 'exam-view--overload' : ''}`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={idx}
+              className="exam-board-wrap"
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
               transition={{ duration: 0.22 }}
             >
-              <Card style={{ height: '100%', position: 'relative' }}>
+              <Card className="exam-board" style={{ height: '100%', position: 'relative' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                   <span className={`exam-tag ${q.type === 'fact' ? 'exam-tag--fact' : q.type === 'fun' ? 'exam-tag--fun' : 'exam-tag--absurd'}`}>{tag}</span>
                   <span className="exam-dots" aria-label={t.progress(idx + 1, total)}>
@@ -311,6 +324,14 @@ export function ExamScene() {
                     {isLast ? t.submit : `${t.next} →`}
                   </Button>
                 </div>
+                <div className={`exam-feedback ${verdict === 'ok' || verdict === 'fun' ? 'exam-feedback--ok' : ''} ${verdict === 'bad' ? 'exam-feedback--bad' : ''}`} data-testid="exam-feedback">
+                  <AnimatePresence mode="wait">
+                    <motion.div key={overload ? 'overload' : feedback || 'empty'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+                      {overload ? t.overload : feedback || '选择一个答案，考官会给出反馈。'}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+                <div className="exam-danmu">💬 弹幕可以一起猜！{danmuLine}</div>
 
                 {/* 判定器过载动画（荒谬判定题） */}
                 <AnimatePresence>
@@ -333,23 +354,65 @@ export function ExamScene() {
               </Card>
             </motion.div>
           </AnimatePresence>
-
-          <div className="exam-side">
-            <div className="exam-danmu">💬 弹幕可以一起猜！{danmuLine}</div>
-            <div className={`exam-feedback ${verdict === 'ok' || verdict === 'fun' ? 'exam-feedback--ok' : ''} ${verdict === 'bad' ? 'exam-feedback--bad' : ''}`} data-testid="exam-feedback">
-              <AnimatePresence mode="wait">
-                <motion.div key={overload ? 'overload' : feedback || 'empty'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-                  {overload ? t.overload : feedback || '选择一个答案，Q版麻衣会给出反馈。'}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-            <div className="exam-cast">
-              <PlaceholderCharacter mood={playerMood} />
-              <ChibiMayi action={examinerAction} scale={1.15} followVoice />
-            </div>
-          </div>
         </div>
       </MinigameShell>
+      <ExamSpeaker mood={playerMood} />
+      {playing && <ExamProctor action={examinerAction} hot={overload || verdict === 'ok'} />}
+      </div>
     </SceneLayout>
   );
 }
+
+/**
+ * 考试语音在画面上属于右侧考生。只映射这四句用到的向导动作，不改全局说话者。
+ */
+function examSpeakerMood(action: GuideAction): PlayerMood | null {
+  if (action === 'think') return 'think';
+  if (action === 'happy') return 'happy';
+  if (action === 'tease' || action === 'surprise') return 'surprise';
+  return null;
+}
+
+/**
+ * 右侧普通立绘考生。说话时换成对应表情，气泡贴在头部左侧。
+ */
+const ExamSpeaker = memo(function ExamSpeaker({ mood }: { mood: PlayerMood }) {
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const voice = getVoiceCaption();
+  const speaking = voice ? examSpeakerMood(voice.action) : null;
+
+  return (
+    <div className={`exam-player ${voice ? 'exam-player--speak' : ''}`}>
+      <AnimatePresence>
+        {voice && (
+          <motion.div
+            key={voice.line}
+            className="exam-player__bubble"
+            role="status"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28 }}
+          >
+            <span className="exam-player__who">麻衣·考生</span>
+            <span className="exam-player__line">{voice.line}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div aria-hidden>
+        <PlaceholderCharacter mood={speaking ?? mood} frame="bust" />
+      </div>
+    </div>
+  );
+});
+
+/**
+ * 认证考试的 Q 版考官。表情只跟随答题事件，不跟随语音，也不出字幕。
+ */
+const ExamProctor = memo(function ExamProctor({ action, hot }: { action: 'surprise' | 'tease' | 'happy' | 'think'; hot: boolean }) {
+  return (
+    <div className={`exam-proctor ${hot ? 'exam-proctor--hot' : ''}`}>
+      <ChibiMayi action={action} scale={hot ? 2.55 : 2.2} facing="right" />
+    </div>
+  );
+});
