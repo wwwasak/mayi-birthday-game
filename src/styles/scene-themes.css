@@ -165,11 +165,9 @@
 
 .scene--food .pot-area {
   border-radius: 28px;
-  border: 2px solid var(--theme-line);
-  background:
-    radial-gradient(ellipse at 50% 88%, rgba(255, 196, 140, 0.38), transparent 58%),
-    linear-gradient(180deg, rgba(255, 248, 236, 0.16), rgba(120, 64, 28, 0.12));
-  box-shadow: inset 0 0 0 7px rgba(255, 246, 230, 0.28);
+  border: 2px solid rgba(214, 168, 96, 0.78);
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 240, 222, 0.96));
+  box-shadow: 0 14px 28px rgba(90, 48, 20, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 .scene--food .food-jar,
@@ -189,6 +187,586 @@
   bottom: 18px;
   z-index: 5;
   pointer-events: none;
+}
+
+.scene--food .food-hub {
+  gap: 28px;
+}
+
+.scene--food .food-station {
+  background: linear-gradient(180deg, rgba(255, 250, 242, 0.82), rgba(255, 226, 196, 0.7));
+  border: 1px solid rgba(214, 168, 96, 0.55);
+  box-shadow: 0 10px 22px rgba(90, 48, 20, 0.12);
+}
+
+.scene--food .pot-area {
+  overflow: visible;
+}
+
+.food-preview {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(72, 40, 24, 0.28);
+  cursor: pointer;
+}
+
+.food-preview__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 420px;
+  padding: 22px 22px 18px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(255, 236, 214, 0.94));
+  border: 2px solid rgba(201, 148, 72, 0.7);
+  box-shadow: 0 16px 32px rgba(70, 40, 16, 0.2);
+  pointer-events: none;
+}
+
+.food-preview__card img {
+  width: 280px;
+  height: 280px;
+  object-fit: contain;
+}
+
+.food-preview__card strong {
+  font-size: 28px;
+  color: #8a4524;
+}
+
+.food-preview__card span {
+  font-size: 18px;
+  line-height: 1.4;
+  color: #6d5648;
+}
+
+.scene--food .step-title,
+.scene--food .hd-progress,
+.scene--food .hd-op {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.9);
+}
+
+.scene--food .hd-step {
+  background: rgba(255, 250, 242, 0.84);
+  opacity: 0.78;
+}
+
+.scene--food .hd-step--active {
+  opacity: 1;
+}
+
+.scene--food .food-station-view__right > .pot-area {
+  order: 1;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12px;
+}
+
+.scene--food .food-station-actions {
+  order: 0;
+}
+
+.scene--food .food-station-view__right .food-station-note {
+  order: 2;
+  align-self: flex-start;
+  width: min(300px, 58%);
+  min-height: 0;
+  margin: 0 0 8px 0;
+  padding: 10px 14px;
+}
+
+.food-station-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.scene--food .food-stage--hotpot {
+  background: linear-gradient(180deg, rgba(255, 248, 240, 0.98), rgba(255, 226, 200, 0.97));
+  border-color: rgba(214, 146, 88, 0.82);
+}
+
+.scene--food .food-stage--sweet {
+  background: linear-gradient(180deg, rgba(255, 250, 246, 0.98), rgba(255, 232, 220, 0.97));
+  border-color: rgba(214, 150, 160, 0.78);
+}
+
+.scene--food .pot {
+  width: 520px;
+  height: 300px;
+  margin-bottom: 0;
+}
+
+.scene--food .bowl {
+  width: 480px;
+  height: 280px;
+  margin-bottom: 0;
+}
+
+.scene--food .ingredient {
+  border-radius: 18px;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.scene--food .ingredient:hover {
+  transform: translateY(-3px);
+}
+
+.scene--food .ingredient--picked {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 0 rgba(214, 160, 70, 0.35);
+}
+
+.scene--food .ingredient--secret {
+  box-shadow: 0 0 0 3px rgba(232, 176, 64, 0.55), 0 8px 16px rgba(180, 120, 40, 0.16);
+  animation: food-secret-glow 1.8s ease-in-out infinite;
+}
+
+.scene--food .gallery-item {
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.92), rgba(255, 236, 214, 0.84));
+}
+
+.scene--food .gallery-item--locked {
+  background: rgba(255, 248, 240, 0.45);
+}
+
+.food-cast {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.food-cast__pop {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  animation: food-cast-in 0.32s cubic-bezier(0.2, 0.85, 0.2, 1) forwards;
+}
+
+.food-cast__bubble {
+  position: relative;
+  order: -1;
+  max-width: 240px;
+  margin-top: 18px;
+  margin-right: 6px;
+  padding: 10px 14px 12px;
+  border-radius: 18px 18px 8px 18px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 236, 214, 0.96));
+  border: 2px solid rgba(201, 148, 72, 0.85);
+  box-shadow: 0 8px 18px rgba(90, 52, 24, 0.16);
+  color: #4a3428;
+}
+
+.food-cast__bubble::after {
+  content: '';
+  position: absolute;
+  right: -11px;
+  top: 26px;
+  border-width: 8px 0 8px 11px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(201, 148, 72, 0.9);
+}
+
+.food-cast__who {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #b85b3c;
+}
+
+.food-cast__line {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+@keyframes food-cast-in {
+  0% { transform: translateX(48px) scale(0.92); }
+  70% { transform: translateX(0) scale(1.04); }
+  100% { transform: translateX(0) scale(1); }
+}
+
+@keyframes food-secret-glow {
+  0%,
+  100% { box-shadow: 0 0 0 3px rgba(232, 176, 64, 0.35); }
+  50% { box-shadow: 0 0 0 5px rgba(255, 196, 80, 0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .food-cast__pop,
+  .scene--food .ingredient--secret {
+    animation: none;
+  }
+}
+
+/* ===== 火锅台：食材牌、紧凑状态、锅边图标。不影响水果捞 ===== */
+.scene--food .food-room--hotpot .mg {
+  background: linear-gradient(165deg, rgba(255, 250, 244, 0.42), rgba(255, 228, 204, 0.22));
+  box-shadow: 0 8px 18px rgba(120, 70, 30, 0.06);
+  backdrop-filter: blur(2px);
+}
+
+.scene--food .food-room--hotpot .mg__topbar {
+  background: linear-gradient(180deg, rgba(255, 250, 244, 0.72), rgba(255, 236, 214, 0.28));
+}
+
+.food-hotpot {
+  gap: 20px;
+  padding: 16px 24px 18px;
+}
+
+.food-hotpot .food-station-view__left,
+.food-hotpot .food-station-view__right {
+  gap: 12px;
+}
+
+.food-hotpot__count {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  align-self: flex-start;
+  padding: 6px 16px 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 252, 246, 0.96);
+  border: 1px solid rgba(214, 168, 96, 0.75);
+  box-shadow: 0 6px 14px rgba(120, 72, 36, 0.08);
+  color: #8a4e2b;
+}
+
+.food-hotpot__count-kicker {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.food-hotpot__count strong {
+  font-size: 32px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #c45b32;
+}
+
+.food-hotpot__count strong span {
+  font-size: 20px;
+  color: #8a6248;
+}
+
+.food-hotpot .ingredient-grid {
+  align-content: start;
+  grid-template-rows: repeat(3, minmax(104px, 128px));
+  gap: 12px;
+}
+
+.food-hotpot .ingredient {
+  position: relative;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 8px 12px;
+  border-radius: 20px;
+  border: 2px solid rgba(214, 168, 96, 0.82);
+  background: linear-gradient(180deg, #fffdf8 0%, #fff1dc 100%);
+  box-shadow: 0 7px 0 rgba(214, 168, 96, 0.28), 0 12px 16px rgba(120, 72, 36, 0.08);
+  color: #5c4032;
+}
+
+.food-hotpot .ingredient__emoji {
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fff 0%, #ffe4bc 72%);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.95), 0 4px 8px rgba(160, 96, 40, 0.14);
+}
+
+.food-hotpot .ingredient__name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+.food-hotpot .ingredient:hover:not(:disabled) {
+  transform: translateY(-5px);
+  border-color: #e0a24a;
+  box-shadow: 0 11px 0 rgba(214, 160, 70, 0.32), 0 16px 20px rgba(180, 110, 40, 0.16);
+}
+
+.food-hotpot .ingredient--picked {
+  opacity: 1;
+  transform: translateY(-3px);
+  border-color: #e08a32;
+  background: linear-gradient(180deg, #fff6dc 0%, #ffd9a4 100%);
+  box-shadow: 0 0 0 3px rgba(255, 186, 72, 0.72), 0 8px 0 rgba(214, 140, 50, 0.32);
+}
+
+.food-hotpot .ingredient--picked::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e07a3a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+}
+
+.food-hotpot .ingredient--weird {
+  border-style: dashed;
+  border-color: rgba(196, 120, 150, 0.7);
+}
+
+.food-hotpot .ingredient:disabled:not(.ingredient--picked) {
+  opacity: 0.62;
+  filter: saturate(0.8);
+  transform: none;
+  cursor: default;
+}
+
+.food-hotpot__status {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin-top: 0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 240, 222, 0.97));
+  border: 1px solid rgba(214, 168, 96, 0.75);
+  box-shadow: 0 8px 16px rgba(120, 72, 36, 0.08);
+  color: #5c4032;
+}
+
+.food-hotpot .feedback-box {
+  min-height: 0;
+}
+
+.food-hotpot__status-line,
+.food-hotpot__drop-line,
+.food-hotpot .quip-box__line {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.food-hotpot__drop-line {
+  margin-top: 6px;
+  font-size: 17px;
+  color: #8a6248;
+}
+
+.food-hotpot__result-title {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--c-pink-deep);
+  font-size: 22px;
+}
+
+.food-hotpot__status--weird {
+  border-style: dashed;
+  border-width: 2px;
+  border-color: var(--c-pink);
+}
+
+.food-hotpot__picked {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.food-hotpot__mini,
+.food-hotpot__chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fff, #ffe4bc 72%);
+  border: 2px solid rgba(214, 168, 96, 0.85);
+  font-size: 20px;
+  box-shadow: 0 3px 0 rgba(214, 168, 96, 0.28);
+}
+
+.food-hotpot__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+}
+
+.food-hotpot__back {
+  margin-right: auto;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: #8a6248;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.food-hotpot__back:hover,
+.food-hotpot__back:active {
+  background: transparent;
+  box-shadow: none;
+  color: #c45b32;
+  transform: none;
+}
+
+.food-hotpot__bar .btn--secondary {
+  font-size: 18px;
+  padding: 8px 16px;
+  box-shadow: 0 4px 0 rgba(180, 150, 110, 0.35);
+}
+
+.food-hotpot__cook {
+  min-width: 188px;
+  padding: 10px 22px;
+  font-size: 24px;
+}
+
+.food-hotpot__cook:disabled {
+  filter: none;
+  opacity: 1;
+  color: #8a6a52;
+  background: linear-gradient(180deg, #f6ecdf, #e7d4be);
+  box-shadow: inset 0 0 0 2px rgba(176, 136, 96, 0.55);
+  cursor: not-allowed;
+}
+
+.food-hotpot__cook--ready {
+  box-shadow: 0 6px 0 rgba(200, 90, 70, 0.35), 0 0 0 3px rgba(255, 210, 120, 0.85);
+}
+
+.scene--food .food-hotpot .pot-area {
+  flex: 0 0 auto;
+  min-height: 0;
+  height: auto;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 10px 14px;
+  overflow: visible;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 236, 214, 0.97));
+}
+
+.food-hotpot__stage {
+  position: relative;
+  width: min(100%, 470px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  /* 为锅底火焰预留高度，使展示框能完整包住锅+火 */
+  padding-bottom: 62px;
+  box-sizing: border-box;
+}
+
+.scene--food .food-hotpot .pot {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  margin: 0;
+}
+
+.food-hotpot__flame {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 0;
+  width: 64px;
+  height: 100px;
+  object-fit: contain;
+  pointer-events: none;
+  opacity: 0.9;
+  transform: translateX(-50%);
+  animation: food-flame 1.15s ease-in-out infinite;
+}
+
+.food-hotpot__flame.is-hot {
+  width: 72px;
+  height: 108px;
+  bottom: -4px;
+  opacity: 1;
+}
+
+.food-hotpot .steam {
+  bottom: 62%;
+}
+
+.food-hotpot__pot--cooking {
+  box-shadow: 0 14px 28px rgba(90, 48, 20, 0.14), inset 0 0 0 2px rgba(255, 186, 96, 0.45);
+}
+
+.food-hotpot__rim {
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  top: 16%;
+  z-index: 2;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-end;
+  min-height: 52px;
+  pointer-events: none;
+}
+
+.food-hotpot__chip {
+  width: 52px;
+  height: 52px;
+  font-size: 28px;
+}
+
+.food-hotpot .dish-reveal {
+  position: relative;
+  width: min(460px, 100%);
+  height: auto;
+  aspect-ratio: 16 / 10;
+}
+
+.food-cast--hotpot {
+  right: 8px;
+  bottom: 6px;
+  z-index: 5;
+}
+
+.food-cast--hotpot .food-cast__bubble {
+  max-width: 200px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 236, 214, 0.98));
+}
+
+@keyframes food-flame {
+  0%,
+  100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05, 1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .food-hotpot__flame {
+    animation: none;
+  }
 }
 
 /* ===== 考场：题目像摊开的认证卷，选项是独立签 ===== */

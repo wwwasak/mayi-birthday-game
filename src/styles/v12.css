@@ -500,12 +500,19 @@
 
 .hd-chibi {
   position: absolute;
-  right: 36px;
-  bottom: 10px;
+  right: 12px;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  pointer-events: none;
+}
+
+.hd-board--done {
+  justify-content: flex-start;
+  padding-top: 28px;
+  overflow: visible;
 }
 
 .hd-chibi__bubble {

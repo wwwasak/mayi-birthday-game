@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { HiddenDishGame } from '../components/food/HiddenDishGame';
+import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { MinigameShell } from '../components/minigame/MinigameShell';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -19,7 +20,7 @@ import { fruitQuips, hotpotQuips } from '../config/foodQuips';
 import { TEXTS } from '../config/texts';
 import { useGame } from '../core/GameContext';
 import { audio } from '../core/audio';
-import { playCharacterVoice } from '../core/characterVoice';
+import { getVoiceCaption, getVoiceCaptionSnapshot, playCharacterVoice, subscribeVoiceCaption } from '../core/characterVoice';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useMinigamePhase } from '../hooks/useMinigamePhase';
 
@@ -112,12 +113,15 @@ export function FoodScene() {
   const { progress, unlockCollectible, patch, setRecords, showToast } = useGame();
   const t = TEXTS.food;
   const potReady = useAssetImageReady('item_pot');
+  const flameReady = useAssetImageReady('item_flame');
   const bowlReady = useAssetImageReady('item_bowl');
   const hotpotDishReady = useAssetImageReady('item_hotpot');
   const fruitDishReady = useAssetImageReady('item_fruit');
   const sauceReady = useAssetImageReady('item_sauce_jar');
+  const goldenReady = useAssetImageReady('item_golden_dish');
 
   const [station, setStation] = useState<Station>('hub');
+  const [galleryPreview, setGalleryPreview] = useState<string | null>(null);
 
   // 火锅
   const [hotpotPicks, setHotpotPicks] = useState<string[]>([]);
@@ -281,6 +285,7 @@ export function FoodScene() {
 
   const goHub = () => {
     audio.playSfx('sfx_click');
+    setGalleryPreview(null);
     setStation('hub');
   };
 
@@ -347,8 +352,12 @@ export function FoodScene() {
         }}
       >
         {hiddenFound && <span className="food-station__done">已制作</span>}
-        <div className="food-station__icon" style={{ background: assetPlaceholder('item_golden_dish') }}>
-          {hiddenUnlocked ? '🎃' : '❓'}
+        <div className="food-station__icon" style={goldenReady && hiddenUnlocked ? undefined : { background: assetPlaceholder('item_golden_dish') }}>
+          {hiddenUnlocked && goldenReady ? (
+            <img src={assetUrl('item_golden_dish')} alt="" draggable={false} style={{ width: '86%', height: '86%', objectFit: 'contain', pointerEvents: 'none' }} />
+          ) : (
+            '❓'
+          )}
         </div>
         <div>
           <h3 className="card__title" style={{ fontSize: 30 }}>
@@ -397,105 +406,143 @@ export function FoodScene() {
             )}
           </AnimatePresence>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <span style={{ fontSize: 22, color: 'var(--c-ink-soft)' }}>{t.hub.doneHint(!!hotpotDone, !!fruitDone)}</span>
-          <Button variant="gold" disabled={!canFinish} onClick={game.finishToResult}>
-            {t.hub.done}
-          </Button>
-        </div>
+        <Button variant="gold" disabled={!canFinish} onClick={game.finishToResult}>
+          {t.hub.done}
+        </Button>
       </div>
     </div>
   );
 
-  const renderHotpot = () => (
-    <div className="food-station-view">
-      <div className="food-station-view__left">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 className="step-title">{t.hotpot.pick(hotpotPicks.length)}</h3>
-          <Button variant="ghost" small onClick={goHub}>
-            {t.hub.back}
-          </Button>
-        </div>
-        <div className="ingredient-grid">
-          {HOTPOT_INGREDIENTS.map((ing) => {
-            const picked = hotpotPicks.includes(ing.id);
-            return (
-              <button
-                key={ing.id}
-                className={`ingredient ${picked ? 'ingredient--picked' : ''} ${ing.weird ? 'ingredient--weird' : ''}`}
-                disabled={hotpotCooked || (!picked && hotpotPicks.length >= HOTPOT_MAX)}
-                onClick={() => toggleHotpot(ing.id)}
-              >
-                <span className="ingredient__emoji">{ing.emoji}</span>
-                {ing.name}
-              </button>
-            );
-          })}
-        </div>
-        {hotpotQuipLines ? (
-          <motion.div className="feedback-box quip-box" data-testid="hotpot-quips" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <span className="quip-box__tag">🍲 {t.hotpot.servedTag}</span>
-            <strong style={{ color: 'var(--c-pink-deep)', display: 'block' }}>{hotpotRating.title}</strong>
-            {hotpotQuipLines.map((l) => (
-              <p key={l} className="quip-box__line">
-                {l}
-              </p>
-            ))}
-          </motion.div>
-        ) : (
-          <div className={`feedback-box ${hotpotLine?.weird ? 'feedback-box--weird' : ''}`}>
-            {hotpotCooked && <strong style={{ color: 'var(--c-pink-deep)', display: 'block' }}>{hotpotRating.title}</strong>}
-            {hotpotLine?.text ?? t.hotpot.emptyLine}
+  const renderHotpot = () => {
+    const pickedIngs = hotpotPicks
+      .map((id) => HOTPOT_INGREDIENTS.find((i) => i.id === id))
+      .filter((ing): ing is (typeof HOTPOT_INGREDIENTS)[number] => !!ing);
+    const remain = HOTPOT_MAX - hotpotPicks.length;
+    const canCook = hotpotPicks.length >= HOTPOT_MAX;
+    const statusText = hotpotPicks.length === 0
+      ? '锅底已就绪，先挑选最多4样食材吧！'
+      : remain > 0
+        ? `已选择：${pickedIngs.map((ing) => ing.name).join('、')}。还可以加入${remain}样。`
+        : `已选择：${pickedIngs.map((ing) => ing.name).join('、')}。可以开锅了。`;
+
+    return (
+      <div className="food-station-view food-hotpot">
+        <div className="food-station-view__left">
+          <div className="food-hotpot__count" aria-live="polite">
+            <span className="food-hotpot__count-kicker">已选食材</span>
+            <strong>
+              {hotpotPicks.length}
+              <span> / {HOTPOT_MAX}</span>
+            </strong>
           </div>
-        )}
-      </div>
-      <div className="food-station-view__right">
-        <div className="pot-area">
-          <Steam count={hotpotPicks.length * 2 + hotpotWeird * 3 + (hotpotCooked ? 4 : 0)} />
-          {hotpotCooked ? (
-            <FinishedDish src={assetUrl('item_hotpot')} missingPath="public/assets/images/items/hotpot.png" label="火锅成品" />
+          <div className="ingredient-grid">
+            {HOTPOT_INGREDIENTS.map((ing) => {
+              const picked = hotpotPicks.includes(ing.id);
+              return (
+                <button
+                  key={ing.id}
+                  className={`ingredient ${picked ? 'ingredient--picked' : ''} ${ing.weird ? 'ingredient--weird' : ''}`}
+                  disabled={hotpotCooked || (!picked && hotpotPicks.length >= HOTPOT_MAX)}
+                  onClick={() => toggleHotpot(ing.id)}
+                >
+                  <span className="ingredient__emoji">{ing.emoji}</span>
+                  <span className="ingredient__name">{ing.name}</span>
+                </button>
+              );
+            })}
+          </div>
+          {hotpotQuipLines ? (
+            <motion.div className="feedback-box quip-box food-hotpot__status food-hotpot__status--result" data-testid="hotpot-quips" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              <span className="quip-box__tag">🍲 {t.hotpot.servedTag}</span>
+              <strong className="food-hotpot__result-title">{hotpotRating.title}</strong>
+              {hotpotQuipLines.map((l) => (
+                <p key={l} className="quip-box__line">
+                  {l}
+                </p>
+              ))}
+            </motion.div>
           ) : (
-            <div className={`pot ${potReady ? 'pot--art' : ''}`}>
-              {potReady && <img className="pot__art" src={assetUrl('item_pot')} alt="" draggable={false} />}
-              <div className="pot__items">
-                <AnimatePresence>
-                  {hotpotPicks.map((id) => (
-                    <motion.span
-                      key={id}
-                      initial={{ y: -120, opacity: 0, scale: 0.5 }}
-                      animate={{ y: 0, opacity: 1, scale: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 16 }}
-                    >
-                      {HOTPOT_INGREDIENTS.find((i) => i.id === id)?.emoji}
-                    </motion.span>
-                  ))}
-                </AnimatePresence>
-              </div>
+            <div className={`food-hotpot__status ${hotpotCooked ? 'food-hotpot__status--result' : ''} ${hotpotLine?.weird ? 'food-hotpot__status--weird' : ''}`}>
+              {hotpotCooked ? (
+                <>
+                  <strong className="food-hotpot__result-title">{hotpotRating.title}</strong>
+                  <p className="food-hotpot__status-line">{hotpotLine?.text ?? hotpotRating.line}</p>
+                </>
+              ) : (
+                <>
+                  <p className="food-hotpot__status-line">{statusText}</p>
+                  {pickedIngs.length > 0 && (
+                    <div className="food-hotpot__picked" aria-hidden>
+                      {pickedIngs.map((ing) => (
+                        <span key={ing.id} className="food-hotpot__mini" title={ing.name}>
+                          {ing.emoji}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {hotpotLine && <p className="food-hotpot__drop-line">{hotpotLine.text}</p>}
+                </>
+              )}
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 14, justifyContent: 'flex-end' }}>
-          <Button variant="secondary" small onClick={resetHotpot} disabled={hotpotPicks.length === 0}>
-            {t.hotpot.reset}
-          </Button>
-          {hotpotQuipLines ? (
-            <Button variant="gold" onClick={goHub} data-testid="hotpot-back">
-              {t.hotpot.backHub}
+        <div className="food-station-view__right">
+          <div className="food-hotpot__bar">
+            <Button variant="ghost" small className="food-hotpot__back" onClick={goHub}>
+              {t.hub.back}
             </Button>
-          ) : !hotpotCooked ? (
-            <Button disabled={hotpotPicks.length < HOTPOT_MAX} onClick={cookHotpot}>
-              {t.hotpot.start}
+            <Button variant="secondary" small onClick={resetHotpot} disabled={hotpotPicks.length === 0 && !hotpotCooked}>
+              {t.hotpot.reset}
             </Button>
-          ) : (
-            <Button variant="gold" onClick={serveHotpot} data-testid="hotpot-serve">
-              {t.hotpot.done}
-            </Button>
-          )}
+            {hotpotQuipLines ? (
+              <Button variant="gold" className="food-hotpot__cook" onClick={goHub} data-testid="hotpot-back">
+                {t.hotpot.backHub}
+              </Button>
+            ) : !hotpotCooked ? (
+              <Button className={`food-hotpot__cook ${canCook ? 'food-hotpot__cook--ready' : ''}`} disabled={!canCook} onClick={cookHotpot}>
+                {canCook ? t.hotpot.start : `开锅 · 还差 ${remain} 样`}
+              </Button>
+            ) : (
+              <Button variant="gold" className="food-hotpot__cook food-hotpot__cook--ready" onClick={serveHotpot} data-testid="hotpot-serve">
+                {t.hotpot.done}
+              </Button>
+            )}
+          </div>
+          <div className={`pot-area food-stage food-stage--hotpot ${hotpotCooked ? 'food-hotpot__pot--cooking' : ''}`}>
+            <Steam count={hotpotPicks.length * 2 + hotpotWeird * 3 + (hotpotCooked ? 4 : 0)} />
+            <div className="food-hotpot__stage">
+              {flameReady && (
+                <img className={`food-hotpot__flame ${hotpotCooked ? 'is-hot' : ''}`} src={assetUrl('item_flame')} alt="" draggable={false} />
+              )}
+              {hotpotCooked ? (
+                <FinishedDish src={assetUrl('item_hotpot')} missingPath="public/assets/images/items/hotpot.png" label="火锅成品" />
+              ) : (
+                <div className={`pot ${potReady ? 'pot--art' : ''}`}>
+                  {potReady && <img className="pot__art" src={assetUrl('item_pot')} alt="" draggable={false} />}
+                  <div className="food-hotpot__rim" aria-hidden>
+                    <AnimatePresence>
+                      {pickedIngs.map((ing) => (
+                        <motion.span
+                          key={ing.id}
+                          className="food-hotpot__chip"
+                          initial={{ y: -64, opacity: 0, scale: 0.55 }}
+                          animate={{ y: 0, opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.4 }}
+                          transition={{ type: 'spring', stiffness: 280, damping: 18 }}
+                        >
+                          {ing.emoji}
+                        </motion.span>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPickGroup = <T extends { id: string; name: string; emoji: string; secret?: boolean }>(
     title: string,
@@ -564,7 +611,7 @@ export function FoodScene() {
         </div>
       </div>
       <div className="food-station-view__right">
-        <div className="pot-area">
+        <div className="pot-area food-stage food-stage--sweet">
           {fruitMade ? (
             <FinishedDish src={assetUrl('item_fruit')} missingPath="public/assets/images/items/fruit_bowl.png" label="水果捞成品" />
           ) : (
@@ -594,7 +641,7 @@ export function FoodScene() {
         </div>
         {/* 端上桌后：组合专属吐槽；线索卡：点到蛋黄沙司后出现（未开做时替代提示框），可直达神秘料理台 */}
         {fruitQuipLines ? (
-          <motion.div className="feedback-box quip-box" data-testid="fruit-quips" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div className="feedback-box quip-box food-station-note" data-testid="fruit-quips" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <span className="quip-box__tag">🍉 {t.hotpot.servedTag}</span>
             <strong style={{ color: 'var(--c-pink-deep)', display: 'block' }}>{fruitName}</strong>
             {fruitQuipLines.map((l) => (
@@ -609,7 +656,7 @@ export function FoodScene() {
             )}
           </motion.div>
         ) : clueShown && !fruitMade ? (
-          <motion.div key="clue" className="clue-card" data-testid="clue-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+          <motion.div key="clue" className="clue-card food-station-note" data-testid="clue-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
             <span className="clue-card__tag">🔍 {t.fruit.clueTag}</span>
             <div className="clue-card__lines">
               {t.fruit.clueLines.map((l) => (
@@ -621,7 +668,7 @@ export function FoodScene() {
             </Button>
           </motion.div>
         ) : (
-          <div className={`feedback-box ${fruitMade && secretChosen ? 'feedback-box--weird' : ''}`}>
+          <div className={`feedback-box food-station-note ${fruitMade && secretChosen ? 'feedback-box--weird' : ''}`}>
             {fruitMade ? (
               <>
                 <strong style={{ color: 'var(--c-pink-deep)', display: 'block' }}>{fruitName}</strong>
@@ -632,7 +679,7 @@ export function FoodScene() {
             )}
           </div>
         )}
-        <div style={{ display: 'flex', gap: 14, justifyContent: 'flex-end' }}>
+        <div className="food-station-actions">
           <Button variant="secondary" small onClick={resetFruit} disabled={fruitPicks.length === 0 && !basePick && !toppingPick}>
             {t.fruit.reset}
           </Button>
@@ -694,7 +741,14 @@ export function FoodScene() {
           {COLLECTIBLES.map((c) => {
             const got = progress.collectibles[c.id];
             return (
-              <Card key={c.id} className={`gallery-item ${got ? '' : 'gallery-item--locked'}`} done={got} placeholder={!got}>
+              <Card
+                key={c.id}
+                className={`gallery-item ${got ? '' : 'gallery-item--locked'}`}
+                done={got}
+                placeholder={!got}
+                clickable={!!got}
+                onClick={got ? () => setGalleryPreview(c.id) : undefined}
+              >
                 <GalleryIcon asset={c.asset} fallback={got || !c.secret ? c.emoji : '❓'} showArt={got || !c.secret} />
                 <h4 className="card__title" style={{ fontSize: 26 }}>
                   {got || !c.secret ? c.name : '？？？'}
@@ -706,6 +760,19 @@ export function FoodScene() {
             );
           })}
         </div>
+        {galleryPreview && (() => {
+          const item = COLLECTIBLES.find((c) => c.id === galleryPreview);
+          if (!item) return null;
+          return (
+            <button type="button" className="food-preview" onClick={() => setGalleryPreview(null)}>
+              <span className="food-preview__card">
+                <img src={assetUrl(item.asset)} alt="" draggable={false} />
+                <strong>{item.name}</strong>
+                <span>{item.desc}</span>
+              </span>
+            </button>
+          );
+        })()}
       </div>
     </div>
   );
@@ -719,19 +786,12 @@ export function FoodScene() {
     gallery: renderGallery,
   };
 
-  /** 操作时不放普通立绘。Q 版只在说话时从旁边探出，开场和结算仍由面板里的她主持。 */
-  const foodGuide = station === 'hotpot' ? 'hotpot' : station === 'hidden' ? 'dish' : station === 'fruit' ? 'point' : station === 'hiddenPrompt' ? 'surprise' : 'point';
+  /** 普通立绘不常驻。出炉时神秘料理台自己端菜；其余语音浮在右侧，不占布局。 */
+  const cooking = game.phase === 'playing' || game.phase === 'paused';
 
   return (
-    <SceneLayout
-      scene="food"
-      title={t.title}
-      subtitle={t.subtitle}
-      side="overlay"
-      mood={null}
-      guide={game.phase === 'playing' ? { action: foodGuide, scale: 0.68, followVoice: true, onlyWhileSpeaking: true } : null}
-      compact
-    >
+    <SceneLayout scene="food" title={t.title} subtitle={t.subtitle} mood={null} guide={null} compact>
+      <div className={`food-room${station === 'hotpot' ? ' food-room--hotpot' : ''}`}>
       <MinigameShell
         phase={game.phase}
         title={t.title}
@@ -746,12 +806,9 @@ export function FoodScene() {
         onFinish={game.finish}
         finishLabel="领取印章，返回地图"
         hud={
-          <>
-            <span className="mg__hud-pill">{t.hub.doneHint(!!hotpotDone, !!fruitDone)}</span>
-            <span className="mg__hud-pill mg__hud-pill--gold">
-              图鉴 {collected}/{COLLECTIBLES.length}
-            </span>
-          </>
+          <span className="mg__hud-pill mg__hud-pill--gold">
+            图鉴 {collected}/{COLLECTIBLES.length}
+          </span>
         }
         result={
           <>
@@ -777,6 +834,40 @@ export function FoodScene() {
           </motion.div>
         </AnimatePresence>
       </MinigameShell>
+      {cooking && station !== 'hidden' && <FoodVoiceCast dock={station === 'hotpot' ? 'hotpot' : 'side'} />}
+      </div>
     </SceneLayout>
   );
 }
+
+/**
+ * 美食屋说话时的 Q 版向导，浮在右侧，不挤占料理台宽度。
+ * 火锅台贴在锅框右下外侧；其他台沿用右侧浮层。台词只来自语音字幕。
+ */
+const FoodVoiceCast = memo(function FoodVoiceCast({ dock }: { dock: 'hotpot' | 'side' }) {
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const voice = getVoiceCaption();
+
+  return (
+    <AnimatePresence>
+      {voice && (
+        <motion.div
+          key="food-cast"
+          className={`food-cast ${dock === 'hotpot' ? 'food-cast--hotpot' : ''}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.28, ease: 'easeOut' }}
+        >
+          <div className="food-cast__pop">
+            <ChibiMayi action={voice.action} scale={dock === 'hotpot' ? 280 / 150 : 300 / 150} facing="left" followVoice />
+            <div className="food-cast__bubble" role="status">
+              <span className="food-cast__who">{voice.speaker}</span>
+              <span className="food-cast__line">{voice.line}</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});

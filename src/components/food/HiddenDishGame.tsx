@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent } from 'react';
 import { assetPlaceholder, assetUrl } from '../../config/assets';
 import { COLLECTIBLES } from '../../config/food';
 import { TEXTS } from '../../config/texts';
 import { audio } from '../../core/audio';
-import { playCharacterVoice } from '../../core/characterVoice';
+import { getVoiceCaption, getVoiceCaptionSnapshot, playCharacterVoice, subscribeVoiceCaption } from '../../core/characterVoice';
 import { useAssetImageReady } from '../../hooks/useAssetImageReady';
 import { Button } from '../ui/Button';
 import { ChibiMayi } from '../ui/ChibiMayi';
@@ -117,6 +117,7 @@ function chunkColor(progress: number): string {
  * 防卡关只保留外壳上的「跳过这关」，步骤内不再提供第二种完成方式
  */
 export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps) {
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
   const pumpkinReady = useAssetImageReady('item_pumpkin');
   const stemReady = useAssetImageReady('item_pumpkin_stem');
   const ovenReady = useAssetImageReady('item_oven');
@@ -412,8 +413,13 @@ export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps)
           </motion.span>
         ))}
         <motion.div className="hd-chibi" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-          <ChibiMayi action="dish" scale={0.7} followVoice />
-          <span className="hd-chibi__bubble">{t.mayiReact[reactIdx]}</span>
+          <ChibiMayi action="dish" scale={2.2} followVoice />
+          <span className="hd-chibi__bubble">
+            {(() => {
+              const voice = getVoiceCaption();
+              return voice ? `${voice.speaker}：${voice.line}` : t.mayiReact[reactIdx];
+            })()}
+          </span>
         </motion.div>
       </motion.div>
     );
@@ -475,7 +481,7 @@ export function HiddenDishGame({ active, onServe, onBack }: HiddenDishGameProps)
             </motion.div>
           </AnimatePresence>
         </div>
-        <div style={{ display: 'flex', gap: 14, justifyContent: 'flex-end', alignItems: 'center' }}>
+        <div className="food-station-actions">
           {revealed && (
             <Button variant="secondary" small onClick={reset} data-testid="hd-replay">
               {t.replay}
