@@ -27,19 +27,40 @@ export const WISH_CARD_TOTAL = 5;
 /** 自定义心愿最大字数（按 Unicode 码点计） */
 export const CUSTOM_WISH_MAX = 80;
 
-/** 音频设置 */
+/**
+ * 音频设置。音量都是 0~1。
+ * 实际响度 = 总音量 × 分类音量 × 资源校准 × 临时压低。
+ */
 export interface AudioSettings {
-  /** 主音量 0~1 */
+  /** 总音量 */
   volume: number;
-  /** 是否静音 */
+  /** 是否全部静音 */
   muted: boolean;
   /**
    * 循环 BGM 是否开启。
-   * 存档里没有这个字段时视为「玩家还没选过」，默认开启。
-   * 玩家关掉之后会写成 false，之后不再自动打开。
+   * 玩家关掉之后写入存档，换场景不会再打开。
    */
   bgmOn: boolean;
+  /** 背景音乐分类音量 */
+  bgm: number;
+  /** Q 版麻衣语音分类音量 */
+  voice: number;
+  /** 游戏音效分类音量 */
+  sfx: number;
+  /** 《红豆》分类音量 */
+  gift: number;
 }
+
+/** 新游戏和「恢复默认」使用的音量 */
+export const AUDIO_DEFAULTS: AudioSettings = {
+  volume: 1,
+  muted: false,
+  bgmOn: true,
+  bgm: 0.15,
+  voice: 1,
+  sfx: 0.55,
+  gift: 0.8,
+};
 
 /** 游戏设置 */
 export interface GameSettings {
@@ -173,7 +194,7 @@ export function createDefaultProgress(): GameProgress {
     },
     hintsSeen: {},
     settings: { danmuTimer: false },
-    audio: { volume: 0.55, muted: false, bgmOn: true },
+    audio: { ...AUDIO_DEFAULTS },
   };
 }
 
@@ -352,6 +373,10 @@ export function normalizeProgress(raw: unknown): GameProgress {
       volume: unit(audioSrc.volume, def.audio.volume),
       muted: bool(audioSrc.muted, false),
       bgmOn: bool(audioSrc.bgmOn, true),
+      bgm: unit(audioSrc.bgm, AUDIO_DEFAULTS.bgm),
+      voice: unit(audioSrc.voice, AUDIO_DEFAULTS.voice),
+      sfx: unit(audioSrc.sfx, AUDIO_DEFAULTS.sfx),
+      gift: unit(audioSrc.gift, AUDIO_DEFAULTS.gift),
     },
   };
 }

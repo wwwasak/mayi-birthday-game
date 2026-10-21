@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useSyncExternalStore } from 'react';
 import type { GuideAction } from '../../config/characters';
 import { SCENES, type SceneId } from '../../config/scenes';
+import { SCENE_THEMES, sceneThemeStyle } from '../../config/sceneThemes';
 import { getVoiceCaption, getVoiceCaptionSnapshot, subscribeVoiceCaption } from '../../core/characterVoice';
 import { ChibiMayi } from './ChibiMayi';
 import { PlaceholderBackground } from './PlaceholderBackground';
@@ -58,8 +59,10 @@ export function SceneLayout({
   const showGuide = !!guide && (!guide.onlyWhileSpeaking || speaking);
   const showPlayer = mood !== null;
   const def = SCENES[scene];
+  const theme = SCENE_THEMES[scene];
+  const themed = theme.skin === 'themed';
   return (
-    <div className={`scene scene--${scene}`}>
+    <div className={`scene scene--${scene}${themed ? ' scene--themed' : ''}`} style={themed ? sceneThemeStyle(theme) : undefined}>
       <div className="scene__bg">
         <PlaceholderBackground asset={def.bg} />
       </div>

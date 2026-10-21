@@ -23,26 +23,23 @@ export function EggScene() {
     return () => window.clearTimeout(id);
   }, []);
 
-  const white = (s: string) => <span style={{ color: '#fff', textShadow: '0 4px 0 rgba(0,0,0,0.3)' }}>{s}</span>;
-
   return (
     <SceneLayout
       scene="egg"
-      title={white(t.title)}
-      mood="normal"
-      guide={{ action: 'peek', scale: 0.75, followVoice: true }}
+      title={t.title}
+      mood={null}
+      guide={{ action: 'peek', scale: 0.75, followVoice: true, onlyWhileSpeaking: true }}
       actions={
         <Button variant="secondary" onClick={backToMap}>
           {t.back}
         </Button>
       }
     >
-      <Card tag="占位 · 后台控制室" style={{ background: 'rgba(20,20,40,0.85)', borderColor: '#5a4a8a', color: '#fff' }}>
+      <Card className="egg-note" tag="占位 · 后台控制室">
         {t.lines.map((line, i) => (
           <motion.p
             key={line}
-            className="card__text"
-            style={{ color: '#ddd', fontFamily: 'Consolas, monospace' }}
+            className="card__text egg-note__line"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 * i }}
@@ -51,8 +48,7 @@ export function EggScene() {
           </motion.p>
         ))}
         <motion.p
-          className="card__text"
-          style={{ marginTop: 24, fontSize: 36, fontWeight: 800, color: 'var(--c-gold)' }}
+          className="egg-note__quote"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 * t.lines.length + 0.3 }}

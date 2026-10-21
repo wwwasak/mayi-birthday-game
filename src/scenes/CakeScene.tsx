@@ -64,7 +64,7 @@ export function CakeScene() {
       title={t.title}
       subtitle={t.subtitle}
       mood={lit ? 'happy' : 'normal'}
-      guide={{ action: lit ? 'host' : 'point', scale: 0.9, followVoice: true }}
+      guide={{ action: lit ? 'host' : 'point', scale: 0.72, followVoice: true }}
       actions={
         lit ? (
           <Button variant="gold" data-hint-target="cake-next" onClick={() => goTo('candle')}>
@@ -93,7 +93,7 @@ export function CakeScene() {
             <CakeCandles lit={progress.candles} blown={[]} interactive={!lit} goldBurst={goldBurst} onLight={lightOne} />
           </div>
         )}
-        <p className="card__text" style={{ marginTop: 18, fontWeight: 700, color: 'var(--c-pink-deep)', minHeight: 40 }}>
+        <p className="card__text" style={{ marginTop: 18, fontWeight: 700, minHeight: 40 }}>
           {lit ? t.lit : t.progress(Object.values(progress.candles).filter(Boolean).length)}
         </p>
       </Card>

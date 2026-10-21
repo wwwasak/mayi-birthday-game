@@ -54,7 +54,7 @@ export function CandleScene() {
       title={t.title}
       subtitle={t.subtitle}
       mood={done ? 'happy' : wished ? 'normal' : 'wish'}
-      guide={{ action: guideAction, scale: 0.9, followVoice: true }}
+      guide={{ action: guideAction, scale: 0.72, followVoice: true }}
       actions={
         done ? (
           <Button variant="gold" data-hint-target="candle-action" data-testid="candle-to-music" onClick={() => goTo('music')}>
@@ -85,7 +85,7 @@ export function CandleScene() {
             <CakeCandles lit={progress.candles} blown={progress.blownCandles} />
           </div>
         )}
-        <p className="card__text" style={{ marginTop: 18, fontWeight: 700, color: 'var(--c-pink-deep)', minHeight: 40 }} data-testid="candle-status">
+        <p className="card__text" style={{ marginTop: 18, fontWeight: 700, minHeight: 40 }} data-testid="candle-status">
           {done ? t.wishSent : wished ? t.left(left) : t.wishPrompt}
         </p>
         {done && <p className="card__text" style={{ marginTop: 6 }}>{t.blown}</p>}

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { Button } from '../components/ui/Button';
 import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
+import { SCENE_THEMES, sceneThemeStyle } from '../config/sceneThemes';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { assetUrl } from '../config/assets';
 import { SCENES } from '../config/scenes';
@@ -204,7 +205,7 @@ export function FinalScene() {
   };
 
   return (
-    <div className={`scene theater theater--${act.kind}`} data-act={act.id} data-step={step}>
+    <div className={`scene scene--final scene--themed theater theater--${act.kind}`} style={sceneThemeStyle(SCENE_THEMES.final)} data-act={act.id} data-step={step}>
       {/* 背景层 */}
       <div className="theater__layer theater__layer--bg">
         <PlaceholderBackground asset={SCENES.final.bg} />

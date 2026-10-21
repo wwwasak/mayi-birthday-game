@@ -719,8 +719,7 @@ export function FoodScene() {
     gallery: renderGallery,
   };
 
-  /** 玩家站在料理台一侧。思考和开心都只是表情，台词由旁边的 Q 版向导说。 */
-  const foodMood = station === 'hidden' ? 'think' : hotpotDone && fruitDone ? 'happy' : 'normal';
+  /** 操作时不放普通立绘。Q 版只在说话时从旁边探出，开场和结算仍由面板里的她主持。 */
   const foodGuide = station === 'hotpot' ? 'hotpot' : station === 'hidden' ? 'dish' : station === 'fruit' ? 'point' : station === 'hiddenPrompt' ? 'surprise' : 'point';
 
   return (
@@ -728,8 +727,9 @@ export function FoodScene() {
       scene="food"
       title={t.title}
       subtitle={t.subtitle}
-      mood={game.phase === 'playing' ? foodMood : null}
-      guide={game.phase === 'playing' ? { action: foodGuide, scale: 0.82, followVoice: true } : null}
+      side="overlay"
+      mood={null}
+      guide={game.phase === 'playing' ? { action: foodGuide, scale: 0.68, followVoice: true, onlyWhileSpeaking: true } : null}
       compact
     >
       <MinigameShell

@@ -1241,16 +1241,81 @@
   text-shadow: 0 8px 24px rgba(201, 164, 90, 0.45);
 }
 
-.scene--mint .scene__side--overlay {
-  left: 4px;
-  right: auto;
-  bottom: 0;
-  z-index: 5;
+/* 游玩时从右侧登场。不接点击，避免挡住糖果。 */
+.mint-cast {
+  position: absolute;
+  right: 18px;
+  bottom: 10px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+  transform-origin: 100% 100%;
 }
 
-.scene--mint .scene__guide {
-  height: 118px;
-  filter: drop-shadow(0 8px 10px rgba(80, 50, 30, 0.18));
+.mint-cast__pop {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+  animation: mint-cast-in 0.32s cubic-bezier(0.2, 0.85, 0.2, 1) forwards;
+}
+
+.mint-cast .chibi {
+  filter: drop-shadow(0 12px 14px rgba(70, 48, 30, 0.22));
+}
+
+@keyframes mint-cast-in {
+  0% { transform: translateX(72px) scale(0.88); }
+  70% { transform: translateX(0) scale(1.05); }
+  100% { transform: translateX(0) scale(1); }
+}
+
+.mint-cast__bubble {
+  position: relative;
+  margin-top: 36px;
+  max-width: 260px;
+  padding: 10px 16px 12px;
+  border-radius: 18px 18px 8px 18px;
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(255, 236, 228, 0.96));
+  border: 2px solid rgba(201, 164, 90, 0.85);
+  box-shadow: 0 8px 18px rgba(90, 60, 30, 0.14);
+  color: #3e4a44;
+  text-align: left;
+}
+
+.mint-cast__bubble::after {
+  content: '';
+  position: absolute;
+  right: -11px;
+  top: 28px;
+  border-width: 8px 0 8px 11px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(201, 164, 90, 0.9);
+}
+
+.mint-cast__who {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #b85b78;
+}
+
+.mint-cast__line {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #3e342c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mint-cast__pop {
+    animation: none;
+  }
 }
 
 @keyframes mint-timer-pulse {

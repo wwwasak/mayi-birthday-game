@@ -634,6 +634,209 @@ button:focus-visible {
   padding: 2px 4px;
 }
 
+.hud-audio {
+  position: relative;
+}
+
+/* ===== 声音设置：视口居中弹窗（Portal 挂到 body） ===== */
+.audio-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(42, 24, 38, 0.42);
+  pointer-events: auto;
+}
+
+.audio-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: min(92vh, 720px);
+  pointer-events: auto;
+}
+
+.audio-modal__card {
+  position: relative;
+  padding: 22px 24px 20px;
+  border-radius: 24px;
+  background: linear-gradient(165deg, #fffaf6 0%, #fff0f5 48%, #fff8ec 100%);
+  border: 2px solid rgba(212, 175, 98, 0.85);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset,
+    0 24px 56px rgba(58, 28, 44, 0.28);
+  color: #4a3b4d;
+  overflow: auto;
+  max-height: inherit;
+}
+
+.audio-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(184, 91, 130, 0.35);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #6b3d52;
+  font-size: 28px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, border-color 0.15s ease;
+}
+
+.audio-modal__close:hover {
+  background: #fff;
+  border-color: rgba(184, 91, 130, 0.65);
+  transform: scale(1.04);
+}
+
+.audio-modal__close:active {
+  transform: scale(0.96);
+}
+
+.audio-modal__close:focus-visible {
+  outline: 3px solid var(--c-gold);
+  outline-offset: 2px;
+}
+
+.audio-modal__title {
+  margin: 0 40px 16px 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #5a3b4d;
+  text-align: center;
+}
+
+.audio-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audio-modal__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.4fr) 52px;
+  gap: 12px;
+  align-items: center;
+  margin: 6px 0;
+  font-size: 17px;
+}
+
+.audio-modal__label {
+  color: #4a3b4d;
+  font-weight: 600;
+}
+
+.audio-modal__pct {
+  font-style: normal;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #7a4d62;
+  font-weight: 700;
+}
+
+.audio-modal__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  margin: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f3c1d2, #e7c98a);
+  outline: none;
+}
+
+.audio-modal__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #b85b82;
+  background: #fffaf6;
+  box-shadow: 0 2px 6px rgba(80, 40, 50, 0.28);
+  cursor: pointer;
+}
+
+.audio-modal__slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #b85b82;
+  background: #fffaf6;
+  cursor: pointer;
+}
+
+.audio-modal__slider::-moz-range-track {
+  height: 10px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f3c1d2, #e7c98a);
+}
+
+.audio-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  justify-content: center;
+}
+
+.audio-modal__btn,
+.audio-modal__link {
+  border: 1px solid rgba(184, 91, 130, 0.45);
+  background: rgba(255, 255, 255, 0.88);
+  color: #4a3b4d;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.audio-modal__btn:hover,
+.audio-modal__link:hover {
+  background: #fff;
+  border-color: rgba(184, 91, 130, 0.7);
+}
+
+.audio-modal__link {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.audio-modal__warn {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #a35b00;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .audio-modal__row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .audio-modal__pct {
+    text-align: left;
+  }
+
+  .audio-modal__title {
+    font-size: 22px;
+  }
+}
+
 .hud__toast {
   position: absolute;
   left: 50%;

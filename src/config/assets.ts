@@ -23,10 +23,14 @@ export interface AssetEntry {
   placeholder?: string;
   /** 音频：是否循环（BGM） */
   loop?: boolean;
-  /** 音频：默认音量 0~1 */
+  /**
+   * 单个音源的校准系数 0~1。
+   * 玩家听到的响度还要再乘总音量和分类音量。
+   * 循环 BGM 与《红豆》保持 1，避免和分类滑块叠成两次衰减。
+   */
   volume?: number;
-  /** 音频分组。voice 走角色语音通道，不和音效混用。 */
-  group?: 'bgm' | 'sfx' | 'voice';
+  /** 音频分组。gift 是《红豆》，不参与 BGM 压低。 */
+  group?: 'bgm' | 'sfx' | 'voice' | 'gift';
 }
 
 /** 资源根目录（相对路径，不可写成绝对路径） */
@@ -494,21 +498,24 @@ export const ASSETS = {
     path: 'audio/bgm_park.mp3',
     description: '游园会主 BGM（轻快、可循环）',
     loop: true,
-    volume: 0.32,
+    volume: 1,
+    group: 'bgm',
   },
   bgm_cake: {
     kind: 'audio',
     path: 'audio/bgm_cake.mp3',
     description: '蛋糕房 BGM（温柔、可循环）',
     loop: true,
-    volume: 0.32,
+    volume: 1,
+    group: 'bgm',
   },
   music_hongdou: {
     kind: 'audio',
     path: 'audio/hongdou.mp3',
     description: '音乐礼物《红豆》（需为自有翻唱或已授权版本）',
     loop: false,
-    volume: 0.8,
+    volume: 1,
+    group: 'gift',
   },
   sfx_click: {
     kind: 'audio',

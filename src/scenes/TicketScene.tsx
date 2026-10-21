@@ -81,7 +81,7 @@ export function TicketScene() {
       title={t.title}
       subtitle={t.subtitle}
       mood="happy"
-      guide={{ action: 'point', scale: 0.8, followVoice: true }}
+      guide={{ action: 'point', scale: 0.72, followVoice: true, onlyWhileSpeaking: true }}
     >
       <motion.div className="ticket" data-testid="ticket" initial={{ opacity: 0, y: 30, rotate: -2 }} animate={{ opacity: 1, y: 0, rotate: -1 }} transition={{ type: 'spring', stiffness: 160, damping: 18 }}>
         <div className="ticket__head">

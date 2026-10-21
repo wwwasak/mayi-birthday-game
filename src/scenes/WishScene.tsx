@@ -428,8 +428,8 @@ export function WishScene() {
   return (
     <SceneLayout
       scene="wish"
-      title={<span style={{ color: '#fff', textShadow: '0 4px 0 rgba(0,0,0,0.25)' }}>{t.title}</span>}
-      subtitle={<span style={{ color: 'rgba(255,255,255,0.8)' }}>{t.subtitle}</span>}
+      title={t.title}
+      subtitle={t.subtitle}
       mood={null}
       compact
     >

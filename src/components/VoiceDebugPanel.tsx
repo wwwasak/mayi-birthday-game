@@ -17,8 +17,19 @@ export function VoiceDebugPanel() {
     return 'group' in entry && entry.group === 'voice';
   }) as AudioAssetId[];
 
+  const debug = audio.getDebug();
+
   return (
     <aside className="voice-debug" aria-label="角色语音试听">
+      <strong>音频调试</strong>
+      <p>
+        BGM {debug.bgmId ?? '无'} #{debug.soundId ?? '-'} · {debug.state}
+        {debug.ducking ? ' · 压低中' : ''} · 增益 {debug.volume.toFixed(3)} · 在响 {debug.sounding}
+      </p>
+      <p>
+        实例 park {debug.instances.bgm_park ?? 0} / cake {debug.instances.bgm_cake ?? 0} / 红豆 {debug.instances.music_hongdou ?? 0}
+      </p>
+      {debug.logs.length > 0 && <p>{debug.logs[debug.logs.length - 1]}</p>}
       <strong>角色语音试听</strong>
       <ul>
         {voices.map((id) => {

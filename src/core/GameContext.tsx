@@ -23,6 +23,7 @@ import {
   loadProgress,
   saveProgress,
   type CollectibleId,
+  type AudioSettings,
   type GameProgress,
   type GameRecords,
   type GameSettings,
@@ -113,9 +114,14 @@ export interface GameContextValue {
    * @param partial 要合并的设置
    */
   updateSettings: (partial: Partial<GameSettings>) => void;
-  /** 设置音量 0~1 */
+  /** 设置总音量 0~1 */
   setVolume: (v: number) => void;
-  /** 切换静音 */
+  /**
+   * 合并音频设置并立刻作用于正在播放的声音。
+   * @param partial 要修改的音量或静音
+   */
+  setAudio: (partial: Partial<AudioSettings>) => void;
+  /** 切换全部静音 */
   toggleMute: () => void;
   /**
    * 打开或关闭循环 BGM，并写入存档。
@@ -140,6 +146,7 @@ const GameContext = createContext<GameContextValue | null>(null);
 export function GameProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<GameProgress>(() => loadProgress());
   const [scene, setScene] = useState<SceneId>(INITIAL_SCENE);
+  audio.holdMix(progress.audio);
   const [storageOk, setStorageOk] = useState<boolean>(() => isStorageAvailable());
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | null>(null);
@@ -150,12 +157,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!ok && storageOk) setStorageOk(false);
   }, [progress, storageOk]);
 
-  // 音量、静音和 BGM 开关同步到播放器。关 BGM 会停掉当前曲子，不会在玩家关掉之后再打开。
+  // 音量、静音和 BGM 开关同步到唯一的播放器。分类音量变化时正在响的声音会马上跟着变。
   useEffect(() => {
-    audio.setVolume(progress.audio.volume);
-    audio.setMuted(progress.audio.muted);
-    audio.setBgmEnabled(progress.audio.bgmOn);
-  }, [progress.audio.volume, progress.audio.muted, progress.audio.bgmOn]);
+    audio.setMix(progress.audio);
+  }, [progress.audio]);
 
   const showToast = useCallback((msg: string, ms = 2200) => {
     setToast(msg);
@@ -282,9 +287,23 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setProgress((p) => ({ ...p, settings: { ...p.settings, ...partial } }));
   }, []);
 
-  const setVolume = useCallback((v: number) => {
-    setProgress((p) => ({ ...p, audio: { ...p.audio, volume: Math.min(1, Math.max(0, v)) } }));
+  const setAudio = useCallback((partial: Partial<AudioSettings>) => {
+    const clamp = (v: number) => Math.min(1, Math.max(0, v));
+    setProgress((p) => ({
+      ...p,
+      audio: {
+        ...p.audio,
+        ...partial,
+        volume: partial.volume === undefined ? p.audio.volume : clamp(partial.volume),
+        bgm: partial.bgm === undefined ? p.audio.bgm : clamp(partial.bgm),
+        voice: partial.voice === undefined ? p.audio.voice : clamp(partial.voice),
+        sfx: partial.sfx === undefined ? p.audio.sfx : clamp(partial.sfx),
+        gift: partial.gift === undefined ? p.audio.gift : clamp(partial.gift),
+      },
+    }));
   }, []);
+
+  const setVolume = useCallback((v: number) => setAudio({ volume: v }), [setAudio]);
 
   const toggleMute = useCallback(() => {
     setProgress((p) => ({ ...p, audio: { ...p.audio, muted: !p.audio.muted } }));
@@ -322,6 +341,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       markHintSeen,
       updateSettings,
       setVolume,
+      setAudio,
       toggleMute,
       setBgmOn,
       resetProgress,
@@ -347,6 +367,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       markHintSeen,
       updateSettings,
       setVolume,
+      setAudio,
       toggleMute,
       setBgmOn,
       resetProgress,

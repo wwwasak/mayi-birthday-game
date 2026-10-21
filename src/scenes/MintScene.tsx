@@ -1,12 +1,13 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { MinigameShell } from '../components/minigame/MinigameShell';
+import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { SceneLayout } from '../components/ui/SceneLayout';
 import { assetUrl, type ImageAssetId } from '../config/assets';
 import { TEXTS } from '../config/texts';
 import { useGame } from '../core/GameContext';
 import { audio } from '../core/audio';
-import { playCharacterVoice } from '../core/characterVoice';
+import { getVoiceCaption, getVoiceCaptionSnapshot, playCharacterVoice, subscribeVoiceCaption } from '../core/characterVoice';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useCountdown } from '../hooks/useCountdown';
 import { useMinigamePhase } from '../hooks/useMinigamePhase';
@@ -62,7 +63,7 @@ function spawnCandy(): Candy {
   return {
     id: nextId++,
     kind,
-    x: 8 + Math.random() * 84,
+    x: 7 + Math.random() * 58,
     y: 12 + Math.random() * 76,
     ttl: LIFE[kind],
     life: LIFE[kind],
@@ -215,17 +216,9 @@ export function MintScene() {
   const best = Math.max(progress.records.mintBest, score);
   const timerUrgent = leftMs < 5000;
 
-  /** 普通立绘不常驻。开场和结算由面板里的 Q 版向导主持；游玩时她只在说话时从左下角探出。 */
+  /** 普通立绘不常驻。开场和结算由面板里的 Q 版向导主持；游玩时说话才从右侧登场。 */
   return (
-    <SceneLayout
-      scene="mint"
-      title={t.title}
-      subtitle={t.subtitle}
-      side="overlay"
-      mood={null}
-      guide={game.phase === 'playing' ? { action: 'happy', scale: 0.68, followVoice: true, onlyWhileSpeaking: true } : null}
-      compact
-    >
+    <SceneLayout scene="mint" title={t.title} subtitle={t.subtitle} mood={null} guide={null} compact>
       <MinigameShell
         phase={game.phase}
         title={t.title}
@@ -360,6 +353,39 @@ export function MintScene() {
 
         </div>
       </MinigameShell>
+      {playing && <MintVoiceCast />}
     </SceneLayout>
   );
 }
+
+/**
+ * 薄荷糖局内的 Q 版向导。只在已有字幕时出现，台词来自语音系统，不另写一份。
+ * 连续两句时保持在场，避免反复滑入滑出。
+ */
+const MintVoiceCast = memo(function MintVoiceCast() {
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const voice = getVoiceCaption();
+
+  return (
+    <AnimatePresence>
+      {voice && (
+        <motion.div
+          key="mint-cast"
+          className="mint-cast"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.28, ease: 'easeOut' }}
+        >
+          <div className="mint-cast__pop">
+          <div className="mint-cast__bubble" role="status">
+            <span className="mint-cast__who">{voice.speaker}</span>
+            <span className="mint-cast__line">{voice.line}</span>
+          </div>
+          <ChibiMayi action={voice.action} scale={380 / 150} followVoice />
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+});

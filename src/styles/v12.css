@@ -1639,6 +1639,7 @@
 
 .gate2__reply {
   min-height: 84px;
+  padding-top: 18px;
 }
 
 .gate2__actions {

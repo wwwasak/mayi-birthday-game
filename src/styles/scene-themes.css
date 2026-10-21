@@ -1,0 +1,454 @@
+/* 按屋子切换的界面皮肤。颜色来自 sceneThemes.ts 写到根节点上的变量。
+   地图和薄荷糖不带 .scene--themed，不受这里影响。 */
+
+.scene--themed {
+  --c-ink: var(--theme-ink);
+  --c-ink-soft: var(--theme-ink-soft);
+  --c-pink: var(--theme-accent);
+  --c-pink-deep: var(--theme-accent-deep);
+  --c-gold: var(--theme-gold);
+}
+
+.scene--themed .scene__content {
+  padding: 86px 88px 32px;
+}
+
+.scene--themed .scene__title,
+.scene--themed .mg__panel-title,
+.scene--themed .mg__result-title,
+.scene--themed .step-title,
+.scene--themed .card__title {
+  font-family: var(--theme-font);
+  color: var(--theme-title);
+  text-shadow: none;
+}
+
+.scene--themed .scene__title {
+  display: inline-block;
+  width: fit-content;
+  padding: 4px 22px 8px;
+  background: var(--theme-chip);
+  border: 2px solid var(--theme-line);
+  border-radius: 16px 18px 20px 16px;
+  box-shadow: var(--theme-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  letter-spacing: 3px;
+}
+
+.scene--themed .scene__subtitle {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 14px;
+  color: var(--theme-ink);
+  background: var(--theme-chip);
+  border-radius: 999px;
+  text-shadow: none;
+}
+
+.scene--themed .scene__body {
+  margin-top: 14px;
+}
+
+.scene--themed .mg {
+  height: 790px;
+  border-radius: 32px;
+  background: var(--theme-panel);
+  border: 3px solid var(--theme-line);
+  box-shadow: var(--theme-shadow), inset 0 0 0 5px var(--theme-inset);
+  backdrop-filter: blur(2px);
+}
+
+.scene--themed .mg__topbar {
+  background: var(--theme-chip);
+  border-bottom: 1px solid var(--theme-line);
+}
+
+.scene--themed .mg__hud-pill {
+  background: var(--theme-panel-strong);
+  color: var(--theme-ink);
+  border: 1px solid var(--theme-line);
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.scene--themed .mg__hud-pill--accent {
+  color: var(--theme-accent-deep);
+}
+
+.scene--themed .mg__hud-pill--gold {
+  color: var(--theme-accent-ink);
+  background: var(--theme-button);
+}
+
+.scene--themed .mg__play--dim {
+  filter: none;
+}
+
+.scene--themed .mg__overlay {
+  background: rgba(40, 24, 36, 0.16);
+}
+
+.scene--themed .mg__panel,
+.scene--themed .card,
+.scene--themed .mg__stat,
+.scene--themed .feedback-box,
+.scene--themed .quip-box,
+.scene--themed .clue-card {
+  background: var(--theme-panel-strong);
+  border: 2px solid var(--theme-line);
+  box-shadow: var(--theme-shadow);
+  color: var(--theme-ink);
+  backdrop-filter: none;
+}
+
+.scene--themed .card__text,
+.scene--themed .mg__panel-desc,
+.scene--themed .mg__rules,
+.scene--themed .mg__result,
+.scene--themed .quip-box__line {
+  color: var(--theme-ink);
+  text-shadow: none;
+}
+
+.scene--themed .mg__stat-value,
+.scene--themed .exam-q__no {
+  color: var(--theme-accent-deep);
+}
+
+.scene--themed .btn {
+  color: var(--theme-accent-ink);
+  background: var(--theme-button);
+  border: 2px solid rgba(255, 252, 244, 0.9);
+  box-shadow: 0 6px 0 var(--theme-button-edge), 0 10px 16px rgba(60, 36, 24, 0.12);
+}
+
+.scene--themed .btn:active {
+  box-shadow: 0 3px 0 var(--theme-button-edge);
+}
+
+.scene--themed .btn--secondary {
+  color: var(--theme-alt-ink);
+  background: var(--theme-alt);
+  box-shadow: 0 6px 0 var(--theme-alt-edge), 0 10px 16px rgba(60, 36, 24, 0.08);
+}
+
+.scene--themed .btn--ghost {
+  color: var(--theme-ink);
+  background: var(--theme-chip);
+  border: 2px dashed var(--theme-line);
+  box-shadow: none;
+}
+
+/* ===== 美食屋：料理台、甜品台、菜单卡 ===== */
+.scene--food .food-station {
+  border-radius: 24px;
+}
+
+.scene--food .food-station__icon {
+  box-shadow: inset 0 0 0 3px rgba(255, 248, 236, 0.9);
+  border-radius: 22px;
+}
+
+.scene--food .food-station__done {
+  background: var(--theme-accent-deep);
+}
+
+.scene--food .ingredient {
+  color: var(--theme-ink);
+  background: var(--theme-panel-strong);
+  border-color: var(--theme-line);
+}
+
+.scene--food .ingredient--picked {
+  border-color: var(--theme-gold);
+  background: #fff6dc;
+}
+
+.scene--food .pot-area {
+  border-radius: 28px;
+  border: 2px solid var(--theme-line);
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(255, 196, 140, 0.38), transparent 58%),
+    linear-gradient(180deg, rgba(255, 248, 236, 0.16), rgba(120, 64, 28, 0.12));
+  box-shadow: inset 0 0 0 7px rgba(255, 246, 230, 0.28);
+}
+
+.scene--food .food-jar,
+.scene--food .food-jar-bubble {
+  background: var(--theme-panel-strong);
+  color: var(--theme-ink);
+  border: 1px solid var(--theme-line);
+}
+
+.scene--food .step-title {
+  color: var(--theme-title);
+}
+
+.scene--food .scene__side--overlay {
+  left: auto;
+  right: 12px;
+  bottom: 18px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* ===== 考场：题目像摊开的认证卷，选项是独立签 ===== */
+.scene--exam .exam-view {
+  background: transparent;
+}
+
+.scene--exam .exam-q {
+  font-size: 30px;
+  line-height: 1.45;
+  color: var(--theme-ink);
+}
+
+.scene--exam .exam-tag--fact {
+  background: #e4ebff;
+  color: var(--theme-accent-deep);
+}
+
+.scene--exam .exam-tag--fun {
+  background: #ffe8f2;
+  color: var(--theme-accent);
+}
+
+.scene--exam .exam-tag--absurd {
+  background: #fff3d4;
+  color: #8a6420;
+}
+
+.scene--exam .option-btn {
+  background: var(--theme-panel-strong);
+  color: var(--theme-ink);
+  border: 2px solid transparent;
+  border-radius: 16px;
+}
+
+.scene--exam .option-btn:hover {
+  border-color: var(--theme-gold);
+}
+
+.scene--exam .option-btn--picked {
+  border-color: var(--theme-gold);
+  background: #fff8e4;
+}
+
+.scene--exam .option-btn--correct {
+  border-color: var(--theme-ok-ink);
+  background: var(--theme-ok);
+  color: var(--theme-ok-ink);
+}
+
+.scene--exam .option-btn--wrong {
+  border-color: var(--theme-bad-ink);
+  background: var(--theme-bad);
+  color: var(--theme-bad-ink);
+}
+
+.scene--exam .exam-feedback {
+  background: var(--theme-chip);
+  color: var(--theme-ink);
+  border: 1px solid var(--theme-line);
+  border-radius: 16px;
+}
+
+.scene--exam .exam-feedback--ok {
+  background: var(--theme-ok);
+  color: var(--theme-ok-ink);
+}
+
+.scene--exam .exam-feedback--bad {
+  background: var(--theme-bad);
+  color: var(--theme-bad-ink);
+}
+
+.scene--exam .exam-danmu {
+  color: var(--theme-ink);
+  background: var(--theme-chip);
+  border-radius: 14px;
+}
+
+.scene--exam .exam-cast {
+  height: 188px;
+}
+
+.scene--exam .exam-cast .pc-bust {
+  width: 104px;
+  height: 210px;
+}
+
+/* ===== 心愿屋：拿掉挡住夜景的纯色底，卡片改成灯笼纸 ===== */
+.scene--wish .wish-view {
+  background: transparent;
+}
+
+.scene--wish .sakura-stage {
+  border-radius: 28px;
+  background: radial-gradient(ellipse at 50% 78%, rgba(255, 214, 230, 0.2), rgba(36, 20, 56, 0.08) 68%);
+  box-shadow: inset 0 0 0 2px rgba(255, 228, 210, 0.35);
+}
+
+.scene--wish .sakura-stage--has-tree-art .sakura-ground {
+  display: none;
+}
+
+.scene--wish .wish-card__face--back {
+  background: linear-gradient(160deg, #6d5cae 0%, #8a6eb8 55%, #c489a8 100%);
+  border: 2px solid rgba(255, 236, 214, 0.7);
+}
+
+.scene--wish .wish-card__face--front {
+  background: var(--theme-panel-strong);
+  border: 2px solid var(--theme-gold);
+  color: var(--theme-ink);
+}
+
+.scene--wish .wish-card__title {
+  color: var(--theme-accent-deep);
+}
+
+.scene--wish .wish-status {
+  color: var(--theme-ink);
+  background: var(--theme-chip);
+  border-radius: 999px;
+  padding: 6px 16px;
+  text-shadow: none;
+  justify-self: center;
+}
+
+/* ===== 蛋糕房与吹蜡烛：礼物感面板，寿星在前，向导站在旁边 ===== */
+.scene--cake .card,
+.scene--candle .card {
+  background: var(--theme-panel);
+  text-align: center;
+}
+
+.scene--cake .scene__side,
+.scene--candle .scene__side {
+  flex-direction: row;
+  align-items: flex-end;
+  width: auto;
+  gap: 2px;
+}
+
+.scene--cake .scene__guide,
+.scene--candle .scene__guide {
+  width: 108px;
+  height: 128px;
+}
+
+.scene--cake .scene__side:has(.scene__guide) .pc-bust,
+.scene--candle .scene__side:has(.scene__guide) .pc-bust {
+  width: 200px;
+  height: 340px;
+}
+
+.scene--cake .card__text,
+.scene--candle .card__text {
+  color: var(--theme-accent-deep);
+}
+
+/* ===== 音乐礼物：唱片换成舞台的金边，文字不再强行涂白 ===== */
+.music-disc {
+  width: 250px;
+  height: 250px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #f4e2b4 0 15%, transparent 16% 20%, #3a2848 21% 100%);
+  box-shadow:
+    0 18px 36px rgba(40, 20, 48, 0.28),
+    inset 0 0 0 12px rgba(255, 232, 190, 0.45);
+}
+
+.scene--music .card {
+  background: var(--theme-panel);
+}
+
+/* ===== 闭园票根 ===== */
+.scene--ticket .ticket {
+  background: var(--theme-panel-strong);
+  border: 3px solid var(--theme-line);
+  box-shadow: var(--theme-shadow);
+  color: var(--theme-ink);
+}
+
+.scene--ticket .ticket__serial,
+.scene--ticket .ticket__label {
+  color: var(--theme-accent-deep);
+}
+
+/* ===== 彩蛋：夜班后台，深色纸条，不用纯黑控制台 ===== */
+.scene--egg .egg-note {
+  background: var(--theme-panel-strong);
+  border-color: var(--theme-line);
+  color: var(--theme-ink);
+}
+
+.scene--egg .egg-note__line {
+  color: var(--theme-ink-soft);
+  font-family: Consolas, 'Cascadia Mono', 'Microsoft YaHei UI', monospace;
+}
+
+.scene--egg .egg-note__quote {
+  margin-top: 24px;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--theme-gold);
+}
+
+/* ===== 最终演出：系统条用奶油金，祝福句仍留在夜空上 ===== */
+.theater.scene--themed .theater__title {
+  font-family: var(--theme-font);
+  color: var(--theme-title);
+  text-shadow: 0 2px 12px rgba(20, 8, 32, 0.45);
+}
+
+.theater.scene--themed .theater__act-label {
+  color: #fff6ea;
+  background: var(--theme-chip);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.theater.scene--themed .theater__system {
+  background: var(--theme-panel-strong);
+  border: 2px solid var(--theme-line);
+  box-shadow: var(--theme-shadow);
+}
+
+.theater.scene--themed .theater__sys-line,
+.theater.scene--themed .theater__reason {
+  color: var(--theme-ink);
+}
+
+.theater.scene--themed .theater__sys-tag {
+  background: var(--theme-accent-deep);
+}
+
+.theater.scene--themed .theater__lines--soft {
+  padding: 18px 28px;
+  border-radius: 24px;
+  background: rgba(28, 16, 44, 0.28);
+  border: 1px solid rgba(255, 232, 210, 0.22);
+}
+
+.theater.scene--themed .btn {
+  color: var(--theme-accent-ink);
+  background: var(--theme-button);
+  border: 2px solid rgba(255, 252, 244, 0.85);
+  box-shadow: 0 6px 0 var(--theme-button-edge);
+}
+
+.theater.scene--themed .btn--ghost {
+  color: #fff6ea;
+  background: var(--theme-chip);
+  border: 2px dashed rgba(255, 232, 210, 0.55);
+  box-shadow: none;
+}
+
+@supports not ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+  .scene--themed .mg {
+    background: var(--theme-panel-strong);
+  }
+}
