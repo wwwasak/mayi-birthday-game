@@ -689,6 +689,14 @@
   box-shadow: 0 6px 0 rgba(217, 54, 62, 0.2);
 }
 
+/* 顺心自在不盖红章，用一层淡金，动画仍是原来的落章。 */
+.theater[data-act='ease'] .theater__stamp {
+  border-color: #d4ae62;
+  color: #9a7340;
+  background: rgba(255, 250, 240, 0.82);
+  box-shadow: 0 6px 0 rgba(212, 174, 98, 0.28);
+}
+
 .theater__lines {
   display: flex;
   flex-direction: column;

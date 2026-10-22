@@ -17,7 +17,7 @@ import { useSceneHint } from '../hooks/useSceneHint';
 
 /** 第一幕系统加载时长 */
 const LOADING_MS = 1600;
-/** 第五幕「正在预测」到「预测失败」的等待 */
+/** 预测幕「正在预测」到「预测失败」的等待 */
 const PREDICT_MS = 1500;
 
 type Act = (typeof TEXTS.final.acts)[number];
@@ -108,7 +108,7 @@ export function FinalScene() {
     setStep(0);
   };
 
-  // 自动步骤：开场文案在幕布前换一句；第五幕预测一段时间后失败。计时器随幕次清掉，避免点开始后还改到下一幕。
+  // 自动步骤：开场文案在幕布前换一句；预测幕一段时间后失败。计时器随幕次清掉，避免点开始后还改到下一幕。
   useEffect(() => {
     let timer = 0;
     if (act.kind === 'loading' && step === 0) {
