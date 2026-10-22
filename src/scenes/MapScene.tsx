@@ -384,13 +384,13 @@ export function MapScene() {
           <button type="button" className="park__guide-hit" data-testid="map-chibi" aria-label={t.chibiHint} title={t.chibiHint} onClick={enterCurrent} />
         </motion.div>
 
-        <div className="park__player-mark" data-character-role="player_mayi" title="玩家麻衣">
-          {mapBustReady ? (
-            <img className="park__player-mark__art" src={assetUrl('player_mayi_map')} alt="" draggable={false} />
-          ) : (
-            <span className="park__player-mark__fallback" aria-hidden />
-          )}
-          <span className="park__player-mark__label">玩家</span>
+        <div className="park__player-mark" data-character-role="player_mayi">
+          <img
+            className={`park__player-mark__art${mapBustReady ? '' : ' park__player-mark__art--full'}`}
+            src={assetUrl(mapBustReady ? 'player_mayi_map' : 'char_normal')}
+            alt=""
+            draggable={false}
+          />
         </div>
 
         <div className="park__tray" style={{ left: STAMP_TRAY.x, top: STAMP_TRAY.y }}>
