@@ -1,18 +1,22 @@
-import { motion } from 'motion/react';
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { ChibiMayi } from '../components/ui/ChibiMayi';
+import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { SceneLayout } from '../components/ui/SceneLayout';
+import { GUIDE_SPEAKER_LABEL } from '../config/characters';
 import { TEXTS } from '../config/texts';
-import { playCharacterVoice } from '../core/characterVoice';
+import { getVoiceCaption, getVoiceCaptionSnapshot, playCharacterVoice, subscribeVoiceCaption } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 
 /**
- * 场景 13：隐藏彩蛋——被下线的“老登大道理功能”留下的一句话
+ * 场景：隐藏彩蛋。后台控制室里，被下线的功能只留下一句。
+ * 台词、触发和「找到过」的记录都沿用原来的规则，这里只排演出。
  */
 export function EggScene() {
   const { patch, backToMap } = useGame();
   const t = TEXTS.egg;
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const voice = getVoiceCaption();
 
   useEffect(() => {
     patch({ eggFound: true });
@@ -28,34 +32,40 @@ export function EggScene() {
       scene="egg"
       title={t.title}
       mood={null}
-      guide={{ action: 'peek', scale: 0.75, followVoice: true, onlyWhileSpeaking: true }}
       actions={
-        <Button variant="secondary" onClick={backToMap}>
+        <Button variant="secondary" onClick={backToMap} data-testid="egg-back">
           {t.back}
         </Button>
       }
     >
-      <Card className="egg-note" tag="占位 · 后台控制室">
-        {t.lines.map((line, i) => (
-          <motion.p
-            key={line}
-            className="card__text egg-note__line"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 * i }}
-          >
-            &gt; {line}
-          </motion.p>
-        ))}
-        <motion.p
-          className="egg-note__quote"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 * t.lines.length + 0.3 }}
-        >
-          {t.quote}
-        </motion.p>
-      </Card>
+      <div className="egg-room">
+        <div className="egg-veil" aria-hidden />
+        <div className="egg-spot" aria-hidden />
+        <div className="egg-screen" data-testid="egg-screen">
+          {t.lines.map((line, i) => (
+            <p key={line} className="egg-line" style={{ animationDelay: `${0.45 + i * 0.7}s` }}>
+              {line}
+            </p>
+          ))}
+          <p className="egg-quote" data-testid="egg-quote">
+            {t.quote}
+          </p>
+        </div>
+        <div className="egg-player" aria-hidden>
+          <PlaceholderCharacter mood="listen" frame="full" scale={1.72} />
+        </div>
+        {voice && (
+          <div className="egg-host">
+            <div className="egg-host__bubble" role="status">
+              <span className="egg-host__who">{GUIDE_SPEAKER_LABEL}</span>
+              <span className="egg-host__line">{voice.line}</span>
+            </div>
+            <div className="egg-host__cast">
+              <ChibiMayi action={voice.action} scale={1.65} facing="left" />
+            </div>
+          </div>
+        )}
+      </div>
     </SceneLayout>
   );
 }
