@@ -15,8 +15,8 @@ import { useHints } from '../core/HintContext';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
 import { useSceneHint } from '../hooks/useSceneHint';
 
-/** 每一行扫描文字的停留时间 */
-const SCAN_STEP_MS = 420;
+/** 每一行扫描文字的停留时间。留出读完短句的空隙，再换下一行。 */
+const SCAN_STEP_MS = 800;
 /** 闸门打开到切换场景的时间 */
 const GATE_OPEN_MS = 1100;
 
