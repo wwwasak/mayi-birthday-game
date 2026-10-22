@@ -36,6 +36,18 @@ export const CANDLE_IDS: readonly CandleId[] = ['mint', 'food', 'exam', 'wish', 
 export const CANDLE_LAYOUT: readonly CandleId[] = ['mint', 'food', 'mayi', 'exam', 'wish'];
 
 /**
+ * 烛芯在蛋糕图里的位置，相对整张图（含透明边），不是相对屏幕。
+ * 数值来自 cake.png 里五根已绘蜡烛的尖端：左起绿、橙、金、蓝、粉。
+ */
+export const CANDLE_WICK: Record<CandleId, { x: number; y: number }> = {
+  mint: { x: 0.3233, y: 0.0216 },
+  food: { x: 0.4113, y: 0.0216 },
+  mayi: { x: 0.4998, y: 0 },
+  exam: { x: 0.5877, y: 0.0216 },
+  wish: { x: 0.6762, y: 0.0216 },
+};
+
+/**
  * 吹灭波次。每次最多两根，按 2＋2＋1，金色最后。
  * 先灭最外侧两根，再灭金色旁边两根，最后灭正中。
  */

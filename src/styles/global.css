@@ -1136,8 +1136,15 @@ button.candle:focus-visible {
 
 .cake-stage {
   position: relative;
-  width: min(760px, 100%);
+  width: min(820px, 100%);
   margin: 8px auto 0;
+  padding-top: 108px;
+  overflow: visible;
+}
+
+.cake-visual {
+  position: relative;
+  overflow: visible;
 }
 
 .cake-stage__img {
@@ -1155,40 +1162,217 @@ button.candle:focus-visible {
 
 .cake-stage .candle-row {
   position: absolute;
-  left: 14%;
-  right: 14%;
-  top: 2%;
+  inset: 0;
+  display: block;
   margin: 0;
+}
+
+.cake-stage .candle-slot {
+  position: absolute;
+  width: 6.2%;
+  height: 20%;
+  transform: translate(-50%, 0);
+  gap: 0;
 }
 
 .cake-stage .candle,
 .cake-stage button.candle {
-  width: 52px;
-  height: 108px;
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
   background: transparent;
   box-shadow: none;
 }
 
+.cake-stage button.candle:hover,
+.cake-stage button.candle:active {
+  transform: none;
+  filter: brightness(1.12);
+}
+
+.cake-stage button.candle:focus,
+.cake-stage button.candle:focus-visible {
+  outline: none;
+}
+
 .cake-stage .candle__name {
   position: absolute;
-  top: 118px;
+  top: 100%;
   left: 50%;
-  width: 76px;
+  width: max-content;
   transform: translateX(-50%);
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.2;
+  margin: 6px 0 0;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(255, 250, 252, 0.78);
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
   color: #6a4a38;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
   pointer-events: none;
+}
+
+/* 火焰图的可视底边大约在图片高度的 91.3%、水平 51.8%。外层把这个点钉在烛芯上。 */
+.cake-stage .candle__flame,
+.cake-stage .candle__flame--art {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 168%;
+  aspect-ratio: 1011 / 1555;
+  height: auto;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  transform: translate(-51.8%, -91.3%);
+  pointer-events: none;
+}
+
+.cake-stage .candle__flame-sway {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 51.8% 91.3%;
+  filter: drop-shadow(0 0 6px rgba(255, 170, 60, 0.55));
+  animation: candle-sway 0.95s ease-in-out infinite;
+}
+
+.cake-stage .candle-slot:nth-child(2) .candle__flame-sway {
+  animation-duration: 1.15s;
+}
+
+.cake-stage .candle-slot:nth-child(3) .candle__flame-sway {
+  animation-duration: 0.82s;
+}
+
+.cake-stage .candle-slot:nth-child(4) .candle__flame-sway {
+  animation-duration: 1.05s;
+}
+
+.cake-stage .candle-slot:nth-child(5) .candle__flame-sway {
+  animation-duration: 0.9s;
+}
+
+@keyframes candle-sway {
+  0%,
+  100% {
+    transform: rotate(-3.5deg);
+  }
+  50% {
+    transform: rotate(3.5deg) scaleX(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cake-stage .candle__flame-sway,
+  .cake-stage .candle--just-out::after,
+  .cake-finale,
+  .cake-finale::before,
+  .cake-finale__spark {
+    animation: none;
+  }
+
+  .cake-finale,
+  .cake-stage .candle--just-out::after {
+    opacity: 0;
+  }
+}
+
+.cake-stage .candle--just-out::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 22px;
+  height: 48px;
+  margin-left: -11px;
+  border-radius: 40%;
+  background: radial-gradient(ellipse at 50% 80%, rgba(255, 255, 255, 0.72), rgba(255, 228, 236, 0.18) 68%, transparent 74%);
+  filter: blur(0.6px);
+  pointer-events: none;
+  animation: candle-smoke 1.2s ease-out forwards;
+}
+
+@keyframes candle-smoke {
+  from {
+    opacity: 0.8;
+    transform: translateY(0) scale(0.55, 0.7);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-52px) scale(1.05, 1.7);
+  }
+}
+
+.cake-finale {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.cake-finale::before {
+  content: '';
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  top: -18%;
+  height: 46%;
+  background: radial-gradient(ellipse at 50% 70%, rgba(255, 220, 150, 0.42), rgba(255, 186, 214, 0.12) 46%, transparent 72%);
+  animation: cake-wash 1.8s ease-out forwards;
+  pointer-events: none;
+}
+
+.cake-finale__spark {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffe08a 46%, rgba(255, 196, 90, 0) 74%);
+  box-shadow: 0 0 10px 3px rgba(255, 214, 120, 0.85);
+  pointer-events: none;
+  animation: cake-spark 1.6s ease-out forwards;
+}
+
+.cake-finale__spark--pink {
+  background: radial-gradient(circle, #fff 0%, #ffd0e4 48%, rgba(255, 160, 196, 0) 74%);
+  box-shadow: 0 0 10px 3px rgba(255, 170, 200, 0.85);
+}
+
+@keyframes cake-wash {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes cake-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1.05);
+  }
 }
 
 .candle__flame--art {
   background: none;
   box-shadow: none;
-  width: 48px;
-  height: 64px;
-  top: -58px;
   border-radius: 0;
 }
 
@@ -1206,6 +1390,32 @@ button.candle:focus-visible {
 
 .candle--burst .candle__flame--gold {
   animation: candle-gold-burst 1.15s ease-out;
+}
+
+/* 蛋糕图上的火焰盒是透明矩形。盒阴影会画出方框，所以这里只让火焰本身的投影闪一下。 */
+.cake-stage .candle__flame--gold,
+.cake-stage .candle--burst .candle__flame--gold {
+  background: none;
+  box-shadow: none;
+  border: none;
+  outline: none;
+  animation: none;
+}
+
+.cake-stage .candle--burst .candle__flame-sway {
+  animation: candle-sway 0.82s ease-in-out infinite, candle-gold-glow 1.15s ease-out;
+}
+
+@keyframes candle-gold-glow {
+  0% {
+    filter: drop-shadow(0 0 4px rgba(255, 210, 90, 0.35));
+  }
+  45% {
+    filter: drop-shadow(0 0 14px rgba(255, 226, 140, 0.95));
+  }
+  100% {
+    filter: drop-shadow(0 0 10px rgba(255, 210, 90, 0.75));
+  }
 }
 
 @keyframes candle-gold-burst {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CakeCandles } from '../components/cake/CakeCandles';
+import { CakeRoomCast } from '../components/cake/CakeRoomCast';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SceneLayout } from '../components/ui/SceneLayout';
@@ -63,8 +64,7 @@ export function CakeScene() {
       scene="cake"
       title={t.title}
       subtitle={t.subtitle}
-      mood={lit ? 'happy' : 'normal'}
-      guide={{ action: lit ? 'host' : 'point', scale: 0.72, followVoice: true }}
+      mood={null}
       actions={
         lit ? (
           <Button variant="gold" data-hint-target="cake-next" onClick={() => goTo('candle')}>
@@ -77,25 +77,28 @@ export function CakeScene() {
         )
       }
     >
-      <Card tag={cakeReady ? undefined : '占位 · 蛋糕 images/items/cake.png'} style={{ textAlign: 'center' }}>
-        <div className="stamp-tray" style={{ marginTop: 0, marginBottom: 28 }}>
-          {STAMP_ORDER.map((id) => (
-            <StampBadge key={id} id={id} unlocked={progress.stamps[id]} scale={0.7} />
-          ))}
+      <Card className="cake-card" tag={cakeReady ? undefined : '占位 · 蛋糕 images/items/cake.png'}>
+        <div className="cake-room">
+          <div className="cake-stamps stamp-tray">
+            {STAMP_ORDER.map((id) => (
+              <StampBadge key={id} id={id} unlocked={progress.stamps[id]} scale={0.62} />
+            ))}
+          </div>
+          {cakeReady ? (
+            <div className="cake-stage">
+              <div className="cake-visual">
+                <img className={`cake-stage__img ${lit ? '' : 'cake-stage__img--dim'}`} src={assetUrl('item_cake')} alt="" draggable={false} />
+                <CakeCandles lit={progress.candles} blown={[]} interactive={!lit} goldBurst={goldBurst} onLight={lightOne} />
+              </div>
+            </div>
+          ) : (
+            <div className={`cake-base ${lit ? '' : 'cake-base--dark'}`}>
+              <CakeCandles lit={progress.candles} blown={[]} interactive={!lit} goldBurst={goldBurst} onLight={lightOne} />
+            </div>
+          )}
+          <p className="cake-status">{lit ? t.lit : t.progress(Object.values(progress.candles).filter(Boolean).length)}</p>
+          <CakeRoomCast mood={lit ? 'happy' : 'normal'} />
         </div>
-        {cakeReady ? (
-          <div className="cake-stage">
-            <img className={`cake-stage__img ${lit ? '' : 'cake-stage__img--dim'}`} src={assetUrl('item_cake')} alt="" draggable={false} />
-            <CakeCandles lit={progress.candles} blown={[]} interactive={!lit} goldBurst={goldBurst} onLight={lightOne} />
-          </div>
-        ) : (
-          <div className={`cake-base ${lit ? '' : 'cake-base--dark'}`}>
-            <CakeCandles lit={progress.candles} blown={[]} interactive={!lit} goldBurst={goldBurst} onLight={lightOne} />
-          </div>
-        )}
-        <p className="card__text" style={{ marginTop: 18, fontWeight: 700, minHeight: 40 }}>
-          {lit ? t.lit : t.progress(Object.values(progress.candles).filter(Boolean).length)}
-        </p>
       </Card>
     </SceneLayout>
   );

@@ -1707,36 +1707,175 @@
   line-height: 1.35;
 }
 
-/* ===== 蛋糕房与吹蜡烛：礼物感面板，寿星在前，向导站在旁边 ===== */
-.scene--cake .card,
-.scene--candle .card {
-  background: var(--theme-panel);
+/* ===== 蛋糕房与吹蜡烛：蛋糕居中，寿星在左侧，Q版只在说话时出现 ===== */
+.scene--cake .cake-card,
+.scene--candle .cake-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  overflow: visible;
   text-align: center;
 }
 
-.scene--cake .scene__side,
-.scene--candle .scene__side {
-  flex-direction: row;
-  align-items: flex-end;
-  width: auto;
-  gap: 2px;
+.scene--cake .scene__content,
+.scene--candle .scene__content {
+  padding-bottom: 8px;
 }
 
-.scene--cake .scene__guide,
-.scene--candle .scene__guide {
-  width: 108px;
-  height: 128px;
+.scene--cake .scene__actions,
+.scene--candle .scene__actions {
+  margin-top: 0;
 }
 
-.scene--cake .scene__side:has(.scene__guide) .pc-bust,
-.scene--candle .scene__side:has(.scene__guide) .pc-bust {
-  width: 200px;
-  height: 340px;
+.scene--cake .scene__body,
+.scene--candle .scene__body {
+  position: static;
+  margin-top: 0;
 }
 
-.scene--cake .card__text,
-.scene--candle .card__text {
-  color: var(--theme-accent-deep);
+.scene--cake .cake-room,
+.scene--candle .cake-room {
+  position: absolute;
+  left: 88px;
+  right: 88px;
+  top: 248px;
+  height: 640px;
+  min-height: 0;
+  overflow: visible;
+}
+
+.scene--cake .scene__subtitle,
+.scene--candle .scene__subtitle {
+  width: fit-content;
+  max-width: 640px;
+  align-self: flex-start;
+}
+
+.scene--cake .cake-stage,
+.scene--candle .cake-stage {
+  position: absolute;
+  left: 50%;
+  /* 下移 220px：火焰簇的视觉中心大约在蛋糕图上沿再往上 48px，这样会落到舞台 y≈528 */
+  top: 220px;
+  width: 820px;
+  margin: 0;
+  padding-top: 108px;
+  transform: translateX(-50%);
+}
+
+.cake-status {
+  position: absolute;
+  left: 50%;
+  top: 668px;
+  transform: translateX(-50%);
+  margin: 0;
+  width: fit-content;
+  max-width: 720px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 250, 252, 0.92);
+  border: 1px solid rgba(214, 160, 180, 0.45);
+  color: #7a4460;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.35;
+  z-index: 4;
+}
+
+.cake-status--sub {
+  top: 716px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+}
+
+.cake-stamps {
+  position: absolute;
+  top: 86px;
+  left: 50%;
+  z-index: 4;
+  margin: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.cake-player {
+  position: absolute;
+  left: -13px;
+  bottom: -601px;
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.cake-guide {
+  position: absolute;
+  right: 250px;
+  bottom: 0;
+  z-index: 6;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cake-guide__cast {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 210px;
+  height: 262px;
+  pointer-events: none;
+}
+
+.cake-guide__bubble {
+  position: absolute;
+  right: 232px;
+  bottom: 168px;
+  width: 380px;
+  box-sizing: border-box;
+  padding: 14px 22px 16px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(255, 236, 244, 0.98));
+  border: 2px solid rgba(212, 150, 170, 0.75);
+  box-shadow: 0 10px 22px rgba(120, 50, 80, 0.16);
+  color: #6a4458;
+  pointer-events: none;
+  text-align: left;
+}
+
+.cake-guide__bubble::after {
+  content: '';
+  position: absolute;
+  right: -15px;
+  bottom: 54px;
+  border-style: solid;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent rgba(255, 252, 248, 0.98);
+  filter: drop-shadow(2px 1px 0 rgba(212, 150, 170, 0.75));
+}
+
+.cake-guide__who {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #a84870;
+}
+
+.cake-guide__line {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.cake-stage .candle--gold .candle__flame-sway {
+  filter: drop-shadow(0 0 12px rgba(255, 210, 90, 0.8));
 }
 
 /* ===== 音乐礼物：唱片换成舞台的金边，文字不再强行涂白 ===== */
