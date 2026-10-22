@@ -510,7 +510,13 @@
 
 .theater__layer--bg {
   z-index: 1;
-  filter: brightness(0.55) saturate(0.8);
+  filter: brightness(0.78) saturate(0.92);
+  transition: filter 2s ease;
+}
+
+.theater--loading .theater__layer--bg,
+.theater--end .theater__layer--bg {
+  filter: brightness(0.42) saturate(0.72);
 }
 
 .theater__layer--stage {
@@ -518,24 +524,9 @@
   pointer-events: none;
 }
 
-.theater__floor {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 220px;
-  background: linear-gradient(180deg, #4b2a3e 0%, #2a1626 100%);
-  border-top: 10px solid #7a4a62;
-}
-
+.theater__floor,
 .theater__edge {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 200px;
-  height: 18px;
-  background: repeating-linear-gradient(90deg, rgba(255, 230, 160, 0.9) 0 24px, transparent 24px 60px);
-  opacity: 0.6;
+  display: none;
 }
 
 .theater__layer--char {
@@ -543,11 +534,13 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 120px;
+  padding-bottom: 0;
   pointer-events: none;
+  overflow: visible;
 }
 
 .theater__char {
+  transform: translateY(260px);
   transform-origin: bottom center;
 }
 
@@ -584,8 +577,10 @@
 }
 
 .theater__light--off .theater__spot,
-.theater__light--off .theater__wash {
-  opacity: 0;
+.theater__light--off .theater__wash,
+.theater__light--dim .theater__spot,
+.theater__light--dim .theater__wash {
+  opacity: 0.28;
 }
 
 .theater__light--soft .theater__spot {
@@ -593,8 +588,8 @@
 }
 
 .theater__light--focus .theater__spot {
-  opacity: 1;
-  transform: scale(1.1);
+  opacity: 0.72;
+  transform: scale(1.04);
 }
 
 .theater__layer--text {
@@ -604,6 +599,11 @@
   justify-content: center;
   padding-top: 170px;
   cursor: pointer;
+}
+
+/* 开场介绍在幕布前面。幕布层是 6，这里升到 7，按钮仍在 UI 层 8。 */
+.theater--loading .theater__layer--text {
+  z-index: 7;
 }
 
 .theater__text {
@@ -753,18 +753,19 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 56%;
+  width: 92%;
   background: repeating-linear-gradient(90deg, #8a1b2e 0 36px, #a8273d 36px 72px, #7a1527 72px 110px);
   box-shadow: inset 0 -80px 80px rgba(0, 0, 0, 0.5);
 }
 
+/* 幕布图左右有大块透明边。合拢时按实心布料对齐中央，而不是按图片外框。 */
 .theater__curtain--l {
-  left: 0;
+  left: -13.7%;
   border-right: 10px solid #d9a521;
 }
 
 .theater__curtain--r {
-  right: 0;
+  left: 21.7%;
   border-left: 10px solid #d9a521;
 }
 
@@ -840,6 +841,68 @@
   bottom: 24px;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.45);
+}
+
+.theater__host {
+  position: absolute;
+  left: 36px;
+  bottom: 24px;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.theater__host-cast {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 192px;
+  height: 240px;
+  pointer-events: none;
+}
+
+.theater__host-bubble {
+  position: absolute;
+  left: 186px;
+  bottom: 148px;
+  width: 420px;
+  box-sizing: border-box;
+  padding: 14px 22px 16px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(255, 236, 244, 0.98));
+  border: 2px solid rgba(212, 150, 170, 0.75);
+  box-shadow: 0 10px 22px rgba(40, 16, 36, 0.28);
+  color: #6a4458;
+  text-align: left;
+  pointer-events: none;
+}
+
+.theater__host-bubble::after {
+  content: '';
+  position: absolute;
+  left: -15px;
+  bottom: 36px;
+  border-style: solid;
+  border-width: 10px 16px 10px 0;
+  border-color: transparent rgba(255, 252, 248, 0.98) transparent transparent;
+  filter: drop-shadow(-2px 1px 0 rgba(212, 150, 170, 0.75));
+}
+
+.theater__host-who {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #a84870;
+}
+
+.theater__host-line {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
 /* ---------- 闭园纪念票根 ---------- */

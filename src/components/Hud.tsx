@@ -59,7 +59,7 @@ export function Hud() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {voice && scene !== 'mint' && scene !== 'food' && scene !== 'exam' && scene !== 'wish' && scene !== 'cake' && scene !== 'candle' && (
+        {voice && scene !== 'mint' && scene !== 'food' && scene !== 'exam' && scene !== 'wish' && scene !== 'cake' && scene !== 'candle' && scene !== 'final' && (
           <motion.div
             key={voice.line}
             className="hud__toast hud__voice"

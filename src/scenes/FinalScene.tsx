@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { Button } from '../components/ui/Button';
 import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
+import { GUIDE_SPEAKER_LABEL } from '../config/characters';
 import { SCENE_THEMES, sceneThemeStyle } from '../config/sceneThemes';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { assetUrl } from '../config/assets';
@@ -88,8 +89,13 @@ export function FinalScene() {
   /** 推进一步（最后一步则进入下一幕） */
   const advance = useCallback(() => {
     if (isEnd) return;
-    // 自动步骤（加载 / 预测中）不响应点击，避免跳过演出节奏
-    if ((act.kind === 'loading' || act.kind === 'predict') && step === 0) return;
+    // 开场点一次就揭幕，不再等加载条自己把幕布拉开。预测中的那一下仍然自动。
+    if (act.kind === 'loading') {
+      audio.playSfx('sfx_click');
+      nextAct();
+      return;
+    }
+    if (act.kind === 'predict' && step === 0) return;
     audio.playSfx('sfx_click');
     if (step >= lastStep) nextAct();
     else setStep(step + 1);
@@ -102,32 +108,32 @@ export function FinalScene() {
     setStep(0);
   };
 
-  // 自动步骤：第一幕加载完成后幕布开启；第五幕预测一段时间后失败
+  // 自动步骤：开场文案在幕布前换一句；第五幕预测一段时间后失败。计时器随幕次清掉，避免点开始后还改到下一幕。
   useEffect(() => {
+    let timer = 0;
     if (act.kind === 'loading' && step === 0) {
-      timers.current.push(
-        window.setTimeout(() => {
-          audio.playSfx('sfx_unlock');
-          setStep(1);
-        }, LOADING_MS),
-      );
+      timer = window.setTimeout(() => {
+        audio.playSfx('sfx_unlock');
+        setStep(1);
+      }, LOADING_MS);
     }
     if (act.kind === 'predict' && step === 0) {
-      timers.current.push(
-        window.setTimeout(() => {
-          audio.playSfx('sfx_wrong');
-          setStep(1);
-        }, PREDICT_MS),
-      );
+      timer = window.setTimeout(() => {
+        audio.playSfx('sfx_wrong');
+        setStep(1);
+      }, PREDICT_MS);
     }
     if (act.kind === 'approve' && step === 0) audio.playSfx('sfx_stamp');
     if (act.kind === 'curtain' && step === lastStep) audio.playSfx('sfx_success');
+    return () => {
+      if (timer) window.clearTimeout(timer);
+    };
   }, [act.kind, step, lastStep]);
 
-  // 幕布：第一幕加载阶段合拢；落幕时合拢；其余打开
-  const curtainClosed = (act.kind === 'loading' && step === 0) || isEnd;
-  // 聚光灯：谢幕与落幕时聚焦角色；审批幕次为柔和舞台光
-  const spotlight = act.kind === 'curtain' || isEnd ? 'focus' : act.kind === 'loading' ? 'off' : 'soft';
+  // 幕布：整个开场都合拢，点「下一步」离开开场后才拉开；落幕时再合上。
+  const curtainClosed = act.kind === 'loading' || isEnd;
+  // 闭幕时只留一层很暗的氛围光，谢幕句聚焦，其余幕次用柔光。
+  const spotlight = curtainClosed ? 'dim' : act.kind === 'curtain' ? 'focus' : 'soft';
   const mood = isEnd || act.kind === 'curtain' ? 'happy' : act.kind === 'predict' && step >= 1 ? 'surprise' : act.kind === 'approve' ? 'happy' : 'normal';
 
   const renderActContent = () => {
@@ -217,14 +223,9 @@ export function FinalScene() {
       </div>
       {/* 角色立绘层 */}
       <div className="theater__layer theater__layer--char">
-        <motion.div className="theater__char" animate={{ opacity: curtainClosed && !isEnd ? 0 : 1, scale: spotlight === 'focus' ? 1.04 : 1 }} transition={{ duration: 1 }}>
-          <PlaceholderCharacter mood={mood} frame="full" />
-        </motion.div>
-        {guideSpeaking && (
-          <div className="theater__guide">
-            <ChibiMayi action="farewell" scale={0.85} followVoice />
-          </div>
-        )}
+        <div className="theater__char">
+          <PlaceholderCharacter mood={mood} frame="full" scale={1.9} />
+        </div>
       </div>
       {/* 聚光灯层 */}
       <div className={`theater__layer theater__layer--light theater__light--${spotlight}`} aria-hidden>
@@ -244,14 +245,16 @@ export function FinalScene() {
         <motion.div
           className={`theater__curtain theater__curtain--l ${curtainL ? 'theater__curtain--art' : ''}`}
           style={curtainL ? { backgroundImage: `url(${assetUrl('theater_curtain_l')})` } : undefined}
-          animate={{ x: curtainClosed ? '0%' : '-92%' }}
-          transition={{ duration: isEnd ? 2.2 : 1.1, ease: 'easeInOut' }}
+          initial={false}
+          animate={{ x: curtainClosed ? '0%' : '-50%' }}
+          transition={{ duration: 2, ease: 'easeInOut' }}
         />
         <motion.div
           className={`theater__curtain theater__curtain--r ${curtainR ? 'theater__curtain--art' : ''}`}
           style={curtainR ? { backgroundImage: `url(${assetUrl('theater_curtain_r')})` } : undefined}
-          animate={{ x: curtainClosed ? '0%' : '92%' }}
-          transition={{ duration: isEnd ? 2.2 : 1.1, ease: 'easeInOut' }}
+          initial={false}
+          animate={{ x: curtainClosed ? '0%' : '50%' }}
+          transition={{ duration: 2, ease: 'easeInOut' }}
         />
         <div
           className={`theater__valance ${valance ? 'theater__valance--art' : ''}`}
@@ -272,7 +275,7 @@ export function FinalScene() {
               <Button variant="ghost" small onClick={skipAll} data-testid="final-skip">
                 {t.skip}
               </Button>
-              <Button variant="gold" onClick={advance} data-hint-target="final-next" data-testid="final-next" disabled={(act.kind === 'loading' || act.kind === 'predict') && step === 0}>
+              <Button variant="gold" onClick={advance} data-hint-target="final-next" data-testid="final-next" disabled={act.kind === 'predict' && step === 0}>
                 {step >= lastStep ? t.nextAct : t.nextStep}
               </Button>
             </>
@@ -295,6 +298,17 @@ export function FinalScene() {
           )}
         </div>
         <span className="theater__layer-label">{t.layerLabels}</span>
+        {guideSpeaking && (
+          <div className="theater__host">
+            <div className="theater__host-bubble" role="status">
+              <span className="theater__host-who">{GUIDE_SPEAKER_LABEL}</span>
+              <span className="theater__host-line">{getVoiceCaption()?.line}</span>
+            </div>
+            <div className="theater__host-cast">
+              <ChibiMayi action="farewell" scale={1.6} facing="right" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
