@@ -1,10 +1,12 @@
 import { AnimatePresence, motion } from 'motion/react';
 import {
+  memo,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ChangeEvent,
   type CompositionEvent,
   type PointerEvent as ReactPointerEvent,
@@ -14,12 +16,13 @@ import { Button } from '../components/ui/Button';
 import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { PlaceholderCharacter } from '../components/ui/PlaceholderCharacter';
 import { SceneLayout } from '../components/ui/SceneLayout';
+import { GUIDE_SPEAKER_LABEL } from '../config/characters';
 import { verifyWishExpandCode } from '../config/secrets';
 import { ASSETS, assetUrl } from '../config/assets';
 import { isDebugUiEnabled } from '../config/debugUi';
 import { TEXTS } from '../config/texts';
 import { audio } from '../core/audio';
-import { playCharacterVoice } from '../core/characterVoice';
+import { getVoiceCaption, getVoiceCaptionSnapshot, playCharacterVoice, subscribeVoiceCaption } from '../core/characterVoice';
 import { useGame } from '../core/GameContext';
 import { CUSTOM_WISH_MAX, WISH_CARD_TOTAL, sanitizeUserText, type WishCardId } from '../core/progress';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
@@ -219,7 +222,11 @@ export function WishScene() {
 
   const onCardPointerDown = (e: ReactPointerEvent<HTMLDivElement>, i: number) => {
     if (hung[i] || !interactive) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* 个别环境拒绝捕获时，翻卡和拖拽仍按位移判断 */
+    }
     dragRef.current = { i, startX: e.clientX, startY: e.clientY, moved: false, flipOnly: !isFaceFront(i) };
   };
   const onCardPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -477,12 +484,12 @@ export function WishScene() {
         }
       >
         <div className={`wish-view ${dragging ? 'wish-view--dragging' : ''}`} ref={viewRef}>
-          <div className="wish-bust" aria-hidden>
-            <PlaceholderCharacter mood={litCount >= 4 ? 'happy' : armed !== null ? 'surprise' : 'normal'} />
-          </div>
-          <div className="wish-guide" aria-hidden>
-            <ChibiMayi action="point" facing="right" scale={0.72} followVoice />
-          </div>
+          {(game.phase === 'playing' || game.phase === 'paused') && (
+            <div className="wish-bust" aria-hidden>
+              <PlaceholderCharacter mood={fullBloom ? 'happy' : 'wish'} frame="full" scale={1.62} />
+            </div>
+          )}
+          {(game.phase === 'playing' || game.phase === 'paused') && <WishGuide />}
           <div
             className={[
               'sakura-stage',
@@ -490,6 +497,7 @@ export function WishScene() {
               armed !== null ? 'sakura-stage--armed' : '',
               treeArtReady ? 'sakura-stage--has-tree-art' : '',
               clusterArtReady ? 'sakura-stage--has-cluster-art' : '',
+              fullBloom ? 'sakura-stage--bloom' : '',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -538,6 +546,7 @@ export function WishScene() {
                 {sparkleAt !== null && (
                   <motion.div
                     key={sparkleAt}
+                    className="sakura-sparkle"
                     style={{
                       position: 'absolute',
                       left: `${CLUSTERS[sparkleAt].x * 100}%`,
@@ -573,24 +582,7 @@ export function WishScene() {
               )}
             </AnimatePresence>
 
-            {/* 满树花开：整体光晕 + 花瓣飘落 */}
-            <AnimatePresence>
-              {fullBloom && (
-                <motion.div
-                  key="glow"
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'radial-gradient(ellipse at 50% 35%, rgba(255,190,225,0.45) 0%, transparent 60%)',
-                    pointerEvents: 'none',
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0, 1, 0.7, 1] }}
-                  transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-                />
-              )}
-            </AnimatePresence>
-            <Petals count={fullBloom ? 24 : litCount * 3} />
+            <Petals count={fullBloom ? 14 : litCount * 2} />
             <div className="sakura-ground" />
             {isDebugUiEnabled() && (
               <span className="placeholder-bg__label" style={{ left: 16, right: 'auto' }}>
@@ -674,7 +666,7 @@ export function WishScene() {
                       </div>
                       <div className="wish-card__status">
                         {isHung ? (
-                          <span className="wish-card__badge">🌸 已挂上树</span>
+                          <span className="wish-card__badge">🌸 已获祝福</span>
                         ) : (
                           <span className="wish-card__drag">{armed === i ? t.flip.armed : t.flip.dragFront}</span>
                         )}
@@ -715,19 +707,17 @@ export function WishScene() {
                   <span className="wish-status__main" data-testid="wish-main-status">
                     {statusText}
                   </span>
-                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <div className="wish-status__actions">
                     <Button variant="secondary" small onClick={openChoose} data-testid="wish-choose">
                       {chosen ? t.choose.change : t.choose.open}
                     </Button>
-                    <Button variant="gold" disabled={!canSeal} onClick={game.finishToResult} data-hint-target="wish-seal" data-testid="wish-seal">
+                    <Button variant="gold" small disabled={!canSeal} onClick={game.finishToResult} data-hint-target="wish-seal" data-testid="wish-seal">
                       {t.seal}
                     </Button>
                   </div>
                 </div>
               ) : (
-                <span>
-                  {t.lit(litCount)} · <small style={{ opacity: 0.8 }}>{t.drag.fallback}</small>
-                </span>
+                <span className="wish-status__hint">{t.drag.fallback}</span>
               )}
               <button type="button" className="wish-signal-tag" data-testid="wish-signal" onClick={openSignal}>
                 {t.signal.tag}
@@ -942,3 +932,34 @@ export function WishScene() {
     </SceneLayout>
   );
 }
+
+/**
+ * 心愿屋的 Q 版向导。只在她说出台词时出现，气泡跟着她，不占选卡布局。
+ */
+const WishGuide = memo(function WishGuide() {
+  useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
+  const voice = getVoiceCaption();
+
+  return (
+    <div className="wish-guide">
+      <AnimatePresence>
+        {voice && (
+          <motion.div
+            key={voice.line}
+            className="wish-guide__cast"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28 }}
+          >
+            <div className="wish-guide__bubble" role="status">
+              <span className="wish-guide__who">{GUIDE_SPEAKER_LABEL}</span>
+              <span className="wish-guide__line">{voice.line}</span>
+            </div>
+            <ChibiMayi action={voice.action} scale={1.9} facing="left" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
