@@ -1,8 +1,8 @@
 import { motion } from 'motion/react';
 import { assetUrl } from '../../config/assets';
-import { PLAYER_MOOD_ASSET, PLAYER_MOOD_FALLBACK, PLAYER_ROLE_LABEL, type PlayerMood } from '../../config/characters';
+import { PLAYER_ROLE_LABEL, type PlayerMood } from '../../config/characters';
 import { isDebugUiEnabled } from '../../config/debugUi';
-import { useAssetImageReady } from '../../hooks/useAssetImageReady';
+import { usePlayerPortrait } from '../../hooks/usePlayerPortrait';
 
 /** 玩家麻衣的表情。沿用旧名字，避免改遍每个场景的导入。 */
 export type CharacterMood = PlayerMood;
@@ -30,12 +30,8 @@ const BASE_H = 460;
  * @param frame bust 用容器裁上头肩，full 按原容器完整包含
  */
 export function PlaceholderCharacter({ mood = 'normal', scale = 1, frame = 'bust' }: PlaceholderCharacterProps) {
-  const preferred = PLAYER_MOOD_ASSET[mood];
-  const fallbackId = PLAYER_MOOD_FALLBACK[mood] ?? preferred;
-  const preferredReady = useAssetImageReady(preferred);
-  const fallbackReady = useAssetImageReady(fallbackId);
-  const asset = preferredReady ? preferred : fallbackId;
-  const ready = preferredReady || fallbackReady;
+  const asset = usePlayerPortrait(mood);
+  const ready = asset !== null;
   const showRole = !ready || isDebugUiEnabled();
   const bust = frame === 'bust';
   const eyeCls = mood === 'happy' ? 'pc__eye--happy' : '';
@@ -46,6 +42,7 @@ export function PlaceholderCharacter({ mood = 'normal', scale = 1, frame = 'bust
       className={bust ? 'pc-bust' : 'pc-full'}
       data-character-role="player_mayi"
       data-player-mood={mood}
+      data-player-asset={asset ?? ''}
       style={{ ['--pc-scale' as string]: scale, width: bust ? undefined : BASE_W * scale, height: bust ? undefined : BASE_H * scale, position: 'relative' }}
       animate={{ y: [0, -8 * scale, 0] }}
       transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}

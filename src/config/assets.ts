@@ -301,6 +301,90 @@ export const ASSETS = {
     description: '玩家麻衣：听音乐。不配台词，向导不插话',
     placeholder: '#ffb8d9',
   },
+  char_normal_purple: {
+    kind: 'image',
+    path: 'images/char/mayi_normal_purple.png',
+    description: '玩家麻衣：常态全身，紫色造型',
+    placeholder: '#c7b6ef',
+  },
+  char_happy_purple: {
+    kind: 'image',
+    path: 'images/char/mayi_happy_purple.png',
+    description: '玩家麻衣：开心，紫色造型',
+    placeholder: '#c7b6ef',
+  },
+  char_think_purple: {
+    kind: 'image',
+    path: 'images/char/mayi_think_purple.png',
+    description: '玩家麻衣：思考，紫色造型',
+    placeholder: '#c7b6ef',
+  },
+  char_surprise_purple: {
+    kind: 'image',
+    path: 'images/char/mayi_surprise_purple.png',
+    description: '玩家麻衣：惊讶，紫色造型',
+    placeholder: '#c7b6ef',
+  },
+  player_mayi_map_purple: {
+    kind: 'image',
+    path: 'images/char/player_mayi_map_purple.png',
+    description: '玩家麻衣：地图半身，紫色造型',
+    placeholder: '#c7b6ef',
+  },
+  player_mayi_wish_purple: {
+    kind: 'image',
+    path: 'images/char/player_mayi_wish_purple.png',
+    description: '玩家麻衣：许愿，紫色造型',
+    placeholder: '#c7b6ef',
+  },
+  player_mayi_listen_purple: {
+    kind: 'image',
+    path: 'images/char/player_mayi_listen_purple.png',
+    description: '玩家麻衣：聆听，紫色造型',
+    placeholder: '#c7b6ef',
+  },
+  char_normal_golden: {
+    kind: 'image',
+    path: 'images/char/mayi_normal_golden.png',
+    description: '玩家麻衣：常态全身，金色造型',
+    placeholder: '#e4c56a',
+  },
+  char_happy_golden: {
+    kind: 'image',
+    path: 'images/char/mayi_happy_golden.png',
+    description: '玩家麻衣：开心，金色造型',
+    placeholder: '#e4c56a',
+  },
+  char_think_golden: {
+    kind: 'image',
+    path: 'images/char/mayi_think_golden.png',
+    description: '玩家麻衣：思考，金色造型',
+    placeholder: '#e4c56a',
+  },
+  char_surprise_golden: {
+    kind: 'image',
+    path: 'images/char/mayi_surprise_golden.png',
+    description: '玩家麻衣：惊讶，金色造型',
+    placeholder: '#e4c56a',
+  },
+  player_mayi_map_golden: {
+    kind: 'image',
+    path: 'images/char/player_mayi_map_golden.png',
+    description: '玩家麻衣：地图半身，金色造型',
+    placeholder: '#e4c56a',
+  },
+  player_mayi_wish_golden: {
+    kind: 'image',
+    path: 'images/char/player_mayi_wish_golden.png',
+    description: '玩家麻衣：许愿，金色造型',
+    placeholder: '#e4c56a',
+  },
+  player_mayi_listen_golden: {
+    kind: 'image',
+    path: 'images/char/player_mayi_listen_golden.png',
+    description: '玩家麻衣：聆听，金色造型',
+    placeholder: '#e4c56a',
+  },
 
   // ---------- 印章 ----------
   stamp_mint: {

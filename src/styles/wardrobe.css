@@ -1,0 +1,194 @@
+/* 入场造型选择。颜色只作用于这一页，不改其他房间的主题。 */
+
+.wardrobe {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 96px 72px 28px;
+  overflow: hidden;
+  color: #4a3b4d;
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(255, 214, 230, 0.85), transparent 42%),
+    radial-gradient(ellipse at 82% 8%, rgba(214, 196, 255, 0.72), transparent 40%),
+    radial-gradient(ellipse at 50% 110%, rgba(255, 226, 176, 0.8), transparent 46%),
+    linear-gradient(180deg, #fff8fb 0%, #f6f0ff 52%, #fff6ea 100%);
+  pointer-events: auto;
+}
+
+.wardrobe__glow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 920px;
+  height: 420px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.72), transparent 68%);
+  pointer-events: none;
+}
+
+.wardrobe__head,
+.wardrobe__cards,
+.wardrobe__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.wardrobe__head {
+  text-align: center;
+}
+
+.wardrobe__title {
+  margin: 0;
+  font-family: KaiTi, STKaiti, 'Microsoft YaHei UI', 'Microsoft YaHei', serif;
+  font-size: 46px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #5a3d4a;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.7);
+}
+
+.wardrobe__subtitle {
+  margin: 8px 0 0;
+  font-size: 20px;
+  color: #7a6570;
+}
+
+.wardrobe__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.wardrobe__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.86);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent 28%),
+    linear-gradient(180deg, rgba(255, 252, 248, 0.94), rgba(255, 247, 240, 0.9));
+  box-shadow: 0 16px 32px rgba(90, 60, 70, 0.12);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  transition: transform 0.28s ease, box-shadow 0.28s ease, opacity 0.28s ease, border-color 0.28s ease;
+}
+
+.wardrobe__card--pink {
+  --look-line: #e989b0;
+  --look-glow: rgba(233, 137, 176, 0.38);
+  --look-wash: rgba(255, 214, 228, 0.55);
+}
+
+.wardrobe__card--purple {
+  --look-line: #9b86d8;
+  --look-glow: rgba(155, 134, 216, 0.4);
+  --look-wash: rgba(220, 210, 255, 0.58);
+}
+
+.wardrobe__card--golden {
+  --look-line: #d4ae62;
+  --look-glow: rgba(212, 174, 98, 0.42);
+  --look-wash: rgba(255, 230, 176, 0.58);
+}
+
+.wardrobe__card--on {
+  transform: translateY(-6px);
+  border-color: var(--look-line);
+  box-shadow:
+    0 16px 28px rgba(80, 50, 40, 0.16),
+    0 0 0 4px var(--look-glow);
+}
+
+.wardrobe__card--dim {
+  opacity: 0.8;
+}
+
+.wardrobe__card--on::after {
+  content: '';
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 18px;
+  height: 72px;
+  border-radius: 999px;
+  background: radial-gradient(ellipse, var(--look-wash), transparent 72%);
+  pointer-events: none;
+}
+
+.wardrobe__art {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background:
+    radial-gradient(ellipse at 50% 78%, var(--look-wash), transparent 62%);
+}
+
+.wardrobe__art img {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  bottom: 0;
+  width: 84%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  pointer-events: none;
+  user-select: none;
+}
+
+.wardrobe__meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 12px 22px 16px;
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.2), rgba(255, 250, 244, 0.96) 28%);
+}
+
+.wardrobe__name {
+  font-family: KaiTi, STKaiti, 'Microsoft YaHei UI', 'Microsoft YaHei', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #5c4038;
+}
+
+.wardrobe__desc {
+  font-size: 16px;
+  line-height: 1.45;
+  color: #6d5c62;
+}
+
+.wardrobe__actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+.wardrobe__actions .btn {
+  min-width: 280px;
+  font-size: 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wardrobe__card,
+  .wardrobe__card--on {
+    transition: none;
+    transform: none;
+  }
+}

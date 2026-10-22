@@ -13,6 +13,7 @@ import { MapScene } from './MapScene';
 import { MintScene } from './MintScene';
 import { MusicScene } from './MusicScene';
 import { TicketScene } from './TicketScene';
+import { WardrobeScene } from './WardrobeScene';
 import { WishScene } from './WishScene';
 
 /** 场景 ID → 组件 的注册表；新增场景需同时在 config/scenes.ts 注册元数据 */
@@ -32,4 +33,5 @@ export const SCENE_COMPONENTS: Record<SceneId, ComponentType> = {
   final: FinalScene,
   ticket: TicketScene,
   egg: EggScene,
+  wardrobe: WardrobeScene,
 };

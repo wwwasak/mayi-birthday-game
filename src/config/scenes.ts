@@ -22,7 +22,8 @@ export type SceneId =
   | 'music'
   | 'final'
   | 'ticket'
-  | 'egg';
+  | 'egg'
+  | 'wardrobe';
 
 /** 场景元数据 */
 export interface SceneDef {
@@ -105,7 +106,8 @@ export const SCENES: Record<SceneId, SceneDef> = {
   final: { id: 'final', title: '生日特别演出', bg: 'bg_final', showBackToMap: true, canEnter: hasAllStamps, lockedHint: '先去蛋糕房吧！' },
   ticket: { id: 'ticket', title: '闭园纪念票根', bg: 'bg_final', showBackToMap: true, canEnter: hasAllStamps, lockedHint: '先去蛋糕房吧！' },
   egg: { id: 'egg', title: '？？？', bg: 'bg_egg', showBackToMap: true },
+  wardrobe: { id: 'wardrobe', title: '入场造型', bg: 'bg_boot', showBackToMap: false },
 };
 
-/** 初始场景 */
-export const INITIAL_SCENE: SceneId = 'boot';
+/** 初始场景。每次打开都先选造型，确认后再进入原来的开场。 */
+export const INITIAL_SCENE: SceneId = 'wardrobe';

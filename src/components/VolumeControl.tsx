@@ -36,7 +36,7 @@ export function VolumeControl() {
 
   useEffect(() => {
     if (!bgmOn) return;
-    if (scene === 'music') {
+    if (scene === 'music' || scene === 'wardrobe') {
       audio.stopBgm();
       return;
     }

@@ -1,4 +1,5 @@
 import { CANDLE_IDS, allCandlesLit, sanitizeBlownCandles, type CandleId } from '../config/candles';
+import { sanitizeMayiAppearance, type MayiAppearance } from '../config/mayiAppearances';
 import type { SceneId } from '../config/scenes';
 import type { StampId } from '../config/stamps';
 import { loadJSON, removeKey, saveJSON } from './storage';
@@ -149,6 +150,11 @@ export interface GameProgress {
   settings: GameSettings;
   /** 音频设置 */
   audio: AudioSettings;
+  /**
+   * 普通立绘造型。
+   * 只影响玩家麻衣的立绘，不参与印章、分数或剧情判断。
+   */
+  mayiAppearance: MayiAppearance;
 }
 
 const STAMP_IDS: StampId[] = ['mint', 'food', 'exam', 'wish'];
@@ -195,6 +201,7 @@ export function createDefaultProgress(): GameProgress {
     hintsSeen: {},
     settings: { danmuTimer: false },
     audio: { ...AUDIO_DEFAULTS },
+    mayiAppearance: 'pink',
   };
 }
 
@@ -378,6 +385,7 @@ export function normalizeProgress(raw: unknown): GameProgress {
       sfx: unit(audioSrc.sfx, AUDIO_DEFAULTS.sfx),
       gift: unit(audioSrc.gift, AUDIO_DEFAULTS.gift),
     },
+    mayiAppearance: sanitizeMayiAppearance(raw.mayiAppearance),
   };
 }
 

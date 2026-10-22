@@ -25,6 +25,34 @@ export const TEXTS = {
     hint: '提示：本游戏会自动播放BGM，可在右上角随时调节音量。',
   },
 
+  /** 入场造型选择。不计入分数，也不发放印章。 */
+  wardrobe: {
+    title: '今天的麻衣，想以哪种模样入场？',
+    subtitle: '挑一套喜欢的装扮，开启今天的奇妙游园会吧！',
+    changeTitle: '想换一套今天的装扮吗？',
+    changeSubtitle: '确认之后，游园会里的普通立绘会换成这一套。',
+    confirmEnter: (name: string) => `以${name}造型入场`,
+    confirmChange: '确认更换',
+    cancel: '先不换了',
+    styles: {
+      pink: {
+        name: '粉色',
+        title: '初心之约',
+        desc: '粉色头发与经典服饰，温柔可爱的基础造型。',
+      },
+      purple: {
+        name: '紫色',
+        title: '星夜幻想',
+        desc: '浅紫色头发与紫色盛装，梦幻又优雅。',
+      },
+      golden: {
+        name: '金色',
+        title: '耀光盛典',
+        desc: '金黄色头发与金色礼服，华丽明亮的庆典感。',
+      },
+    },
+  },
+
   /** 入园闸机（身份认证 + 游客须知合并为一屏） */
   gate: {
     title: '入园闸机',
@@ -70,6 +98,7 @@ export const TEXTS = {
     orderStep: (n: number) => `第 ${n} 站`,
     orderNow: '👉 当前站，点击进入',
     chibiHint: '点 Q 版麻衣，进入她正在指路的这一站。',
+    changeLook: '更换造型',
     allReplay: '四站都可以随时重玩，蛋糕房已开放。',
     booths: {
       mint: { title: '薄荷糖补给站', desc: '给今天的游园会补充一点清凉。' },

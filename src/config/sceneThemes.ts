@@ -104,6 +104,7 @@ const custom = room({
  * 颜色从对应背景里取：暖木、蓝金图书馆、夜色樱花、粉金礼堂、深夜后台。
  */
 export const SCENE_THEMES: Record<SceneId, SceneTheme> = {
+  wardrobe: custom,
   boot: custom,
   gate: custom,
   auth: custom,

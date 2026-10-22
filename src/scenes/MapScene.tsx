@@ -6,6 +6,7 @@ import { ChibiMayi } from '../components/ui/ChibiMayi';
 import { StampIcon } from '../components/ui/StampBadge';
 import { PlaceholderBackground } from '../components/ui/PlaceholderBackground';
 import { ASSETS, assetUrl } from '../config/assets';
+import { isMapPortraitAsset } from '../config/mayiAppearances';
 import type { GuideAction } from '../config/characters';
 import { isDebugUiEnabled } from '../config/debugUi';
 import { cakeSlotCenter, chibiSpot, STAMP_TRAY, trayCenter, type BuildingId } from '../config/mapLayout';
@@ -18,6 +19,7 @@ import { useGame } from '../core/GameContext';
 import { useHints } from '../core/HintContext';
 import { canEnterStage, countPreWishStamps, countStamps, currentStage, STRICT_ORDER, type GameProgress } from '../core/progress';
 import { useSceneHint } from '../hooks/useSceneHint';
+import { usePlayerPortrait } from '../hooks/usePlayerPortrait';
 import { useAssetImageReady } from '../hooks/useAssetImageReady';
 
 /** 地图演出类型 */
@@ -230,7 +232,8 @@ export function MapScene() {
   const tokenTarget: BuildingId = show === 'wish' ? 'wish' : show === 'converge' ? 'cake' : next;
   const tokenPos = chibiSpot(tokenTarget, artReady[tokenTarget]);
   const tokenStart = cameFrom ? chibiSpot(cameFrom, artReady[cameFrom]) : tokenPos;
-  const mapBustReady = useAssetImageReady('player_mayi_map');
+  const mapPortrait = usePlayerPortrait('map');
+  const mapBustReady = mapPortrait !== null && isMapPortraitAsset(mapPortrait);
   const guideFacing: 'left' | 'right' = (() => {
     if (!hovered) return tokenPos.x < 960 ? 'right' : 'left';
     const spot = chibiSpot(hovered, artReady[hovered]);
@@ -384,13 +387,15 @@ export function MapScene() {
           <button type="button" className="park__guide-hit" data-testid="map-chibi" aria-label={t.chibiHint} title={t.chibiHint} onClick={enterCurrent} />
         </motion.div>
 
-        <div className="park__player-mark" data-character-role="player_mayi">
-          <img
-            className={`park__player-mark__art${mapBustReady ? '' : ' park__player-mark__art--full'}`}
-            src={assetUrl(mapBustReady ? 'player_mayi_map' : 'char_normal')}
-            alt=""
-            draggable={false}
-          />
+        <div className="park__player-mark" data-character-role="player_mayi" data-player-asset={mapPortrait ?? ''}>
+          {mapPortrait && (
+            <img
+              className={`park__player-mark__art${mapBustReady ? '' : ' park__player-mark__art--full'}`}
+              src={assetUrl(mapPortrait)}
+              alt=""
+              draggable={false}
+            />
+          )}
         </div>
 
         <div className="park__tray" style={{ left: STAMP_TRAY.x, top: STAMP_TRAY.y }}>

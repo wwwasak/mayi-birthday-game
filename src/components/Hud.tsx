@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { WardrobePicker } from './WardrobePicker';
 import { SCENES } from '../config/scenes';
 import { TEXTS } from '../config/texts';
 import { getVoiceCaption, getVoiceCaptionSnapshot, subscribeVoiceCaption } from '../core/characterVoice';
@@ -13,14 +14,19 @@ import { VolumeControl } from './VolumeControl';
  * 常驻 HUD：左上场景名 + 返回地图；右上音量控制 + 存储状态；顶部中央提示
  */
 export function Hud() {
-  const { scene, progress, storageOk, toast, backToMap } = useGame();
+  const { scene, progress, storageOk, toast, backToMap, patch } = useGame();
   const { mode: hintMode } = useHints();
+  const [wardrobeOpen, setWardrobeOpen] = useState(false);
   useSyncExternalStore(subscribeVoiceCaption, getVoiceCaptionSnapshot);
   const voice = getVoiceCaption();
   const def = SCENES[scene];
-  const showStamps = scene !== 'boot' && scene !== 'gate' && scene !== 'auth' && scene !== 'notice';
+  const showStamps = scene !== 'boot' && scene !== 'gate' && scene !== 'auth' && scene !== 'notice' && scene !== 'wardrobe';
   /** 提示槽可见时 toast 下移，避免重叠 */
   const toastTop = hintMode ? 170 : 110;
+
+  useEffect(() => {
+    if (scene !== 'map') setWardrobeOpen(false);
+  }, [scene]);
 
   return (
     <div className="hud">
@@ -39,6 +45,11 @@ export function Hud() {
 
       <div className="hud__top-right">
         {!storageOk && <div className="hud__pill hud__warn">{TEXTS.common.storageWarn}</div>}
+        {scene === 'map' && (
+          <Button variant="secondary" small data-testid="map-change-look" onClick={() => setWardrobeOpen(true)}>
+            {TEXTS.map.changeLook}
+          </Button>
+        )}
         <VolumeControl />
       </div>
 
@@ -59,7 +70,7 @@ export function Hud() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {voice && scene !== 'mint' && scene !== 'food' && scene !== 'exam' && scene !== 'wish' && scene !== 'cake' && scene !== 'candle' && scene !== 'final' && scene !== 'egg' && (
+        {voice && scene !== 'mint' && scene !== 'food' && scene !== 'exam' && scene !== 'wish' && scene !== 'cake' && scene !== 'candle' && scene !== 'final' && scene !== 'egg' && scene !== 'wardrobe' && (
           <motion.div
             key={voice.line}
             className="hud__toast hud__voice"
@@ -74,6 +85,18 @@ export function Hud() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {wardrobeOpen && (
+        <WardrobePicker
+          mode="change"
+          initial={progress.mayiAppearance}
+          onConfirm={(look) => {
+            patch({ mayiAppearance: look });
+            setWardrobeOpen(false);
+          }}
+          onCancel={() => setWardrobeOpen(false)}
+        />
+      )}
     </div>
   );
 }
