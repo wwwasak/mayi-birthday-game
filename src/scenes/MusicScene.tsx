@@ -74,7 +74,7 @@ export function MusicScene() {
         </>
       }
     >
-      <Card tag="占位 · 唱片机" style={{ textAlign: 'center', padding: 48 }}>
+      <Card tag="音乐礼物" style={{ textAlign: 'center', padding: 48 }}>
         <motion.div
           className="music-disc"
           animate={playing ? { rotate: 360 } : { rotate: 0 }}

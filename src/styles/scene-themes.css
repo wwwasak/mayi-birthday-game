@@ -2009,6 +2009,7 @@
 }
 
 .egg-quote {
+  white-space: pre-line;
   display: block;
   width: fit-content;
   margin: 14px auto 0;
